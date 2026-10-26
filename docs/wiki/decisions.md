@@ -131,3 +131,8 @@ Owner: a YouTube song reached with "next" should play in the big player as part 
 It does — in YouTube's IFrame player on the full player screen, which opens by itself. This
 keeps the ToS rule (visible embedded player, no background play): when the screen is closed
 or the app is in the background, YouTube doesn't play.
+
+### 2026-10-27 — Repository made public
+Owner's choice, to get free GitHub Actions while his billing is blocked. The code holds no
+user data or AI keys; the Android signing key is now public (see build-and-release.md) and must
+be replaced, outside the repo, before real use.

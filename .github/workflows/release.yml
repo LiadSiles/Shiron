@@ -9,7 +9,9 @@ name: Release
 #     "ios: true" to attach an IPA to a build as well.
 #
 # The iOS job runs on macOS, which costs 10× the Actions minutes of Linux on a private repo;
-# that's why it runs per version and not per push. See docs/wiki/build-and-release.md.
+# that's why it runs per version and not per push. Since 2026-10-27 the repo is public (the
+# owner's Actions billing was blocked), where standard runners are free. See
+# docs/wiki/build-and-release.md.
 on:
   push:
     branches: [main]

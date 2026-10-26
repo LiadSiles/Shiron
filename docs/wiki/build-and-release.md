@@ -131,3 +131,10 @@ Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+.
   count 10×), not the workflow. The APK/IPA are still downloadable as run artifacts
   (`android`, `ios`, kept 90 days); once billing is fixed, "Re-run failed jobs" on the run
   publishes the release. Sessions here can't create releases themselves (403).
+- 2026-10-27: the owner made the repo **public** so Actions run free (billing was blocked).
+  Consequence: the committed signing keystore (`app/keystore/shiron.keystore`, password in
+  `plugins/withSigningKey.js`) is public — anyone can sign an APK that installs as an update.
+  Acceptable while only the owner tests; **generate a new key (kept out of the repo, as a CI
+  secret) before the teacher relies on the app** — a new key means one uninstall/reinstall.
+  Sessions here can't re-run workflows (403); a push touching `app/`, `scripts/` or
+  `release.yml` triggers the release.
