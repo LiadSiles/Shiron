@@ -27,7 +27,7 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci
       - run: npm run typecheck
-      - run: npm test
+      - run: npx vitest run --reporter=default --reporter=github-actions
       # Config plugins (share extension, signing, RTL, background audio) only run at prebuild:
       # this catches a broken plugin without a full native build.
       - name: Prebuild native projects
@@ -55,10 +55,14 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - name: Install ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          echo "::notice::$(ffmpeg -version | head -1)"
       - run: npm ci
       - run: npm run typecheck
-      - run: npm test
+      # The github-actions reporter turns failures into annotations, readable through the
+      # checks API when raw logs aren't.
+      - run: npx vitest run --reporter=default --reporter=github-actions
 
   server-image:
     runs-on: ubuntu-latest
