@@ -2,7 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import type { ShareIntent } from 'expo-share-intent';
-import { extensionOf, fallbackTitle, isAudioFile, isNativelyPlayable, youtubeIdFrom } from '../core/ingestRules';
+import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, youtubeIdFrom } from '../core/ingestRules';
 import type { Song } from '../core/types';
 import { findBySha, findByYoutube, insertSong } from '../db/repo';
 import { processQueue } from './processor';
@@ -23,13 +23,13 @@ function newSong(partial: Partial<Song> & Pick<Song, 'id' | 'kind' | 'title'>): 
   return {
     titleSource: 'file', lyrics: null, summary: null, keywords: [], originalUri: null,
     playableUri: null, youtubeId: null, sourceName: null, contextText: null, sha256: null,
-    durationSec: null, status: 'pending', error: null, pinnedAt: null, createdAt: now, updatedAt: now,
+    durationSec: null, audioState: 'raw', status: 'pending', error: null, pinnedAt: null, createdAt: now, updatedAt: now,
     ...partial,
   };
 }
 
-/** Copy one audio file into the app's own storage and add it to the library. */
-export async function importAudioFile(
+/** Copy one audio or video file into the app's own storage and add it to the library. */
+export async function importMediaFile(
   source: File,
   fileName: string,
   context: string | null,
@@ -93,12 +93,12 @@ export async function importShareIntent(intent: ShareIntent): Promise<ImportSumm
   const text = intent.text?.trim() || null;
 
   for (const f of intent.files ?? []) {
-    if (!isAudioFile(f.fileName, f.mimeType)) {
+    if (!isMediaFile(f.fileName, f.mimeType)) {
       summary.unsupported.push(f.fileName);
       continue;
     }
     try {
-      await importAudioFile(new File(toFileUri(f.path)), f.fileName, text, summary);
+      await importMediaFile(new File(toFileUri(f.path)), f.fileName, text, summary);
     } catch (e) {
       console.warn('import failed', f.fileName, e);
       summary.unsupported.push(f.fileName);
@@ -117,17 +117,17 @@ export async function importShareIntent(intent: ShareIntent): Promise<ImportSumm
   return summary;
 }
 
-/** Fallback when sharing isn't possible: pick audio files from the Files app. */
+/** Fallback when sharing isn't possible: pick audio or video files from the Files app. */
 export async function importFromPicker(): Promise<ImportSummary | null> {
-  const picked = await File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*'] });
+  const picked = await File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] });
   if (picked.canceled) return null;
   const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
   for (const f of picked.result) {
-    if (!isAudioFile(f.name, f.type)) {
+    if (!isMediaFile(f.name, f.type)) {
       summary.unsupported.push(f.name);
       continue;
     }
-    await importAudioFile(f, f.name, null, summary);
+    await importMediaFile(f, f.name, null, summary);
   }
   if (summary.added.length) processQueue();
   return summary;

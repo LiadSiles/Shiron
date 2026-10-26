@@ -3,27 +3,51 @@
 export const AUTO_ACCEPT_CONFIDENCE = 0.85;
 export const SUGGEST_CONFIDENCE = 0.5;
 
-const AUDIO_EXT = ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'oga', 'flac', 'amr', '3gp', 'caf', 'mp4', 'mpga'];
+/** Audio formats a teacher may receive. Decoded on the phone (see docs/wiki/audio-processing.md). */
+export const AUDIO_EXT = [
+  'mp3', 'mpga', 'm4a', 'aac', 'wav', 'aif', 'aiff', 'caf', 'flac', 'ogg', 'oga', 'opus', 'amr', 'awb', 'wma',
+];
+/** Videos: the sound track is extracted (a song filmed in another kindergarten, a clip). */
+export const VIDEO_EXT = ['mp4', 'm4v', 'mov', '3gp', '3g2', 'mpeg', 'mpg', 'webm', 'mkv', 'avi'];
+
+const MEDIA_MIME = /^(audio|video)\//;
+const MEDIA_MIME_EXTRA = new Set(['application/ogg', 'application/x-ogg']);
 
 export function extensionOf(name: string): string {
   const m = /\.([a-z0-9]+)(?:\?.*)?$/i.exec(name);
   return m ? m[1].toLowerCase() : '';
 }
 
-export function isAudioFile(fileName: string, mimeType?: string | null): boolean {
-  if (mimeType?.startsWith('audio/')) return true;
-  return AUDIO_EXT.includes(extensionOf(fileName));
+/** Anything worth trying to decode. The native decoder has the final word. */
+export function isMediaFile(fileName: string, mimeType?: string | null): boolean {
+  if (mimeType && (MEDIA_MIME.test(mimeType) || MEDIA_MIME_EXTRA.has(mimeType))) return true;
+  const ext = extensionOf(fileName);
+  return AUDIO_EXT.includes(ext) || VIDEO_EXT.includes(ext);
+}
+
+export function isVideoFile(fileName: string, mimeType?: string | null): boolean {
+  return !!mimeType?.startsWith("video/") || VIDEO_EXT.includes(extensionOf(fileName));
 }
 
 /**
- * Can the phone play the original file before the server converts it?
+ * Can the phone play the original before it is converted (conversion takes a few seconds)?
  * iOS (AVPlayer) cannot play Ogg/Opus voice notes; Android can.
  */
 export function isNativelyPlayable(fileName: string, platform: 'ios' | 'android' | string): boolean {
   const ext = extensionOf(fileName);
-  if (['mp3', 'm4a', 'aac', 'wav', 'mp4', 'caf'].includes(ext)) return true;
-  if (['ogg', 'opus', 'oga'].includes(ext)) return platform === 'android';
+  if (['mp3', 'm4a', 'aac', 'wav', 'caf', 'aif', 'aiff'].includes(ext)) return true;
+  if (['ogg', 'oga', 'opus', 'flac', 'amr'].includes(ext)) return platform === 'android';
   return false;
+}
+
+/** MIME type to send with an upload, from the file name. */
+export function mimeOf(fileName: string): string {
+  const ext = extensionOf(fileName);
+  const map: Record<string, string> = {
+    m4a: 'audio/mp4', mp4: 'video/mp4', mp3: 'audio/mpeg', wav: 'audio/wav', flac: 'audio/flac',
+    ogg: 'audio/ogg', oga: 'audio/ogg', opus: 'audio/ogg', webm: 'audio/webm',
+  };
+  return map[ext] ?? 'application/octet-stream';
 }
 
 /** Extract an 11-character YouTube video id from any common URL form. */

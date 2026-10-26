@@ -16,6 +16,7 @@ interface SongRow {
   context_text: string | null;
   sha256: string | null;
   duration_sec: number | null;
+  audio_state: string;
   status: string;
   error: string | null;
   pinned_at: number | null;
@@ -45,6 +46,7 @@ function fromRow(r: SongRow): Song {
     contextText: r.context_text,
     sha256: r.sha256,
     durationSec: r.duration_sec,
+    audioState: r.audio_state as Song['audioState'],
     status: r.status as SongStatus,
     error: r.error,
     pinnedAt: r.pinned_at,
@@ -57,7 +59,7 @@ const COLUMN: Record<keyof Song, string> = {
   id: 'id', kind: 'kind', title: 'title', titleSource: 'title_source', lyrics: 'lyrics',
   summary: 'summary', keywords: 'keywords', originalUri: 'original_uri', playableUri: 'playable_uri',
   youtubeId: 'youtube_id', sourceName: 'source_name', contextText: 'context_text', sha256: 'sha256',
-  durationSec: 'duration_sec', status: 'status', error: 'error', pinnedAt: 'pinned_at',
+  durationSec: 'duration_sec', audioState: 'audio_state', status: 'status', error: 'error', pinnedAt: 'pinned_at',
   createdAt: 'created_at', updatedAt: 'updated_at',
 };
 

@@ -13,7 +13,7 @@ function song(p: Partial<SongWithCategories> & { id: string; title: string }): S
   return {
     kind: 'audio', titleSource: 'ai', lyrics: null, summary: null, keywords: [], originalUri: null,
     playableUri: 'file:///x.m4a', youtubeId: null, sourceName: null, contextText: null, sha256: null,
-    durationSec: 90, status: 'ready', error: null, pinnedAt: null, createdAt: NOW - 30 * DAY,
+    durationSec: 90, audioState: 'done', status: 'ready', error: null, pinnedAt: null, createdAt: NOW - 30 * DAY,
     updatedAt: NOW, categories: [], ...p,
   };
 }

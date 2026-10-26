@@ -52,6 +52,10 @@ const MIGRATIONS: string[] = [
     value TEXT NOT NULL
   );
   `,
+  // v2 — audio is processed on the phone (0.2.0). Songs from 0.1 are converted again.
+  `
+  ALTER TABLE songs ADD COLUMN audio_state TEXT NOT NULL DEFAULT 'raw';
+  `,
 ];
 
 async function migrate(db: SQLite.SQLiteDatabase) {

@@ -1,7 +1,16 @@
 export type SongKind = 'audio' | 'youtube';
 
 /**
- * pending  – saved, waiting for the processing server
+ * State of the on-device audio step (decode → trim → loudness → AAC .m4a).
+ * raw          – as shared; playable only if the platform reads the original format
+ * done         – converted; playableUri points at the .m4a
+ * unsupported  – this phone can't decode the format (e.g. webm on iPhone)
+ */
+export type AudioState = 'raw' | 'done' | 'unsupported';
+
+/**
+ * AI step (Groq: transcription + title/categories):
+ * pending  – saved, waiting for Groq (or for the teacher to connect it)
  * review   – processed, but the AI was not confident; shown in the review inbox
  * ready    – in the library, confirmed or confidently auto-classified
  * failed   – processing failed; still playable when the original format allows it
@@ -25,6 +34,7 @@ export interface Song {
   contextText: string | null;
   sha256: string | null;
   durationSec: number | null;
+  audioState: AudioState;
   status: SongStatus;
   error: string | null;
   pinnedAt: number | null;
@@ -47,17 +57,4 @@ export interface PlayEvent {
 
 export interface SongWithCategories extends Song {
   categories: SongCategory[];
-}
-
-/** What the processing server returns for one song. */
-export interface ProcessResult {
-  title: string;
-  titleConfidence: number;
-  categories: { id: string; confidence: number }[];
-  lyrics: string | null;
-  summary: string | null;
-  keywords: string[];
-  durationSec: number | null;
-  /** Relative path on the server to download the normalized m4a, when audio was sent. */
-  audioPath: string | null;
 }
