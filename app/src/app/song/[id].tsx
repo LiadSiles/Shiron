@@ -91,7 +91,7 @@ export default function SongScreen() {
         <Button label="ניגון" icon="▶︎" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
         <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon="📌" kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
       </View>
-      {song.status === 'pending' || song.error ? (
+      {song.status === 'pending' || song.error || (song.kind === 'youtube' && !song.lyrics) ? (
         <Button label="לעבד שוב" kind="quiet" icon="↻" onPress={() => retrySong(song.id)} style={{ marginTop: space.s }} />
       ) : null}
 

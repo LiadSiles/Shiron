@@ -33,6 +33,16 @@ Groq first, and since 0.4.0 also **Gemini** (Google AI Studio key) — see "Two 
 | Errors | bad key = **400** `INVALID_ARGUMENT` + reason `API_KEY_INVALID`; quota = 429 `RESOURCE_EXHAUSTED` + `RetryInfo.retryDelay` ("41s"); see `errorFromGemini` |
 | Key | from `aistudio.google.com/apikey`. **Since mid-2026 new keys look like `AQ.Ab…`** (length undocumented); old `AIza` + 35 chars keys are being rejected (unrestricted ones since 19 Jun 2026, all by Sep 2026). Both recognised; a hand-pasted key of any shape is sent for checking (`pastedKey`). Sent as `x-goog-api-key` (works for `AQ.`; `Authorization: Bearer` fails for them on the OpenAI-compatible route). Checked with `GET /v1beta/models?pageSize=1` |
 
+**YouTube songs (0.5.0):** Gemini takes a public YouTube URL as a `file_data` part
+(`{file_uri: "https://www.youtube.com/watch?v=…"}`) and watches/listens to the video itself —
+Google's own feature, so nothing is downloaded by us and YouTube's terms aren't touched. That
+gives YouTube songs lyrics and a better name. For a YouTube song `nameSong` puts Gemini first
+when it is connected (Groq can only name it from the title). Limits: public videos only; free
+tier up to 8 hours of YouTube video per day; marked "preview" by Google (may change). Timeout
+180 s. A refused video (private, too long) → again from the title and context alone. The song
+screen offers "לעבד שוב" for YouTube songs without lyrics (e.g. named before Gemini was
+connected).
+
 `generateContent` is labelled "legacy" since Google's Interactions API went GA (June 2026) but
 "remains fully supported"; it is the documented way to send inline audio. Revisit if Google
 announces a shutdown.

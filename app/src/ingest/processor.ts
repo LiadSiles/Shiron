@@ -208,7 +208,8 @@ async function understandSong(song: Song) {
   // Prefer the converted m4a (small, mono); fall back to the original a service may still read.
   const stored = song.kind === 'audio' ? song.playableUri ?? song.originalUri : null;
   const audio = stored ? resolveStored(stored) : null;
-  const { result, provider, refused } = await nameSong(await inputFor(song), audio, audio ? mimeOf(audio.name) : '');
+  const youtubeId = song.kind === 'youtube' ? song.youtubeId : null;
+  const { result, provider, refused } = await nameSong(await inputFor(song), audio, audio ? mimeOf(audio.name) : '', youtubeId);
   diag(refused ? 'naming refused' : 'named', provider, result.title,
     result.lyrics ? `${result.lyrics.length} chars of lyrics` : 'no lyrics',
     result.categories.map((c) => `${c.id} ${c.confidence}`).join(', '), refused?.message ?? '');

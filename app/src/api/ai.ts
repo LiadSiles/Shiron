@@ -41,15 +41,23 @@ export interface Naming {
  * Throws an AiError only when no service can do it right now (quota, offline, bad key): the
  * queue stops and comes back later. A song a service refuses still gets a fallback name.
  */
-export async function nameSong(input: SongInput, audio: File | null, audioMime: string): Promise<Naming> {
+export async function nameSong(
+  input: SongInput,
+  audio: File | null,
+  audioMime: string,
+  youtubeId: string | null = null,
+): Promise<Naming> {
   let last: AiError | null = null;
-  for (const provider of await usableProviders()) {
+  let order = await usableProviders();
+  // Only Gemini can listen to a YouTube song (it opens the video itself): try it first there.
+  if (youtubeId && order.includes('gemini')) order = ['gemini', ...order.filter((p) => p !== 'gemini')];
+  for (const provider of order) {
     const key = await getKey(provider);
     if (!key) continue;
     try {
       return provider === 'groq'
         ? await nameWithGroq(key, input, audio, audioMime)
-        : await nameWithGemini(key, input, audio);
+        : await nameWithGemini(key, input, audio, youtubeId);
     } catch (e) {
       if (!(e instanceof AiError) || !e.transient) throw e;
       diag(`${provider} unavailable`, `${e.kind}: ${e.message}`);
@@ -81,9 +89,9 @@ async function nameWithGroq(key: string, input: SongInput, audio: File | null, m
   }
 }
 
-async function nameWithGemini(key: string, input: SongInput, audio: File | null): Promise<Naming> {
+async function nameWithGemini(key: string, input: SongInput, audio: File | null, youtubeId: string | null): Promise<Naming> {
   try {
-    return { result: await understandWithGemini(key, input, audio), provider: 'gemini', refused: null };
+    return { result: await understandWithGemini(key, input, audio, youtubeId), provider: 'gemini', refused: null };
   } catch (e) {
     if (!(e instanceof AiError) || e.transient) throw e;
     return { result: fallbackUnderstanding(input), provider: 'gemini', refused: e };

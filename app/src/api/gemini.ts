@@ -49,6 +49,11 @@ async function generate(key: string, model: string, body: object, timeoutMs: num
   }
 }
 
+/** A YouTube video by URL (public videos; free tier: up to 8 hours of video a day). */
+function youtubePart(youtubeId: string): object {
+  return { file_data: { file_uri: `https://www.youtube.com/watch?v=${youtubeId}` } };
+}
+
 /** Inline audio part, or null when the file is too big or a format Gemini doesn't read. */
 async function audioPart(audio: File | null): Promise<object | null> {
   if (!audio?.exists || (audio.size ?? 0) > GEMINI_MAX_AUDIO_BYTES) return null;
@@ -60,8 +65,14 @@ async function audioPart(audio: File | null): Promise<object | null> {
  * Title, categories, lyrics and keywords, listening to the recording when it can be sent.
  * If Gemini refuses the audio itself, it tries once more from the text alone.
  */
-export async function understandWithGemini(key: string, input: SongInput, audio: File | null): Promise<Understanding> {
-  const sound = await audioPart(audio);
+export async function understandWithGemini(
+  key: string,
+  input: SongInput,
+  audio: File | null,
+  youtubeId: string | null = null,
+): Promise<Understanding> {
+  // A public YouTube video Gemini watches itself (Google's own feature: no download by us).
+  const sound = youtubeId ? youtubePart(youtubeId) : await audioPart(audio);
   if (!sound) return understand(key, input, null);
   try {
     return await understand(key, input, sound);
@@ -85,7 +96,7 @@ async function understand(key: string, input: SongInput, sound: object | null): 
           ...(schema ? { responseJsonSchema: UNDERSTANDING_SCHEMA } : {}),
         },
       },
-      120_000,
+      sound && 'file_data' in sound ? 180_000 : 120_000,
     );
   return eachModel(GEMINI_MODELS, async (model) => {
     let content: string;
