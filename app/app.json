@@ -3,7 +3,7 @@
     "name": "שירון",
     "slug": "shiron",
     "scheme": "shiron",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
