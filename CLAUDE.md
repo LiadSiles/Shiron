@@ -65,22 +65,28 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     hebrew.ts, search.ts     Hebrew normalization + full-text search
     ranking.ts               frecency ranking (τ = 30 days), pins, seasonal boost
     ingestRules.ts           formats, YouTube ids, fallback titles, playability, review thresholds
-    understand.ts            prompt, strict JSON schema, sanitising the model's answer
+    understand.ts            prompt, strict JSON schema, sanitising the model's answer, search expansion
     groqRules.ts             models, key detection, error mapping, retry-after
+    time.ts, color.ts        player time format, readable text on coloured tiles
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
-  src/api/groq.ts            Groq calls (Whisper, chat), key in expo-secure-store, YouTube oEmbed
-  src/player/player.ts       expo-audio: background, lock screen, fade-out stop, queue
+  src/api/groq.ts            Groq calls (Whisper, chat, search expansion; timeouts), key in
+                             expo-secure-store, YouTube oEmbed
+  src/diag/log.ts            on-phone technical log (Settings → יומן טכני)
+  src/player/player.ts       expo-audio playlist: background, lock screen + notification
+                             next/previous, fade-out pause, seek, queue
   src/screens/, src/ui/      tabs (home, library, search, review), components, theme
   src/app/                   expo-router routes (layout, shell, category, song, player, youtube,
-                             settings, connect)
+                             settings, connect, log)
   modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a
     ios/Core/                plain AVFoundation (Ogg Opus demux, asset reader, encoder)
     android/                 MediaExtractor/MediaCodec/MediaMuxer; unit + instrumented tests
     swift-tests/             runs ios/Core as a Swift package on macOS
     fixtures/                one test signal in every format (see its README)
   plugins/withSigningKey.js  signs Android builds with app/keystore/shiron.keystore
-  tests/                     vitest — core logic
+  patches/                   patch-package diffs (expo-audio notification; must also be in
+                             package.json → expo.autolinking.android.buildFromSource)
+  tests/                     vitest — one file per core module, fixtures.ts
 scripts/                     version bump, CI build-number stamp
 docs/wiki/                   engineering knowledge (this is for you)
 ```

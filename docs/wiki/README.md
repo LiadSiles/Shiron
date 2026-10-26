@@ -22,21 +22,37 @@ made it stale.
 The owner's Hebrew planning document (claude.ai doc "שירון הגן — תוכנית מוצר ועיצוב") is
 the product-level source; this wiki is the engineering one.
 
-## UI map (0.2.0)
+## UI map (0.3.3)
 
 `src/app/_layout.tsx` (fonts, RTL, share-intent provider, toast, processing on app foreground)
 → `src/app/index.tsx` — the shell: four tabs rendered in-place + `MiniPlayer` above the tab bar:
 
 - **בית** `screens/HomeScreen` — "now" sections (holiday, time of day), pinned, recent;
   review banner; empty state with import instructions.
-- **ספרייה** `screens/LibraryScreen` — category tiles grouped by `GROUP_NAMES` →
+- **ספרייה** `screens/LibraryScreen` — one flat grid of square category tiles (2 columns) →
   `app/category/[id]` (ranked list, "נגני הכול"; `id = all` for every song).
-- **חיפוש** `screens/SearchScreen` — live search, category chips, lyric snippet per hit.
-- **לבדיקה** `screens/ReviewScreen` — review cards (approve, pick categories, listen) and failed items.
+- **חיפוש** `screens/SearchScreen` — forgiving live search, highlights, recent searches,
+  category chips, related songs by meaning (Groq) when few match.
+- **לבדיקה** `screens/ReviewScreen` — review cards (approve, pick categories, listen; Groq
+  error + retry when naming failed).
 
 Stack screens: `song/[id]` (rename, categories, pin, lyrics edit, delete), `player` (modal,
-full controls, lyrics), `youtube/[id]` (embedded player), `settings` (Groq status,
-file import), `connect` (modal: connect Groq). `+native-intent.tsx` redirects the share
+full controls, scrubber, lyrics), `youtube/[id]` (embedded player), `settings` (Groq status,
+file import, technical log), `connect` (modal: connect Groq), `log` (technical log: copy/clear). `+native-intent.tsx` redirects the share
 extension's deep link to `/`.
 
 Tap on a song row = play; long press = song screen (`ui/components.tsx` → `playOrOpen`).
+
+## Code conventions (from the 0.3.3 review)
+
+- `tsc` runs with `noUnusedLocals` / `noUnusedParameters`: dead code fails CI. Export only what
+  another module imports.
+- Pure logic in `src/core/` with a test in `app/tests/<module>.test.ts` (one file per module;
+  `tests/fixtures.ts` has the `song()` builder).
+- Fire-and-forget calls must not reject: `processQueue()` and `diag()` never throw; UI actions
+  that can fail go through a helper that explains the error (`playOrOpen`, `playAll`,
+  `importFromPicker`).
+- Network calls to Groq/YouTube go through `fetchWithTimeout` (src/api/groq.ts).
+- Anything written to disk on a path that can fail cleans up after itself (import copies,
+  native `.m4a` output).
+- SQL that changes more than one row set or table runs in `withTransactionAsync`.
