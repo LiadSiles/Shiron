@@ -1,0 +1,104 @@
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
+index 53c36f7..8f3d0b8 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
+@@ -65,6 +65,11 @@ class AudioControlsService : MediaSessionService() {
+   var playbackListener: Player.Listener? = null
+ 
+   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
++    // [shiron] Swiping the paused notification away: keep it gone until playback resumes.
++    if (intent?.action == ACTION_DISMISS) {
++      dismissed = true
++      return START_NOT_STICKY
++    }
+     ensureForegroundNotification()
+ 
+     val playable = currentPlayable
+@@ -188,6 +193,7 @@ class AudioControlsService : MediaSessionService() {
+       .setContentIntent(buildContentIntent())
+       .setAutoCancel(false)
+       .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
++      .setDeleteIntent(buildActionPendingIntent(ACTION_DISMISS))
+ 
+     val style = MediaStyleNotificationHelper.MediaStyle(session)
+ 
+@@ -371,6 +377,7 @@ class AudioControlsService : MediaSessionService() {
+   }
+ 
+   private fun postOrStartForegroundNotificationNow(startInForeground: Boolean) {
++    if (!startInForeground && dismissed) return
+     val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+     val notification = buildNotification() ?: return
+ 
+@@ -437,6 +444,8 @@ class AudioControlsService : MediaSessionService() {
+     removePlayerListener()
+     currentPlayable?.isActiveForLockScreen = false
+     hideNotification()
++    detached = false // [shiron]
++    dismissed = false
+ 
+     currentPlayable = playable
+     currentMetadata = metadata
+@@ -505,6 +514,7 @@ class AudioControlsService : MediaSessionService() {
+     playable?.assignBasicMediaSession()
+     currentPlayable = null
+     stopForeground(STOP_FOREGROUND_REMOVE)
++    detached = true // [shiron]
+   }
+ 
+   override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
+@@ -666,6 +676,11 @@ class AudioControlsService : MediaSessionService() {
+ 
+       override fun onPlaybackStateChanged(playbackState: Int) {
+         postOrStartForegroundNotification(startInForeground = false)
++        updateForegroundState()
++      }
++
++      override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
++        updateForegroundState()
+       }
+     }
+     playbackListener = listener
+@@ -683,7 +698,42 @@ class AudioControlsService : MediaSessionService() {
+     }
+   }
+ 
++  // [shiron] A foreground service's notification can't be swiped away. Like media3's own
++  // MediaSessionService, stay in the foreground only while playback is meant to run; when paused
++  // or finished, detach so the notification becomes dismissible, and re-promote on resume.
++  private var detached = false
++  private var dismissed = false
++
++  private fun updateForegroundState() {
++    val player = currentPlayable?.player ?: return
++    val running = player.playWhenReady &&
++      player.playbackState != Player.STATE_ENDED &&
++      player.playbackState != Player.STATE_IDLE
++    if (running && (detached || dismissed)) {
++      detached = false
++      dismissed = false
++      postOrStartForegroundNotification(startInForeground = true)
++    } else if (!running && !detached) {
++      detached = true
++      stopForeground(STOP_FOREGROUND_DETACH)
++      postOrStartForegroundNotification(startInForeground = false)
++    }
++  }
++
++  // [shiron] Closing the app from recents while nothing plays removes the controls entirely.
++  override fun onTaskRemoved(rootIntent: Intent?) {
++    val player = currentPlayable?.player
++    val running = player != null && player.playWhenReady && player.playbackState != Player.STATE_ENDED
++    if (!running) {
++      player?.pause()
++      clearSessionInternal()
++      hideNotification()
++      stopSelf()
++    }
++  }
++
+   companion object {
++    private const val ACTION_DISMISS = "expo.modules.audio.action.DISMISS"
+     private const val CHANNEL_ID = "expo_audio_channel"
+     private const val ACTION_PLAY = "expo.modules.audio.action.PLAY"
+     private const val ACTION_PAUSE = "expo.modules.audio.action.PAUSE"

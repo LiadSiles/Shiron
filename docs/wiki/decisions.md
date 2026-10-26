@@ -86,3 +86,15 @@ blossoming almonds) needs a model; local embeddings are ruled out (no local mode
 suggests related words — only the query is sent, only when fewer than 3 songs match, and the
 result is marked as "בנושא דומה". Rejected: sending lyrics/library to the model per search
 (privacy, rate limits).
+
+### 2026-10-26 — Categories are one flat list
+The owner saw "עולם הילד" with "טבע וגינה" under it and read it as a category inside a
+category. The six groups are gone from the taxonomy and the UI: the library is a two-column grid
+of square tiles (Spotify "browse" style), ordered in season → most used → most songs; the song
+editor shows one list of chips.
+
+### 2026-10-26 — Patch expo-audio rather than fork or replace it
+The non-dismissible notification is in expo-audio's native service. A config plugin can't change
+library code, a fork means maintaining a whole module, and react-native-track-player would
+replace the player for one behaviour. `patch-package` keeps a ~60-line diff that fails loudly
+on upgrade. See player.md.

@@ -1,6 +1,6 @@
 # Player
 
-_Last verified: 2026-10-26 (0.3.0; background playback and seeking not yet tested on a device)_
+_Last verified: 2026-10-26 (0.3.1; notification changes and the playlist not yet tested on a device)_
 
 `app/src/player/player.ts`, on `expo-audio` (SDK 58).
 
@@ -21,8 +21,19 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
 
 ## Behaviour
 
-- One `AudioPlayer` for the app; `replace()` per song. Queue = the list the song was picked
-  from (only playable items).
+- One native `AudioPlaylist` for the app (since 0.3.1; 0.3.0 used an `AudioPlayer` with
+  `replace()`). `playSong(song, queue)` clears it, adds the queue (songs still processing or
+  with a missing file are skipped), `skipTo(index)`, plays. Why a playlist: expo-audio shows
+  next/previous in the notification and lock screen **only for playlists**
+  (`supportsNextTrack` is false for `AudioPlayer`), and those buttons drive the native queue
+  directly, so they work with the app in the background.
+- JS follows the native queue through `trackChanged` and `currentIndex` in status updates
+  (`onIndex` → `moveTo`): play accounting, lock-screen metadata, mini player. After a rebuild
+  or a JS next/previous, `expectIndex` ignores stale index reports until the native side
+  reports the index we asked for.
+- Repeat = playlist `loop: 'single'`. Previous in the app: back to 0:00 if > 3 s in, otherwise
+  the previous song; previous in the notification goes straight to the previous song.
+- Playback errors: `status.error` (untyped; `{message, code}` on Android) → `PlayerState.error`.
 - One play/pause action everywhere: `togglePlay()` (mini player, full player) and
   `playOrToggle(song)` (a song row: same song → toggle, other song → play it). There is no
   separate "stop" — 0.2 had a square stop in the mini player and a play/pause in the full
@@ -58,3 +69,23 @@ YouTube: time the screen was open (≥ 5 s).
   `gesture.dx` (no `measure` needed); the thumb grows and the time shows the target while
   dragging; seek happens once on release. `onPanResponderTerminationRequest: false` keeps the
   drag inside the ScrollView. VoiceOver/TalkBack: adjustable, ±10 s.
+
+## Android notification (patched expo-audio)
+
+expo-audio 58 starts its `AudioControlsService` in the foreground and never leaves it, so the
+media notification could never be swiped away and stayed after leaving the app (owner report,
+0.3.0). `app/patches/expo-audio+58.0.10.patch` (applied by `patch-package` on `npm ci`):
+
+- Foreground only while playback should run (`playWhenReady` and not ENDED/IDLE). Paused or
+  finished → `stopForeground(STOP_FOREGROUND_DETACH)`, re-posted as a normal, dismissible
+  notification; resumed → `startForeground` again. This is what media3's own
+  `MediaSessionService` does.
+- Swiping it away (`setDeleteIntent` → `ACTION_DISMISS`) keeps it hidden until playback resumes.
+- `onTaskRemoved`: closing the app from recents while nothing plays clears the session.
+- Seek bar: the session already allows `COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM`, which Android
+  13+ shows as a draggable bar; we pass `isLiveStream: false` explicitly. The owner saw no bar
+  in 0.3.0 on his Xiaomi — unknown whether HyperOS hides it; check on 0.3.1.
+
+When upgrading expo-audio, the patch fails loudly in `npm ci` if it no longer applies: re-check
+whether upstream fixed this (then drop the patch) or regenerate it with
+`npx patch-package expo-audio`.

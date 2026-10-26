@@ -1,7 +1,8 @@
 import {
-  AudioPlayer,
-  AudioStatus,
-  createAudioPlayer,
+  AudioLockScreenOptions,
+  AudioPlaylist,
+  AudioPlaylistStatus,
+  createAudioPlaylist,
   requestNotificationPermissionsAsync,
   setAudioModeAsync,
 } from 'expo-audio';
@@ -44,49 +45,90 @@ export function usePlayer(): PlayerState {
   );
 }
 
-let player: AudioPlayer | null = null;
+/**
+ * One native playlist holds the queue the song was picked from. A playlist (not a single player)
+ * is what gives the notification and lock screen their next/previous buttons: those call the
+ * native queue directly, even when the app is in the background. See docs/wiki/player.md.
+ */
+let player: AudioPlaylist | null = null;
 /** While a fade-out runs, status updates still say "playing": don't let them flip the button back. */
 let fading = false;
 /** Ignore stale positions for a moment after a seek, so the scrubber doesn't jump back. */
 let seekingUntil = 0;
+/**
+ * After rebuilding the queue, native events still report the old/intermediate index for a moment.
+ * Ignore index changes until the player reports the one we asked for.
+ */
+let expectIndex: number | null = null;
 let notificationsAsked = false;
+
+const LOCK_SCREEN: AudioLockScreenOptions = {
+  showNextTrack: true,
+  showPreviousTrack: true,
+  isLiveStream: false, // keeps the seek bar in the notification
+};
 
 /** Listening-time accounting for the ranking. */
 let session: { songId: string; startedAt: number; listened: number; lastTime: number } | null = null;
 
-async function ensurePlayer(): Promise<AudioPlayer> {
+function lockScreenInfo(song: SongWithCategories) {
+  const category = song.categories[0] ? getCategory(song.categories[0].categoryId).name : 'שירון';
+  return { title: song.title, artist: category, albumTitle: 'שירון' };
+}
+
+async function ensurePlayer(): Promise<AudioPlaylist> {
   if (player) return player;
   await setAudioModeAsync({
     playsInSilentMode: true, // the classroom phone is often on silent
     shouldPlayInBackground: true,
     interruptionMode: 'doNotMix', // required for lock-screen controls
   });
-  player = createAudioPlayer(null, { updateInterval: 500 });
-  player.addListener('playbackStatusUpdate', onStatus);
+  player = createAudioPlaylist({ updateInterval: 500, loop: 'none' });
+  player.addListener('playlistStatusUpdate', onStatus);
+  player.addListener('trackChanged', ({ currentIndex }) => onIndex(currentIndex));
   return player;
 }
 
-function onStatus(status: AudioStatus) {
-  if (session) {
+/** The native queue moved (end of a song, or next/previous from the notification). */
+function onIndex(index: number) {
+  if (expectIndex !== null) {
+    if (index === expectIndex) expectIndex = null;
+    return;
+  }
+  moveTo(index);
+}
+
+function moveTo(index: number) {
+  if (index === state.index || index < 0 || index >= state.queue.length) return;
+  const song = state.queue[index];
+  void finishSession();
+  session = { songId: song.id, startedAt: Date.now(), listened: 0, lastTime: 0 };
+  set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null });
+  player?.updateLockScreenMetadata(lockScreenInfo(song));
+}
+
+function onStatus(status: AudioPlaylistStatus) {
+  if (typeof status.currentIndex === 'number') onIndex(status.currentIndex);
+  if (session && typeof status.currentTime === 'number') {
     const delta = status.currentTime - session.lastTime;
     if (delta > 0 && delta < 2) session.listened += delta;
     session.lastTime = status.currentTime;
   }
-  if (status.error && status.error !== state.error) {
-    diag('play failed', state.song?.title ?? '?', status.error);
-    set({ error: status.error });
+  // Not in the typed status, but both platforms report playback errors here.
+  const raw = (status as { error?: unknown }).error;
+  const error = raw == null ? null : typeof raw === 'string' ? raw : String((raw as { message?: unknown }).message ?? 'שגיאה');
+  if (error && error !== state.error) {
+    diag('play failed', state.song?.title ?? '?', error);
+    set({ error });
   }
-  set({
-    playing: fading ? false : status.playing,
-    position: Date.now() < seekingUntil ? state.position : status.currentTime,
-    duration: status.duration || state.duration,
-  });
-  if (status.didJustFinish && !state.repeat) {
-    if (state.index < state.queue.length - 1) void next();
-    else {
-      set({ playing: false });
-      void finishSession();
-    }
+  const patch: Partial<PlayerState> = {};
+  if (typeof status.playing === 'boolean') patch.playing = fading ? false : status.playing;
+  if (typeof status.currentTime === 'number' && Date.now() >= seekingUntil) patch.position = status.currentTime;
+  if (status.duration) patch.duration = status.duration;
+  set(patch);
+  if (status.didJustFinish && !state.repeat && state.index >= state.queue.length - 1) {
+    set({ playing: false });
+    void finishSession();
   }
 }
 
@@ -106,8 +148,9 @@ export function isPlayable(song: Song): boolean {
 }
 
 /**
- * Start a song. `queue` is the list it was picked from, so "next" continues there.
- * YouTube songs are not handled here — the UI opens the YouTube screen instead.
+ * Start a song. `queue` is the list it was picked from, so "next" continues there — in the app,
+ * on the lock screen and in the notification. YouTube songs are not handled here — the UI opens
+ * the YouTube screen instead.
  */
 export async function playSong(song: SongWithCategories, queue: SongWithCategories[] = [song]) {
   if (!isPlayable(song)) throw new NotPlayableError('השיר עדיין בעיבוד');
@@ -124,19 +167,22 @@ export async function playSong(song: SongWithCategories, queue: SongWithCategori
     await requestNotificationPermissionsAsync().catch(() => undefined);
   }
 
-  const playable = queue.filter(isPlayable);
-  const index = Math.max(0, playable.findIndex((s) => s.id === song.id));
-  set({ song, queue: playable.length ? playable : [song], index, position: 0, duration: song.durationSec ?? 0, error: null });
+  // Songs in the list that can't play right now (still processing, file gone) are skipped.
+  const playable = queue.filter((s) => s.id === song.id || (isPlayable(s) && resolveStored(s.playableUri!).exists));
+  const list = playable.some((s) => s.id === song.id) ? playable : [song];
+  const index = list.findIndex((s) => s.id === song.id);
+  set({ song, queue: list, index, position: 0, duration: song.durationSec ?? 0, error: null, playing: true });
 
-  diag('play', song.title, `${file.name} ${Math.round((file.size ?? 0) / 1024)} KB`);
-  p.replace({ uri: file.uri });
-  p.loop = state.repeat;
+  diag('play', song.title, `${file.name} ${Math.round((file.size ?? 0) / 1024)} KB`, `${index + 1}/${list.length}`);
+  expectIndex = index;
+  p.clear();
+  for (const s of list) p.add({ uri: resolveStored(s.playableUri!).uri });
+  p.skipTo(index);
+  p.loop = state.repeat ? 'single' : 'none';
   p.volume = 1;
   p.play();
   session = { songId: song.id, startedAt: Date.now(), listened: 0, lastTime: 0 };
-
-  const category = song.categories[0] ? getCategory(song.categories[0].categoryId).name : 'שירון';
-  p.setActiveForLockScreen(true, { title: song.title, artist: category, albumTitle: 'שירון' });
+  p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
 }
 
 /**
@@ -186,23 +232,30 @@ export async function playOrToggle(song: SongWithCategories, queue: SongWithCate
 }
 
 export async function next() {
+  if (!player || state.index >= state.queue.length - 1) return;
   const i = state.index + 1;
-  if (i < state.queue.length) await playSong(state.queue[i], state.queue);
-  else await finishSession();
+  expectIndex = i;
+  player.next();
+  if (!state.playing) player.play();
+  moveTo(i);
 }
 
 export async function previous() {
-  if (state.position > 3 && player) {
+  if (!player) return;
+  if (state.position > 3 || state.index === 0) {
     await seek(0);
     return;
   }
   const i = state.index - 1;
-  if (i >= 0) await playSong(state.queue[i], state.queue);
+  expectIndex = i;
+  player.previous();
+  if (!state.playing) player.play();
+  moveTo(i);
 }
 
 export function setRepeat(repeat: boolean) {
   set({ repeat });
-  if (player) player.loop = repeat;
+  if (player) player.loop = repeat ? 'single' : 'none';
 }
 
 export async function seek(seconds: number) {
@@ -215,16 +268,21 @@ export async function seek(seconds: number) {
 
 /** Keep the lock screen in sync after a rename. */
 export function refreshCurrent(song: SongWithCategories) {
-  if (state.song?.id !== song.id) return;
-  set({ song });
-  player?.updateLockScreenMetadata({ title: song.title, albumTitle: 'שירון' });
+  const queue = state.queue.map((s) => (s.id === song.id ? song : s));
+  if (state.song?.id !== song.id) {
+    set({ queue });
+    return;
+  }
+  set({ song, queue });
+  player?.updateLockScreenMetadata(lockScreenInfo(song));
 }
 
 /** Stop and forget the current song (e.g. it was deleted). */
 export async function clearIfCurrent(songId: string) {
   if (state.song?.id !== songId || !player) return;
   player.pause();
-  player.setActiveForLockScreen(false);
+  player.clearLockScreenControls();
+  player.clear();
   session = null;
   set({ song: null, queue: [], index: -1, playing: false, position: 0, duration: 0 });
 }
