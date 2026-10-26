@@ -117,3 +117,10 @@ Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+.
 - Android: `cd app && npx expo run:android` (Android Studio SDK, device with USB debugging).
 - iOS: `cd app && npx expo run:ios --device` (Mac + Xcode + Apple ID).
 - Dev client with fast refresh: `npx eas-cli@latest build --profile development`.
+
+## Sandbox gotchas (0.3.0)
+
+- `gh release view`, `gh pr view` and other GraphQL-backed `gh` commands return 403 from
+  Claude sessions. Use REST: `gh api repos/LiadSiles/shiron/releases/tags/v<version>`.
+- `npm run version:bump` turns `## [Unreleased]` into the new version heading. Write the
+  entries under `[Unreleased]` first; don't add the version heading by hand (it duplicates).
