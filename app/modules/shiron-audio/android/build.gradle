@@ -1,0 +1,27 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'app.shiron'
+version = '0.2.0'
+
+android {
+  namespace "app.shiron.audio"
+  defaultConfig {
+    versionCode 1
+    versionName "0.2.0"
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+  sourceSets {
+    // Instrumented tests read the same fixtures as the Swift tests.
+    androidTest.assets.srcDirs += "${projectDir}/../fixtures"
+  }
+}
+
+dependencies {
+  testImplementation 'junit:junit:4.13.2'
+  androidTestImplementation 'androidx.test:runner:1.6.2'
+  androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+  androidTestImplementation 'junit:junit:4.13.2'
+}

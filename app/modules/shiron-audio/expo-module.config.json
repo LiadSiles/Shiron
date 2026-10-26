@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["ShironAudioModule"]
+  },
+  "android": {
+    "modules": ["app.shiron.audio.ShironAudioModule"]
+  }
+}

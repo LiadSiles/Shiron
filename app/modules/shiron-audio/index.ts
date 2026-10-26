@@ -1,0 +1,34 @@
+import { requireNativeModule } from 'expo-modules-core';
+
+export interface ProcessedAudio {
+  /** Length of the output after trimming silence. */
+  durationSec: number;
+  sourceDurationSec: number;
+  /** Gain applied to reach the target loudness (negative = turned down). */
+  gainDb: number;
+  trimStartSec: number;
+  trimEndSec: number;
+}
+
+/** Error codes thrown by `processAudio` (prefixed `ERR_AUDIO_`). */
+export type AudioErrorCode = 'UNSUPPORTED' | 'NO_AUDIO' | 'TOO_LONG' | 'CORRUPT' | 'FAILED' | 'BAD_URI';
+
+interface NativeModule {
+  processAsync(inputUri: string, outputUri: string): Promise<ProcessedAudio>;
+}
+
+const native = requireNativeModule<NativeModule>('ShironAudio');
+
+/**
+ * Decodes any supported recording (WhatsApp Opus, mp3, m4a, wav, flac, amr, video…), trims
+ * silence at both ends, normalises loudness and writes mono AAC .m4a at 44.1 kHz.
+ * Both URIs must be file:// URIs. Runs on a native background thread.
+ */
+export function processAudio(inputUri: string, outputUri: string): Promise<ProcessedAudio> {
+  return native.processAsync(inputUri, outputUri);
+}
+
+export function audioErrorCode(e: unknown): AudioErrorCode | null {
+  const code = (e as { code?: string } | null)?.code;
+  return typeof code === 'string' && code.startsWith('ERR_AUDIO_') ? (code.slice(10) as AudioErrorCode) : null;
+}
