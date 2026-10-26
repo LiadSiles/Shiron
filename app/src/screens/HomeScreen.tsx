@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { importFromPicker, describeSummary } from '../ingest/ingest';
 import { onProcessorState, ProcessorState } from '../ingest/processor';
@@ -19,7 +19,8 @@ export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview:
   const [proc, setProc] = useState<ProcessorState | null>(null);
   useEffect(() => onProcessorState(setProc), []);
 
-  const sections = homeSections(lib);
+  // Not on every processor tick: ranking every category runs the Hebrew calendar per song.
+  const sections = useMemo(() => homeSections(lib), [lib]);
   const reviewCount = lib.songs.filter((s) => s.status === 'review').length;
   const pendingCount = lib.songs.filter((s) => s.status === 'pending').length;
 

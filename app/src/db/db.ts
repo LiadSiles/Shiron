@@ -67,11 +67,14 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   let version = row?.user_version ?? 0;
   while (version < MIGRATIONS.length) {
+    const next = version + 1;
+    // The version bump is in the same transaction: a crash can't leave a migration applied but
+    // unrecorded (re-running v2's ALTER TABLE would then fail on every launch).
     await db.withTransactionAsync(async () => {
       await db.execAsync(MIGRATIONS[version]);
+      await db.execAsync(`PRAGMA user_version = ${next}`);
     });
-    version += 1;
-    await db.execAsync(`PRAGMA user_version = ${version}`);
+    version = next;
   }
 }
 

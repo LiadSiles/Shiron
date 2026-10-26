@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { activeCategoryIds, CATEGORIES, getCategory, UNSORTED_ID } from '../core/categories';
 import { CategoryTile, frecency, orderCategoryTiles, rankSongs } from '../core/ranking';
 import type { PlayEvent, SongWithCategories } from '../core/types';
+import { diag } from '../diag/log';
 import { listSongs, onLibraryChange, playsBySong, recentlyPlayedIds } from './repo';
 
 export interface LibraryState {
@@ -21,9 +22,17 @@ export function useLibrary(): LibraryState {
     loading: true, songs: [], plays: new Map(), recentIds: [],
   });
 
+  // Writes come in bursts (processing a song is several updates); each triggers a reload, and
+  // an older query must not land after a newer one.
+  const latest = useRef(0);
   const load = useCallback(async () => {
-    const [songs, plays, recentIds] = await Promise.all([listSongs(), playsBySong(), recentlyPlayedIds(10)]);
-    setState({ loading: false, songs, plays, recentIds });
+    const id = ++latest.current;
+    try {
+      const [songs, plays, recentIds] = await Promise.all([listSongs(), playsBySong(), recentlyPlayedIds(10)]);
+      if (id === latest.current) setState({ loading: false, songs, plays, recentIds });
+    } catch (e) {
+      diag('library load failed', e);
+    }
   }, []);
 
   useEffect(() => {
@@ -43,8 +52,12 @@ export function useLibrary(): LibraryState {
 }
 
 /** Songs that appear in the library (not waiting for review), in a category, ranked by use. */
-export function rankedCategory(lib: LibraryState, categoryId: string, now = Date.now()): SongWithCategories[] {
-  const { seasonal } = activeCategoryIds(new Date(now));
+export function rankedCategory(
+  lib: LibraryState,
+  categoryId: string,
+  now = Date.now(),
+  seasonal = activeCategoryIds(new Date(now)).seasonal,
+): SongWithCategories[] {
   const inCat = lib.songs.filter((s) => {
     if (s.status === 'review') return false;
     if (categoryId === UNSORTED_ID) return s.categories.length === 0 || s.categories.every((c) => c.categoryId === UNSORTED_ID);
@@ -63,11 +76,12 @@ export function rankedCategory(lib: LibraryState, categoryId: string, now = Date
 
 /** Library tiles: categories that have songs, in season and most used first. */
 export function categoryTiles(lib: LibraryState, now = Date.now()): CategoryTile[] {
+  const { seasonal } = activeCategoryIds(new Date(now));
   const tiles = CATEGORIES.map((c) => {
-    const songs = rankedCategory(lib, c.id, now);
+    const songs = rankedCategory(lib, c.id, now, seasonal);
     return { id: c.id, count: songs.length, usage: songs.reduce((sum, s) => sum + (lib.usage[s.id] ?? 0), 0) };
   }).filter((t) => t.count > 0);
-  return orderCategoryTiles(tiles, activeCategoryIds(new Date(now)).seasonal);
+  return orderCategoryTiles(tiles, seasonal);
 }
 
 export interface HomeSection {
@@ -85,7 +99,7 @@ export function homeSections(lib: LibraryState, now = Date.now()): HomeSection[]
   for (const id of [...seasonal, ...timeOfDay]) {
     if (seen.has(id)) continue;
     seen.add(id);
-    const songs = rankedCategory(lib, id, now).slice(0, 8);
+    const songs = rankedCategory(lib, id, now, seasonal).slice(0, 8);
     if (songs.length) sections.push({ key: `now-${id}`, title: `עכשיו: ${getCategory(id).name}`, songs });
   }
 

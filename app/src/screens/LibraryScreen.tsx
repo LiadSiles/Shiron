@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { getCategory } from '../core/categories';
 import { textOn } from '../core/color';
@@ -17,7 +18,7 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
   const c = useTheme();
   const { width } = useWindowDimensions();
   const size = Math.floor((width - space.l * 2 - GAP * (COLUMNS - 1)) / COLUMNS);
-  const tiles = categoryTiles(lib);
+  const tiles = useMemo(() => categoryTiles(lib), [lib]);
   const total = lib.songs.filter((s) => s.status !== 'review').length;
 
   return (

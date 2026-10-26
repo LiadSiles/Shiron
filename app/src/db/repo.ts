@@ -27,9 +27,10 @@ interface SongRow {
 function fromRow(r: SongRow): Song {
   let keywords: string[] = [];
   try {
-    keywords = JSON.parse(r.keywords);
+    const parsed: unknown = JSON.parse(r.keywords);
+    if (Array.isArray(parsed)) keywords = parsed.filter((k): k is string => typeof k === 'string');
   } catch {
-    keywords = [];
+    /* keep [] */
   }
   return {
     id: r.id,
@@ -172,8 +173,10 @@ export async function setCategories(songId: string, cats: { id: string; confiden
 /** Teacher accepted the AI's suggestions as they are. */
 export async function confirmSong(songId: string): Promise<void> {
   const db = await getDb();
-  await db.runAsync('UPDATE song_categories SET confirmed = 1 WHERE song_id = ?', [songId]);
-  await db.runAsync("UPDATE songs SET status = 'ready', updated_at = ? WHERE id = ?", [Date.now(), songId]);
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('UPDATE song_categories SET confirmed = 1 WHERE song_id = ?', [songId]);
+    await db.runAsync("UPDATE songs SET status = 'ready', updated_at = ? WHERE id = ?", [Date.now(), songId]);
+  });
   emit();
 }
 
