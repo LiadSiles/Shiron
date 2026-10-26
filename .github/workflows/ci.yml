@@ -60,9 +60,15 @@ jobs:
           echo "::notice::$(ffmpeg -version | head -1)"
       - run: npm ci
       - run: npm run typecheck
-      # The github-actions reporter turns failures into annotations, readable through the
-      # checks API when raw logs aren't.
-      - run: npx vitest run --reporter=default --reporter=github-actions
+      # Failures are re-emitted as annotations, readable through the checks API when raw
+      # logs aren't (github-actions reporter for assertions, the log tail for setup errors).
+      - name: Test
+        run: |
+          set -o pipefail
+          if ! npx vitest run --reporter=default --reporter=github-actions 2>&1 | tee test.log; then
+            grep -vE '^\s*$' test.log | tail -40 | while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
 
   server-image:
     runs-on: ubuntu-latest
