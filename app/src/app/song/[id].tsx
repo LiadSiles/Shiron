@@ -47,8 +47,6 @@ export default function SongScreen() {
   const toggleCategory = async (catId: string) => {
     const next = selected.includes(catId) ? selected.filter((x) => x !== catId) : [...selected, catId];
     await setCategories(song.id, next.map((cid) => ({ id: cid, confidence: 1, confirmed: true })));
-    // Choosing categories by hand is an approval.
-    if (song.status === 'review') await updateSong(song.id, { status: 'ready' });
   };
 
   const togglePin = () => updateSong(song.id, { pinnedAt: song.pinnedAt ? null : Date.now() });

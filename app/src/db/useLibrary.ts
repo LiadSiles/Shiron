@@ -51,11 +51,7 @@ export function useLibrary(): LibraryState {
   }, [state, load]);
 }
 
-/**
- * Songs in a category, ranked by use. Songs waiting for review are left out here only: their
- * categories are the AI's unconfirmed guess. They play, search and show under "כל השירים" and
- * "חדשים" like any other song.
- */
+/** Songs in a category, ranked by use. */
 export function rankedCategory(
   lib: LibraryState,
   categoryId: string,
@@ -63,7 +59,6 @@ export function rankedCategory(
   seasonal = activeCategoryIds(new Date(now)).seasonal,
 ): SongWithCategories[] {
   const inCat = lib.songs.filter((s) => {
-    if (s.status === 'review') return false;
     if (categoryId === UNSORTED_ID) return s.categories.length === 0 || s.categories.every((c) => c.categoryId === UNSORTED_ID);
     return s.categories.some((c) => c.categoryId === categoryId);
   });
@@ -78,6 +73,17 @@ export function rankedCategory(
   return ranked.map((r) => lib.byId.get(r.id)!).filter(Boolean);
 }
 
+/** The list behind a library tile: a category, every song (most used first), or the newest. */
+export function songsFor(lib: LibraryState, id: string, now = Date.now()): SongWithCategories[] {
+  if (id === RECENT_ID) return recentlyAdded(lib, now);
+  if (id === ALL_ID) {
+    return rankSongs(lib.songs.map((s) => ({ song: s, events: lib.plays.get(s.id) ?? [], seasonal: false })), now)
+      .map((r) => lib.byId.get(r.id)!)
+      .filter(Boolean);
+  }
+  return rankedCategory(lib, id, now);
+}
+
 /** Library tiles: categories that have songs, in season and most used first. */
 export function categoryTiles(lib: LibraryState, now = Date.now()): CategoryTile[] {
   const { seasonal } = activeCategoryIds(new Date(now));
@@ -88,13 +94,24 @@ export function categoryTiles(lib: LibraryState, now = Date.now()): CategoryTile
   return orderCategoryTiles(tiles, seasonal);
 }
 
-/** How long a song stays in the home screen's "נוספו עכשיו". */
-const NEW_FOR_MS = 2 * 24 * 60 * 60 * 1000;
+/** Pseudo-categories with their own list screens (app/category/[id]). */
+export const ALL_ID = 'all';
+export const RECENT_ID = 'recent';
+
+/** How long a song counts as "נוספו לאחרונה" (home section and library tile). */
+const RECENT_FOR_MS = 14 * 24 * 60 * 60 * 1000;
+
+/** Songs added in the last two weeks, newest first — playable at once, details filling in. */
+export function recentlyAdded(lib: LibraryState, now = Date.now()): SongWithCategories[] {
+  return lib.songs.filter((s) => now - s.createdAt < RECENT_FOR_MS).sort((a, b) => b.createdAt - a.createdAt);
+}
 
 export interface HomeSection {
   key: string;
   title: string;
   songs: SongWithCategories[];
+  /** "הכול ›" opens this category (or 'recent'). */
+  categoryId?: string;
 }
 
 /** "Now" suggestions: current holiday first, then time of day; plus pinned and recent. */
@@ -104,14 +121,14 @@ export function homeSections(lib: LibraryState, now = Date.now()): HomeSection[]
   const seen = new Set<string>();
 
   // Just shared: playable at once, while the name and category are still on their way.
-  const fresh = lib.songs.filter((s) => now - s.createdAt < NEW_FOR_MS).slice(0, 5);
-  if (fresh.length) sections.push({ key: 'new', title: 'נוספו עכשיו', songs: fresh });
+  const fresh = recentlyAdded(lib, now);
+  if (fresh.length) sections.push({ key: 'new', title: 'נוספו לאחרונה', songs: fresh, categoryId: RECENT_ID });
 
   for (const id of [...seasonal, ...timeOfDay]) {
     if (seen.has(id)) continue;
     seen.add(id);
-    const songs = rankedCategory(lib, id, now, seasonal).slice(0, 8);
-    if (songs.length) sections.push({ key: `now-${id}`, title: `עכשיו: ${getCategory(id).name}`, songs });
+    const songs = rankedCategory(lib, id, now, seasonal);
+    if (songs.length) sections.push({ key: `now-${id}`, title: `עכשיו: ${getCategory(id).name}`, songs, categoryId: id });
   }
 
   const pinned = lib.songs

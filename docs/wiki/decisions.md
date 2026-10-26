@@ -119,3 +119,9 @@ out of quota. Groq stays the recommended default. Earlier decision "Groq only" i
 neither have his key detected nor save it. Clipboard detection stays pattern-based (it must not
 grab unrelated text), but a key pasted into the field is accepted if it is one token of 20–200
 printable characters and the service's own check decides.
+
+### 2026-10-26 — No review inbox
+Owner asked to remove the review screen and the approval step entirely, and to show recently
+added songs instead (home section and a library tile). Every processed song is `ready`; she
+corrects a name or category on the song screen if she wants. Supersedes "songs waiting for
+review are visible everywhere but category tiles". DB v5 moves `review` → `ready`.

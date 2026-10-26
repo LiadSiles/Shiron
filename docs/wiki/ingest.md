@@ -58,8 +58,8 @@ can't read becomes `audioState = 'unsupported'`.
   still-raw ones) and again before writing: `user` titles and confirmed categories are kept.
 - `processor.running` is true while either lane works.
 - `keepCategories()`: ≥ 0.5 confidence, max 3, always at least the top one.
-- Auto-accept: top category ≥ 0.85 **and** title ≥ 0.85 (`AUTO_ACCEPT_CONFIDENCE`). Both
-  thresholds are guesses to be tuned on ~200 real songs (open roadmap item).
+- No approval step since 0.5.0: every processed song is `ready`; confidences are kept on
+  `song_categories` (for ordering suggestions), not used to hold songs back.
 - Runs on app start, on every return to the foreground, after an import and after connecting Groq.
 
 ## File picker fallback

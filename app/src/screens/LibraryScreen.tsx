@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { getCategory } from '../core/categories';
 import { textOn } from '../core/color';
-import { categoryTiles, LibraryState } from '../db/useLibrary';
+import { ALL_ID, categoryTiles, LibraryState, RECENT_ID, recentlyAdded } from '../db/useLibrary';
 import { EmptyState, T } from '../ui/components';
 import { radius, space, useTheme } from '../ui/theme';
 
@@ -19,6 +19,7 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
   const { width } = useWindowDimensions();
   const size = Math.floor((width - space.l * 2 - GAP * (COLUMNS - 1)) / COLUMNS);
   const tiles = useMemo(() => categoryTiles(lib), [lib]);
+  const recent = useMemo(() => recentlyAdded(lib).length, [lib]);
   const total = lib.songs.length;
 
   return (
@@ -36,8 +37,18 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
             icon="🎵"
             color={c.primary}
             count={total}
-            onPress={() => router.push({ pathname: '/category/[id]', params: { id: 'all' } })}
+            onPress={() => router.push({ pathname: '/category/[id]', params: { id: ALL_ID } })}
           />
+          {recent ? (
+            <Tile
+              size={size}
+              name="נוספו לאחרונה"
+              icon="✨"
+              color={c.accent}
+              count={recent}
+              onPress={() => router.push({ pathname: '/category/[id]', params: { id: RECENT_ID } })}
+            />
+          ) : null}
           {tiles.map((t) => {
             const cat = getCategory(t.id);
             return (

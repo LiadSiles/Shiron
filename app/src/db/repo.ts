@@ -170,16 +170,6 @@ export async function setCategories(songId: string, cats: { id: string; confiden
   emit();
 }
 
-/** Teacher accepted the AI's suggestions as they are. */
-export async function confirmSong(songId: string): Promise<void> {
-  const db = await getDb();
-  await db.withTransactionAsync(async () => {
-    await db.runAsync('UPDATE song_categories SET confirmed = 1 WHERE song_id = ?', [songId]);
-    await db.runAsync("UPDATE songs SET status = 'ready', updated_at = ? WHERE id = ?", [Date.now(), songId]);
-  });
-  emit();
-}
-
 // ---------- plays ----------
 
 export async function recordPlay(e: PlayEvent): Promise<void> {

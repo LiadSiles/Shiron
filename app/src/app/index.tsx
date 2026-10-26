@@ -4,19 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLibrary } from '../db/useLibrary';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
-import { ReviewScreen } from '../screens/ReviewScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { T } from '../ui/components';
 import { MiniPlayer } from '../ui/MiniPlayer';
 import { space, useTheme } from '../ui/theme';
 
-type Tab = 'home' | 'library' | 'search' | 'review';
+type Tab = 'home' | 'library' | 'search';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'home', label: 'בית', icon: '🏠' },
   { key: 'library', label: 'ספרייה', icon: '📚' },
   { key: 'search', label: 'חיפוש', icon: '🔍' },
-  { key: 'review', label: 'לבדיקה', icon: '✅' },
 ];
 
 /**
@@ -28,15 +26,13 @@ export default function Shell() {
   const c = useTheme();
   const lib = useLibrary();
   const [tab, setTab] = useState<Tab>('home');
-  const reviewCount = lib.songs.filter((s) => s.status === 'review').length;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
       <View style={{ flex: 1 }}>
-        {tab === 'home' && <HomeScreen lib={lib} goToReview={() => setTab('review')} />}
+        {tab === 'home' && <HomeScreen lib={lib} />}
         {tab === 'library' && <LibraryScreen lib={lib} />}
         {tab === 'search' && <SearchScreen lib={lib} />}
-        {tab === 'review' && <ReviewScreen lib={lib} />}
       </View>
       <MiniPlayer />
       <SafeAreaView edges={['bottom']} style={[styles.bar, { backgroundColor: c.surface, borderColor: c.line }]}>
@@ -53,11 +49,6 @@ export default function Shell() {
             >
               <View>
                 <Text style={{ fontSize: 22, opacity: active ? 1 : 0.55 }}>{t.icon}</Text>
-                {t.key === 'review' && reviewCount > 0 ? (
-                  <View style={[styles.dot, { backgroundColor: c.primary }]}>
-                    <Text style={{ color: c.primaryInk, fontSize: 11, fontWeight: '700' }}>{reviewCount}</Text>
-                  </View>
-                ) : null}
               </View>
               <T size={12} weight={active ? 'bold' : 'regular'} style={{ color: active ? c.primary : c.inkSoft }}>
                 {t.label}
@@ -73,15 +64,4 @@ export default function Shell() {
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space.xs },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 56, gap: 2 },
-  dot: {
-    position: 'absolute',
-    top: -4,
-    end: -12,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
 });

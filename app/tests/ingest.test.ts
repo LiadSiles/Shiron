@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideStatus, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
+import { fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -17,11 +17,6 @@ describe('ingest rules', () => {
     expect(isNativelyPlayable('PTT-1.opus', 'ios')).toBe(false);
     expect(isNativelyPlayable('PTT-1.opus', 'android')).toBe(true);
     expect(isNativelyPlayable('song.mp3', 'ios')).toBe(true);
-  });
-  it('auto-accepts only confident results', () => {
-    expect(decideStatus(0.9, [{ confidence: 0.92 }])).toBe('ready');
-    expect(decideStatus(0.9, [{ confidence: 0.6 }])).toBe('review');
-    expect(decideStatus(0.5, [{ confidence: 0.99 }])).toBe('review');
   });
   it('keeps at most three suggestions, at least one', () => {
     expect(keepCategories([{ id: 'a', confidence: 0.2 }, { id: 'b', confidence: 0.1 }]).map((c) => c.id)).toEqual(['a']);

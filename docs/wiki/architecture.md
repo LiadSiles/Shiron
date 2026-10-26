@@ -19,7 +19,7 @@ WhatsApp ──share──▶ iOS share extension / Android intent      (expo-sh
                         │     songs(audio_state = done, playable_uri = songs/<id>.m4a)
     step 2, Groq (needs key) ── Whisper transcription → gpt-oss title / categories / lyrics
                         ▼
-  songs(status = ready | review), song_categories
+  songs(status = ready), song_categories
 ```
 
 Step 1 never waits for step 2: a song is playable seconds after it is shared, even offline or
@@ -50,10 +50,10 @@ updates; absolute paths would break every song after an update.
 
 - Audio: `raw` → `done` (converted; original deleted) | `unsupported` (kept; played if the
   platform reads it).
-- AI: `pending` → `ready` | `review` → (teacher approves) → `ready`. Retryable Groq problems
+- AI: `pending` → `ready` (no approval step since 0.5.0; DB v5 moved `review` → `ready`). Retryable AI problems
   (quota, offline, 5xx, bad key) leave songs `pending` and stop the queue until the next
-  foreground / import / connect. A song Groq can't handle gets a fallback title → `review` with
-  `error` set; the review card shows the error and a retry button (`retrySong`).
+  foreground / import / connect. A song the AI can't handle gets a fallback title → `ready` with
+  `error` set; the song screen shows the error and "לעבד שוב" (`retrySong`).
 
 ## State in the UI
 

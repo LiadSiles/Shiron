@@ -2,8 +2,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCategory } from '../../core/categories';
-import { rankSongs } from '../../core/ranking';
-import { rankedCategory, useLibrary } from '../../db/useLibrary';
+import { ALL_ID, RECENT_ID, songsFor, useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, T } from '../../ui/components';
 import { MiniPlayer } from '../../ui/MiniPlayer';
 import { space } from '../../ui/theme';
@@ -11,36 +10,32 @@ import { space } from '../../ui/theme';
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const lib = useLibrary();
-  const isAll = id === 'all';
+  const isAll = id === ALL_ID;
+  const isRecent = id === RECENT_ID;
+  const isList = isAll || isRecent;
   const cat = getCategory(id);
-
-  const songs = isAll
-    ? rankSongs(
-        lib.songs.map((s) => ({ song: s, events: lib.plays.get(s.id) ?? [], seasonal: false })),
-        Date.now(),
-      ).map((r) => lib.byId.get(r.id)!)
-    : rankedCategory(lib, id);
+  const songs = songsFor(lib, id);
   const playable = songs.filter((s) => s.kind === 'audio' && s.playableUri);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
-      <Stack.Screen options={{ title: isAll ? 'כל השירים' : cat.name }} />
+      <Stack.Screen options={{ title: isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name }} />
       <FlatList
         data={songs}
         keyExtractor={(s) => s.id}
         contentContainerStyle={{ padding: space.l, paddingBottom: 24 }}
         ListHeaderComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.m, marginBottom: space.l }}>
-            {!isAll ? <CategoryBadge id={cat.id} size={56} /> : null}
+            {!isList ? <CategoryBadge id={cat.id} size={56} /> : null}
             <View style={{ flex: 1 }}>
-              <T soft>{songs.length} שירים · השירים הנפוצים למעלה</T>
+              <T soft>{songs.length} שירים · {isRecent ? 'החדשים למעלה' : 'השירים הנפוצים למעלה'}</T>
             </View>
             {playable.length > 1 ? (
               <Button label="נגני הכול" icon="▶︎" onPress={() => playAll(playable)} />
             ) : null}
           </View>
         }
-        renderItem={({ item }) => <SongRow song={item} queue={songs} showCategory={isAll} />}
+        renderItem={({ item }) => <SongRow song={item} queue={songs} showCategory={isList} />}
         ListEmptyComponent={<EmptyState icon={cat.icon} title="אין כאן שירים עדיין" body="שירים שיסווגו לקטגוריה הזו יופיעו כאן." />}
       />
       <MiniPlayer />

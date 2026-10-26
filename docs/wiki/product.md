@@ -33,8 +33,9 @@ her lap. Measured as time from opening the app to playback (target < 5 s median)
 ## Behaviour (0.1.0)
 
 - Share from WhatsApp → "שומרת…" toast → saved; processing runs in the background.
-- Confident AI results (title and top category ≥ 0.85) go straight to the library; others wait
-  in **לבדיקה** with the suggestion pre-selected.
+- Every song goes straight to the library; the AI's name, category and lyrics fill in when
+  ready, and she can change them on the song screen. There is no approval step (removed in
+  0.5.0 at the owner's request); new songs are under "נוספו לאחרונה" on home and in the library.
 - Categories: 32 defaults in one flat list, no groups (`app/src/core/categories.ts`); a song can be in several.
 - Home suggests by time of day (`hours`) and Hebrew-calendar season (`season`).
 - Within a category: pinned first, then frecency (recent plays weigh more), see

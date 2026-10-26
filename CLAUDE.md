@@ -66,7 +66,7 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     categories.ts            taxonomy (32 categories), Hebrew calendar seasons, time of day
     hebrew.ts, search.ts     Hebrew normalization + full-text search
     ranking.ts               frecency ranking (τ = 30 days), pins, seasonal boost
-    ingestRules.ts           formats, YouTube ids, fallback titles, playability, review thresholds
+    ingestRules.ts           formats, YouTube ids, fallback titles, playability, category suggestions
     understand.ts            prompt, strict JSON schema, sanitising the model's answer, search expansion
     ai.ts                    the AI services (keys, order, errors); groqRules.ts / geminiRules.ts
                              models, error mapping, Gemini audio and answers

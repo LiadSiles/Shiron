@@ -64,6 +64,10 @@ const MIGRATIONS: string[] = [
   `
   UPDATE songs SET audio_state = 'done' WHERE kind = 'youtube';
   `,
+  // v5 — no review inbox any more (0.5.0): what waited for approval is simply in the library.
+  `
+  UPDATE songs SET status = 'ready' WHERE status = 'review';
+  `,
 ];
 
 async function migrate(db: SQLite.SQLiteDatabase) {

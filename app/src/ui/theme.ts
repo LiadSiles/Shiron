@@ -10,6 +10,8 @@ const light = {
   primary: '#D9573B',
   primaryInk: '#FFFFFF',
   primarySoft: '#FBE4DC',
+  /** Second tile colour ("נוספו לאחרונה"), distinct from the categories' own colours. */
+  accent: '#5B4FC4',
   good: '#2E8B57',
   warn: '#C77B12',
   bad: '#C0392B',
@@ -25,6 +27,7 @@ const dark: typeof light = {
   primary: '#F07A5E',
   primaryInk: '#1A1214',
   primarySoft: '#3A2520',
+  accent: '#7D6FE0',
   good: '#5CC28A',
   warn: '#E7A64A',
   bad: '#F0796B',

@@ -1,6 +1,5 @@
 /** Pure helpers for turning shared content into songs. */
 
-const AUTO_ACCEPT_CONFIDENCE = 0.85;
 const SUGGEST_CONFIDENCE = 0.5;
 
 /** Audio formats a teacher may receive. Decoded on the phone (see docs/wiki/audio-processing.md). */
@@ -81,14 +80,6 @@ export function fallbackTitle(fileName: string | null | undefined, createdAt: nu
     return `הקלטה מ-${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
   }
   return base.replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
-}
-
-export type ReviewDecision = 'ready' | 'review';
-
-/** Songs the AI is confident about skip the review inbox. */
-export function decideStatus(titleConfidence: number, categories: { confidence: number }[]): ReviewDecision {
-  const top = categories.reduce((m, c) => Math.max(m, c.confidence), 0);
-  return top >= AUTO_ACCEPT_CONFIDENCE && titleConfidence >= AUTO_ACCEPT_CONFIDENCE ? 'ready' : 'review';
 }
 
 /** Keep only suggestions worth showing; always at least the best one. */

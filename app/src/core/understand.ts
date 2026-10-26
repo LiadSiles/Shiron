@@ -143,7 +143,7 @@ export function parseModelJson(content: string): Partial<RawUnderstanding> | nul
   }
 }
 
-/** When the AI is unavailable: a usable title from what we have; goes to the review inbox. */
+/** When the AI is unavailable or refuses: a usable title from what we have. */
 export function fallbackUnderstanding(input: SongInput): Understanding {
   const fromContext = input.context?.split('\n')[0]?.trim();
   const title = input.youtube?.title

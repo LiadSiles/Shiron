@@ -50,8 +50,8 @@ _Last verified: 2026-10-26 (0.3.0, unit-tested in `app/tests/search.test.ts`, `h
   (logged to the technical log) nothing changes.
 - `matchCategories(query)`: typed category names ("חנוכה", "מנוחה") show category chips above
   results.
-- Songs in `review` are searchable and listed under "כל השירים" (since 0.3.4); only category
-  lists leave them out until approved (decisions.md).
+- Every song is searchable and listed under "כל השירים" and its categories (there is no review
+  state since 0.5.0).
 
 ## Ranking inside a category (`core/ranking.ts`)
 

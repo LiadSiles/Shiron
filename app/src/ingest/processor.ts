@@ -4,7 +4,7 @@ import { nameSong, resumeAllProviders } from '../api/ai';
 import { connectedProviders } from '../api/keys';
 import { youtubeMeta } from '../api/youtube';
 import { AiError, describeAiError } from '../core/ai';
-import { decideStatus, keepCategories, mimeOf } from '../core/ingestRules';
+import { keepCategories, mimeOf } from '../core/ingestRules';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
 import { getSong, listSongs, setCategories, updateSong } from '../db/repo';
@@ -136,7 +136,7 @@ async function nameSongs() {
         return;
       }
       // Not an answer we can use (services' own refusals are handled in nameSong): name the
-      // song from what we know and send it to review, so the queue moves on.
+      // song from what we know (the error shows on its screen), so the queue moves on.
       await applyUnderstanding(song, fallbackUnderstanding(await inputFor(song)), describeAiError(err));
     }
   }
@@ -224,6 +224,7 @@ async function applyUnderstanding(song: Song, u: Understanding, error: string | 
     summary: u.summary,
     keywords: u.keywords,
     error,
+    status: 'ready',
   };
   if (fresh.titleSource !== 'user' && u.title) {
     patch.title = u.title;
@@ -231,7 +232,6 @@ async function applyUnderstanding(song: Song, u: Understanding, error: string | 
   }
   const userCategorized = fresh.categories.some((c) => c.confirmed);
   const cats = keepCategories(u.categories);
-  patch.status = userCategorized ? 'ready' : error ? 'review' : decideStatus(u.titleConfidence, cats);
   if (!userCategorized) {
     await setCategories(song.id, cats.map((c) => ({ id: c.id, confidence: c.confidence, confirmed: false })));
   }

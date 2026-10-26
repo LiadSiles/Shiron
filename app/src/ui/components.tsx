@@ -65,7 +65,6 @@ export function statusLabel(song: SongWithCategories): string | null {
   if (song.audioState === 'unsupported' && !song.playableUri) return song.error ?? 'הפורמט לא נתמך במכשיר הזה';
   if (isPreparing(song)) return 'מכינה לניגון…';
   if (song.status === 'pending') return 'ממתין לשם וקטגוריה';
-  if (song.status === 'review') return 'ממתין לאישור';
   return null;
 }
 

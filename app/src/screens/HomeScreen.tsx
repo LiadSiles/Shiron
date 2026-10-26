@@ -14,14 +14,13 @@ function greeting(hour: number) {
   return 'ערב טוב';
 }
 
-export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview: () => void }) {
+export function HomeScreen({ lib }: { lib: LibraryState }) {
   const c = useTheme();
   const [proc, setProc] = useState<ProcessorState | null>(null);
   useEffect(() => onProcessorState(setProc), []);
 
   // Not on every processor tick: ranking every category runs the Hebrew calendar per song.
   const sections = useMemo(() => homeSections(lib), [lib]);
-  const reviewCount = lib.songs.filter((s) => s.status === 'review').length;
   const pendingCount = lib.songs.filter((s) => s.status === 'pending').length;
 
   const importFiles = async () => {
@@ -63,24 +62,22 @@ export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview:
         <T soft size={13} style={{ marginTop: space.s }}>{proc.notice}</T>
       ) : null}
 
-      {reviewCount > 0 ? (
-        <Pressable
-          onPress={goToReview}
-          accessibilityRole="button"
-          style={[styles.banner, { backgroundColor: c.primarySoft }]}
-        >
-          <T weight="bold" size={17}>
-            {reviewCount === 1 ? 'שיר חדש מחכה לאישור' : `${reviewCount} שירים חדשים מחכים לאישור`}
-          </T>
-          <T soft size={14}>דקה אחת של אישור, והם נכנסים לספרייה ›</T>
-        </Pressable>
-      ) : null}
-
       {proc?.running ? <T soft size={13} style={{ marginTop: space.s }}>מעבדת שירים חדשים…</T> : null}
 
       {sections.map((sec) => (
         <View key={sec.key}>
-          <SectionTitle>{sec.title}</SectionTitle>
+          <View style={styles.sectionHead}>
+            <SectionTitle>{sec.title}</SectionTitle>
+            {sec.categoryId && sec.songs.length > 5 ? (
+              <Pressable
+                onPress={() => router.push({ pathname: '/category/[id]', params: { id: sec.categoryId! } })}
+                hitSlop={12}
+                accessibilityRole="link"
+              >
+                <T weight="medium" style={{ color: c.primary, marginTop: space.xl }}>הכול ›</T>
+              </Pressable>
+            ) : null}
+          </View>
           {sec.songs.slice(0, 5).map((s) => (
             <SongRow key={s.id} song={s} queue={sec.songs} />
           ))}
@@ -110,5 +107,6 @@ const styles = StyleSheet.create({
   content: { padding: space.l, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: space.s },
   gear: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   banner: { padding: space.l, borderRadius: radius.m, marginTop: space.m, gap: 4 },
 });

@@ -16,7 +16,7 @@ Groq first, and since 0.4.0 also **Gemini** (Google AI Studio key) — see "Two 
   its quota is skipped until its `retryAfterSec` (default 10 min). Only when no service can do
   it now does the queue stop (`AiError` thrown, same handling as before). A **refusal**
   (bad-request / too-large) doesn't try the other service: the song gets a fallback name and
-  goes to review with the error. `resumeAllProviders()` on "try again".
+  is ready with the error shown on its screen. `resumeAllProviders()` on "try again".
 - Within a service, `eachModel()` (src/api/http.ts) walks the model list on 429 or 404
   (retired model).
 - Search by meaning (`relatedWords`) uses the same order, cached per query.
@@ -76,7 +76,7 @@ Source: <https://www.eesel.ai/blog/groq-pricing>.
 | 429 (all models) | stop, pause until `retry-after` / `x-ratelimit-reset-*` (default 10 min), notice "daily quota" |
 | 5xx / no network / timeout | stop, retry on next foreground or import |
 | 413 / other 4xx on transcription | logged; the song is still named, without lyrics |
-| 413 / other 4xx on naming | this song only: fallback title, the transcript kept as lyrics → review inbox with the error and a retry button |
+| 413 / other 4xx on naming | this song only: fallback title, the transcript kept as lyrics → ready, error and retry on the song screen |
 
 The song keeps `status = 'pending'` while waiting; nothing is lost. `processQueue()` never
 rejects — anything unexpected goes to the technical log and the next trigger tries again.

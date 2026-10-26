@@ -11,12 +11,12 @@ export type AudioState = 'raw' | 'done' | 'unsupported';
 /**
  * AI step (Groq or Gemini: transcription + title/categories):
  * pending  – saved, waiting for the AI (or for the teacher to connect a service)
- * review   – processed, but the AI was not confident; shown in the review inbox
- * ready    – in the library, confirmed or confidently auto-classified
- * When the AI can't handle a song, it goes to review with a fallback name and `error` set
- * (0.1's server-side 'failed' status was migrated away in DB v3).
+ * ready    – named and categorised (by the AI, or by her)
+ * When the AI can't handle a song it still becomes ready, with a fallback name and `error` set
+ * (shown on the song screen with "try again"). There is no approval step: 0.5.0 removed the
+ * review inbox (DB v5); 0.1's 'failed' status went in DB v3.
  */
-export type SongStatus = 'pending' | 'review' | 'ready';
+export type SongStatus = 'pending' | 'ready';
 
 export type TitleSource = 'file' | 'ai' | 'user';
 

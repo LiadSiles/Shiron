@@ -60,5 +60,5 @@ technical details first.
 
 ## Not done yet
 
-App icon and splash are Expo defaults. Swipe-to-approve on review cards (design doc) is a
+App icon and splash are Expo defaults. (Swipe-to-approve went with the review inbox in 0.5.0.) The rest is a
 button for now. No screenshot tests yet.
