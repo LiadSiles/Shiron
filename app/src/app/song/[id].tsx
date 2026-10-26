@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { CATEGORIES, CategoryGroup, GROUP_NAMES } from '../../core/categories';
+import { CATEGORIES } from '../../core/categories';
 import type { SongWithCategories } from '../../core/types';
 import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
 import { retrySong } from '../../ingest/processor';
@@ -80,7 +80,6 @@ export default function SongScreen() {
       },
     ]);
 
-  const groups = Object.keys(GROUP_NAMES) as CategoryGroup[];
   const status = statusLabel(song);
 
   return (
@@ -106,28 +105,23 @@ export default function SongScreen() {
       ) : null}
 
       <T weight="bold" size={18} style={styles.h}>קטגוריות</T>
-      {groups.map((g) => (
-        <View key={g} style={{ marginBottom: space.s }}>
-          <T soft size={13} style={{ marginBottom: space.xs }}>{GROUP_NAMES[g]}</T>
-          <View style={styles.chips}>
-            {CATEGORIES.filter((cat) => cat.group === g).map((cat) => {
-              const on = selected.includes(cat.id);
-              return (
-                <Pressable
-                  key={cat.id}
-                  onPress={() => toggleCategory(cat.id)}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: on }}
-                  style={[styles.chip, { backgroundColor: on ? cat.color + '33' : c.surfaceAlt, borderColor: on ? cat.color : 'transparent' }]}
-                >
-                  <CategoryBadge id={cat.id} size={24} />
-                  <T size={14} weight={on ? 'medium' : 'regular'}>{cat.name}</T>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-      ))}
+      <View style={[styles.chips, { marginBottom: space.s }]}>
+        {CATEGORIES.map((cat) => {
+          const on = selected.includes(cat.id);
+          return (
+            <Pressable
+              key={cat.id}
+              onPress={() => toggleCategory(cat.id)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: on }}
+              style={[styles.chip, { backgroundColor: on ? cat.color + '33' : c.surfaceAlt, borderColor: on ? cat.color : 'transparent' }]}
+            >
+              <CategoryBadge id={cat.id} size={24} />
+              <T size={14} weight={on ? 'medium' : 'regular'}>{cat.name}</T>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <View style={[styles.lyricsHeader]}>
         <T weight="bold" size={18} style={{ flex: 1 }}>מילות השיר</T>

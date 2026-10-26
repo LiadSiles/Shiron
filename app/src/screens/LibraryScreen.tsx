@@ -1,15 +1,24 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { CATEGORIES, CategoryGroup, GROUP_NAMES, getCategory } from '../core/categories';
-import { categoryCounts, LibraryState } from '../db/useLibrary';
-import { CategoryBadge, EmptyState, SectionTitle, T } from '../ui/components';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { getCategory } from '../core/categories';
+import { textOn } from '../core/color';
+import { categoryTiles, LibraryState } from '../db/useLibrary';
+import { EmptyState, T } from '../ui/components';
 import { radius, space, useTheme } from '../ui/theme';
 
+const COLUMNS = 2;
+const GAP = space.m;
+
+/**
+ * Every category as a square tile in two columns, Spotify-style: one level, no groups.
+ * Categories without songs are hidden; what's in season and most used comes first.
+ */
 export function LibraryScreen({ lib }: { lib: LibraryState }) {
   const c = useTheme();
-  const counts = new Map(categoryCounts(lib).map((x) => [x.id, x.count]));
-  const groups = Object.keys(GROUP_NAMES) as CategoryGroup[];
+  const { width } = useWindowDimensions();
+  const size = Math.floor((width - space.l * 2 - GAP * (COLUMNS - 1)) / COLUMNS);
+  const tiles = categoryTiles(lib);
   const total = lib.songs.filter((s) => s.status !== 'review').length;
 
   return (
@@ -19,69 +28,75 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
 
       {total === 0 && !lib.loading ? (
         <EmptyState icon="📚" title="עוד אין שירים" body="שירים שתשתפי מוואטסאפ יסודרו כאן לפי נושאים." />
-      ) : null}
-
-      {total > 0 ? (
-        <Pressable
-          onPress={() => router.push({ pathname: '/category/[id]', params: { id: 'all' } })}
-          style={[styles.allTile, { backgroundColor: c.surface, borderColor: c.line }]}
-        >
-          <T size={24}>🎵</T>
-          <T weight="medium" size={17} style={{ flex: 1 }}>כל השירים</T>
-          <T soft>{total}</T>
-        </Pressable>
-      ) : null}
-
-      {groups.map((g) => {
-        const cats = CATEGORIES.filter((cat) => cat.group === g && counts.has(cat.id));
-        if (!cats.length) return null;
-        return (
-          <View key={g}>
-            <SectionTitle>{GROUP_NAMES[g]}</SectionTitle>
-            <View style={styles.grid}>
-              {cats.map((cat) => (
-                <Pressable
-                  key={cat.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${cat.name}, ${counts.get(cat.id)} שירים`}
-                  onPress={() => router.push({ pathname: '/category/[id]', params: { id: cat.id } })}
-                  style={({ pressed }) => [
-                    styles.tile,
-                    { backgroundColor: getCategory(cat.id).color + (pressed ? '33' : '1F'), borderColor: cat.color + '55' },
-                  ]}
-                >
-                  <CategoryBadge id={cat.id} size={40} />
-                  <T weight="medium" size={16} numberOfLines={2}>{cat.name}</T>
-                  <T soft size={13}>{counts.get(cat.id)} שירים</T>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        );
-      })}
+      ) : (
+        <View style={[styles.grid, { marginTop: space.l }]}>
+          <Tile
+            size={size}
+            name="כל השירים"
+            icon="🎵"
+            color={c.primary}
+            count={total}
+            onPress={() => router.push({ pathname: '/category/[id]', params: { id: 'all' } })}
+          />
+          {tiles.map((t) => {
+            const cat = getCategory(t.id);
+            return (
+              <Tile
+                key={t.id}
+                size={size}
+                name={cat.name}
+                icon={cat.icon}
+                color={cat.color}
+                count={t.count}
+                onPress={() => router.push({ pathname: '/category/[id]', params: { id: t.id } })}
+              />
+            );
+          })}
+        </View>
+      )}
     </ScrollView>
+  );
+}
+
+function Tile({ size, name, icon, color, count, onPress }: {
+  size: number;
+  name: string;
+  icon: string;
+  color: string;
+  count: number;
+  onPress: () => void;
+}) {
+  const ink = textOn(color);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${name}, ${count} שירים`}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.tile,
+        { width: size, height: size, backgroundColor: color, opacity: pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] },
+      ]}
+    >
+      <T weight="bold" size={19} numberOfLines={2} style={{ color: ink }}>{name}</T>
+      <T size={13} style={{ color: ink, opacity: 0.8, marginTop: 2 }}>{count === 1 ? 'שיר אחד' : `${count} שירים`}</T>
+      {/* Big tilted emoji in the bottom corner, partly cut off — the Spotify "browse" look. */}
+      <T size={Math.round(size * 0.42)} style={styles.art} accessible={false}>{icon}</T>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   content: { padding: space.l, paddingBottom: 40 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.m },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: GAP },
   tile: {
-    width: '47%',
-    flexGrow: 1,
+    borderRadius: radius.m,
     padding: space.m,
-    borderRadius: radius.m,
-    borderWidth: 1,
-    gap: space.xs,
-    minHeight: 112,
+    overflow: 'hidden',
   },
-  allTile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.m,
-    padding: space.l,
-    borderRadius: radius.m,
-    borderWidth: StyleSheet.hairlineWidth,
-    marginTop: space.l,
+  art: {
+    position: 'absolute',
+    bottom: -6,
+    end: -8,
+    transform: [{ rotate: '-20deg' }],
   },
 });

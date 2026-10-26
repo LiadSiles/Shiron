@@ -25,7 +25,15 @@ _Last verified: 2026-10-26 (0.1.0)_
 
 `T` (text with weight/size/soft), `Button` (primary/quiet), `CategoryBadge`, `SongRow`
 (tap plays, long press opens; shows status line), `EmptyState`, `SectionTitle`,
-`playOrOpen`, `statusLabel`. Plus `MiniPlayer` and `ToastHost` / `toast()`.
+`playOrOpen`, `statusLabel`, `Highlighted` (search hits in bold). Plus `MiniPlayer`,
+`Scrubber`, the drawn media icons (`icons.tsx`) and `ToastHost` / `toast()`.
+
+## Library (`src/screens/LibraryScreen.tsx`, 0.3.1)
+
+Two columns of square tiles, Spotify "browse" style: the category colour fills the tile, the
+name in bold at the top start, the song count under it, and the category emoji large, tilted
+and cut off at the bottom end. Text colour is chosen per tile for contrast (`core/color.ts →
+textOn`). "כל השירים" is the first tile. One level only — no group headings (decisions.md).
 
 ## RTL and language
 

@@ -1,9 +1,8 @@
 /**
  * Default category taxonomy for an Israeli kindergarten.
- * Pure TypeScript (no React Native imports) so the processing server can share it.
+ * One flat list: every topic is its own category, with no groups above it (owner's decision).
+ * Pure TypeScript (no React Native imports), unit-tested.
  */
-
-export type CategoryGroup = 'routine' | 'holidays' | 'events' | 'world' | 'movement' | 'other';
 
 /** Hebrew-calendar month keys, normalized. */
 export type HebrewMonth =
@@ -21,7 +20,6 @@ export interface Category {
   name: string;
   icon: string;
   color: string;
-  group: CategoryGroup;
   /** Short description the AI uses to decide whether a song belongs here. */
   hint: string;
   /** Local hours [start, end) when this category is suggested on the home screen. */
@@ -29,53 +27,44 @@ export interface Category {
   season?: SeasonWindow;
 }
 
-export const GROUP_NAMES: Record<CategoryGroup, string> = {
-  routine: 'שגרת יום',
-  holidays: 'חגים ומועדים',
-  events: 'אירועים',
-  world: 'עולם הילד',
-  movement: 'תנועה ורגיעה',
-  other: 'אחר',
-};
-
 export const CATEGORIES: Category[] = [
-  { id: 'morning', name: 'בוקר טוב', icon: '☀️', color: '#F2A93B', group: 'routine', hint: 'שירי פתיחת יום, מעגל בוקר, שלום לחברים', hours: [7, 10] },
-  { id: 'meal', name: 'ארוחה', icon: '🍎', color: '#E46B5D', group: 'routine', hint: 'ברכות לפני אוכל, שירי ארוחת עשר וצהריים', hours: [9, 13] },
-  { id: 'cleanup', name: 'סידור', icon: '🧺', color: '#6BAF92', group: 'routine', hint: 'שירים לסידור הגן ואיסוף צעצועים' },
-  { id: 'transitions', name: 'מעברים', icon: '🔔', color: '#7C8BD9', group: 'routine', hint: 'שירים למעבר בין פעילויות, יציאה לחצר, כניסה למעגל' },
-  { id: 'rest', name: 'מנוחה', icon: '🌙', color: '#5C6BC0', group: 'routine', hint: 'שירים שקטים למנוחת צהריים והרגעה', hours: [12, 15] },
-  { id: 'goodbye', name: 'פרידה', icon: '👋', color: '#9C7BB8', group: 'routine', hint: 'שירי סוף יום ולהתראות', hours: [15, 17] },
+  { id: 'morning', name: 'בוקר טוב', icon: '☀️', color: '#F2A93B', hint: 'שירי פתיחת יום, מעגל בוקר, שלום לחברים', hours: [7, 10] },
+  { id: 'meal', name: 'ארוחה', icon: '🍎', color: '#E46B5D', hint: 'ברכות לפני אוכל, שירי ארוחת עשר וצהריים', hours: [9, 13] },
+  { id: 'cleanup', name: 'סידור', icon: '🧺', color: '#6BAF92', hint: 'שירים לסידור הגן ואיסוף צעצועים' },
+  { id: 'transitions', name: 'מעברים', icon: '🔔', color: '#7C8BD9', hint: 'שירים למעבר בין פעילויות, יציאה לחצר, כניסה למעגל' },
+  { id: 'rest', name: 'מנוחה', icon: '🌙', color: '#5C6BC0', hint: 'שירים שקטים למנוחת צהריים והרגעה', hours: [12, 15] },
+  { id: 'goodbye', name: 'פרידה', icon: '👋', color: '#9C7BB8', hint: 'שירי סוף יום ולהתראות', hours: [15, 17] },
 
-  { id: 'rosh-hashana', name: 'ראש השנה', icon: '🍯', color: '#D9A13B', group: 'holidays', hint: 'ראש השנה, תפוח בדבש, שנה טובה, שופר', season: { from: ['elul', 10], to: ['tishri', 4] } },
-  { id: 'yom-kippur', name: 'יום כיפור', icon: '🕊️', color: '#90A4AE', group: 'holidays', hint: 'סליחה, יום כיפור', season: { from: ['tishri', 3], to: ['tishri', 10] } },
-  { id: 'sukkot', name: 'סוכות', icon: '🌿', color: '#7CB342', group: 'holidays', hint: 'סוכה, ארבעת המינים, שמחת תורה', season: { from: ['tishri', 8], to: ['tishri', 23] } },
-  { id: 'hanukkah', name: 'חנוכה', icon: '🕎', color: '#3F7FBF', group: 'holidays', hint: 'חנוכייה, סביבון, נרות, מכבים, סופגניות', season: { from: ['kislev', 10], to: ['tevet', 3] } },
-  { id: 'tu-bishvat', name: 'ט״ו בשבט', icon: '🌳', color: '#4E9A51', group: 'holidays', hint: 'עצים, נטיעות, פירות יבשים, השקדייה פורחת', season: { from: ['shevat', 1], to: ['shevat', 16] } },
-  { id: 'purim', name: 'פורים', icon: '🎭', color: '#E0567A', group: 'holidays', hint: 'פורים, תחפושות, רעשן, אסתר, משלוח מנות', season: { from: ['adar', 1], to: ['adar', 15] } },
-  { id: 'pesach', name: 'פסח', icon: '🫓', color: '#C58B4E', group: 'holidays', hint: 'פסח, מצה, יציאת מצרים, ליל הסדר, אביב', season: { from: ['adar', 20], to: ['nisan', 22] } },
-  { id: 'memorial', name: 'יום הזיכרון', icon: '🕯️', color: '#78909C', group: 'holidays', hint: 'יום הזיכרון ויום השואה, שירים שקטים', season: { from: ['nisan', 24], to: ['iyar', 5] } },
-  { id: 'independence', name: 'יום העצמאות', icon: '🇮🇱', color: '#2F6FD6', group: 'holidays', hint: 'יום העצמאות, דגל, ארץ ישראל, יום הולדת למדינה', season: { from: ['nisan', 28], to: ['iyar', 7] } },
-  { id: 'lag-baomer', name: 'ל״ג בעומר', icon: '🔥', color: '#E8752B', group: 'holidays', hint: 'מדורה, חץ וקשת, ל״ג בעומר', season: { from: ['iyar', 12], to: ['iyar', 19] } },
-  { id: 'jerusalem', name: 'יום ירושלים', icon: '🏛️', color: '#B8975A', group: 'holidays', hint: 'ירושלים, הכותל', season: { from: ['iyar', 20], to: ['iyar', 29] } },
-  { id: 'shavuot', name: 'שבועות', icon: '🧺', color: '#8BC34A', group: 'holidays', hint: 'ביכורים, חג הקציר, מוצרי חלב, טנא', season: { from: ['iyar', 22], to: ['sivan', 7] } },
-  { id: 'shabbat', name: 'קבלת שבת', icon: '🕯️', color: '#C9A227', group: 'holidays', hint: 'שבת שלום, נרות שבת, חלה, קידוש' },
+  { id: 'rosh-hashana', name: 'ראש השנה', icon: '🍯', color: '#D9A13B', hint: 'ראש השנה, תפוח בדבש, שנה טובה, שופר', season: { from: ['elul', 10], to: ['tishri', 4] } },
+  { id: 'yom-kippur', name: 'יום כיפור', icon: '🕊️', color: '#90A4AE', hint: 'סליחה, יום כיפור', season: { from: ['tishri', 3], to: ['tishri', 10] } },
+  { id: 'sukkot', name: 'סוכות', icon: '🌿', color: '#7CB342', hint: 'סוכה, ארבעת המינים, שמחת תורה', season: { from: ['tishri', 8], to: ['tishri', 23] } },
+  { id: 'hanukkah', name: 'חנוכה', icon: '🕎', color: '#3F7FBF', hint: 'חנוכייה, סביבון, נרות, מכבים, סופגניות', season: { from: ['kislev', 10], to: ['tevet', 3] } },
+  { id: 'tu-bishvat', name: 'ט״ו בשבט', icon: '🌳', color: '#4E9A51', hint: 'עצים, נטיעות, פירות יבשים, השקדייה פורחת', season: { from: ['shevat', 1], to: ['shevat', 16] } },
+  { id: 'purim', name: 'פורים', icon: '🎭', color: '#E0567A', hint: 'פורים, תחפושות, רעשן, אסתר, משלוח מנות', season: { from: ['adar', 1], to: ['adar', 15] } },
+  { id: 'pesach', name: 'פסח', icon: '🫓', color: '#C58B4E', hint: 'פסח, מצה, יציאת מצרים, ליל הסדר, אביב', season: { from: ['adar', 20], to: ['nisan', 22] } },
+  { id: 'memorial', name: 'יום הזיכרון', icon: '🕯️', color: '#78909C', hint: 'יום הזיכרון ויום השואה, שירים שקטים', season: { from: ['nisan', 24], to: ['iyar', 5] } },
+  { id: 'independence', name: 'יום העצמאות', icon: '🇮🇱', color: '#2F6FD6', hint: 'יום העצמאות, דגל, ארץ ישראל, יום הולדת למדינה', season: { from: ['nisan', 28], to: ['iyar', 7] } },
+  { id: 'lag-baomer', name: 'ל״ג בעומר', icon: '🔥', color: '#E8752B', hint: 'מדורה, חץ וקשת, ל״ג בעומר', season: { from: ['iyar', 12], to: ['iyar', 19] } },
+  { id: 'jerusalem', name: 'יום ירושלים', icon: '🏛️', color: '#B8975A', hint: 'ירושלים, הכותל', season: { from: ['iyar', 20], to: ['iyar', 29] } },
+  { id: 'shavuot', name: 'שבועות', icon: '🧺', color: '#8BC34A', hint: 'ביכורים, חג הקציר, מוצרי חלב, טנא', season: { from: ['iyar', 22], to: ['sivan', 7] } },
+  { id: 'shabbat', name: 'קבלת שבת', icon: '🕯️', color: '#C9A227', hint: 'שבת שלום, נרות שבת, חלה, קידוש' },
 
-  { id: 'birthday', name: 'יום הולדת', icon: '🎂', color: '#EC6FA7', group: 'events', hint: 'יום הולדת, עוגה, נרות, משאלה, הרמת כיסא' },
-  { id: 'end-of-year', name: 'מסיבת סיום', icon: '🎓', color: '#AB7AE0', group: 'events', hint: 'פרידה מהגן, מסיבת סיום, עולים לכיתה א' },
-  { id: 'family', name: 'משפחה', icon: '👨‍👩‍👧', color: '#E58A5C', group: 'events', hint: 'אמא, אבא, סבא וסבתא, יום המשפחה' },
+  { id: 'birthday', name: 'יום הולדת', icon: '🎂', color: '#EC6FA7', hint: 'יום הולדת, עוגה, נרות, משאלה, הרמת כיסא' },
+  { id: 'end-of-year', name: 'מסיבת סיום', icon: '🎓', color: '#AB7AE0', hint: 'פרידה מהגן, מסיבת סיום, עולים לכיתה א' },
+  { id: 'family', name: 'משפחה', icon: '👨‍👩‍👧', color: '#E58A5C', hint: 'אמא, אבא, סבא וסבתא, יום המשפחה' },
 
-  { id: 'seasons', name: 'עונות ומזג אוויר', icon: '🌦️', color: '#4FA3C7', group: 'world', hint: 'גשם, חורף, קיץ, סתיו, אביב, שמש, רוח' },
-  { id: 'animals', name: 'בעלי חיים', icon: '🐘', color: '#8D6E63', group: 'world', hint: 'בעלי חיים, חיות בית, חרקים, ציפורים, חוות' },
-  { id: 'learning', name: 'צבעים, מספרים ואותיות', icon: '🔢', color: '#26A69A', group: 'world', hint: 'ספירה, צבעים, אותיות, צורות' },
-  { id: 'body', name: 'הגוף שלי', icon: '🖐️', color: '#F48A65', group: 'world', hint: 'איברי הגוף, היגיינה, רחצת ידיים, שיניים' },
-  { id: 'nature', name: 'טבע וגינה', icon: '🌼', color: '#66BB6A', group: 'world', hint: 'פרחים, צמחים, גינה, ים' },
+  { id: 'seasons', name: 'עונות ומזג אוויר', icon: '🌦️', color: '#4FA3C7', hint: 'גשם, חורף, קיץ, סתיו, אביב, שמש, רוח' },
+  { id: 'animals', name: 'בעלי חיים', icon: '🐘', color: '#8D6E63', hint: 'בעלי חיים, חיות בית, חרקים, ציפורים, חוות' },
+  { id: 'learning', name: 'צבעים, מספרים ואותיות', icon: '🔢', color: '#26A69A', hint: 'ספירה, צבעים, אותיות, צורות' },
+  { id: 'body', name: 'הגוף שלי', icon: '🖐️', color: '#F48A65', hint: 'איברי הגוף, היגיינה, רחצת ידיים, שיניים' },
+  { id: 'nature', name: 'טבע וגינה', icon: '🌼', color: '#66BB6A', hint: 'פרחים, צמחים, גינה, ים' },
 
-  { id: 'dance', name: 'ריקוד ותנועה', icon: '💃', color: '#EF5350', group: 'movement', hint: 'שירי תנועה, ריקודים, הוראות לתנועה' },
-  { id: 'finger', name: 'שירי ידיים', icon: '🤲', color: '#FFA726', group: 'movement', hint: 'משחקי אצבעות ושירי ידיים' },
-  { id: 'calm', name: 'רגיעה ושירי ערש', icon: '🧸', color: '#7E57C2', group: 'movement', hint: 'שירי ערש, נשימות, הרפיה', hours: [12, 15] },
-  { id: 'stories', name: 'סיפורים מוקלטים', icon: '📖', color: '#8E7CC3', group: 'movement', hint: 'סיפור מוקלט או מוקרא, לא שיר' },
+  { id: 'dance', name: 'ריקוד ותנועה', icon: '💃', color: '#EF5350', hint: 'שירי תנועה, ריקודים, הוראות לתנועה' },
+  { id: 'finger', name: 'שירי ידיים', icon: '🤲', color: '#FFA726', hint: 'משחקי אצבעות ושירי ידיים' },
+  { id: 'calm', name: 'רגיעה ושירי ערש', icon: '🧸', color: '#7E57C2', hint: 'שירי ערש, נשימות, הרפיה', hours: [12, 15] },
+  { id: 'stories', name: 'סיפורים מוקלטים', icon: '📖', color: '#8E7CC3', hint: 'סיפור מוקלט או מוקרא, לא שיר' },
 
-  { id: 'unsorted', name: 'לא מסווג', icon: '🎵', color: '#9E9E9E', group: 'other', hint: 'כשאין קטגוריה מתאימה' },
+  { id: 'unsorted', name: 'לא מסווג', icon: '🎵', color: '#9E9E9E', hint: 'כשאין קטגוריה מתאימה' },
 ];
 
 export const CATEGORY_BY_ID: Record<string, Category> = Object.fromEntries(

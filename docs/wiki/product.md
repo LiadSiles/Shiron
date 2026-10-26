@@ -35,7 +35,7 @@ her lap. Measured as time from opening the app to playback (target < 5 s median)
 - Share from WhatsApp → "שומרת…" toast → saved; processing runs in the background.
 - Confident AI results (title and top category ≥ 0.85) go straight to the library; others wait
   in **לבדיקה** with the suggestion pre-selected.
-- Categories: 32 defaults in 6 groups (`app/src/core/categories.ts`), a song can be in several.
+- Categories: 32 defaults in one flat list, no groups (`app/src/core/categories.ts`); a song can be in several.
 - Home suggests by time of day (`hours`) and Hebrew-calendar season (`season`).
 - Within a category: pinned first, then frecency (recent plays weigh more), see
   [search-and-ranking.md](search-and-ranking.md).

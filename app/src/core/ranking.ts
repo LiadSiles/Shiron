@@ -73,3 +73,26 @@ export function rankSongs(items: RankInput[], now: number): Ranked[] {
   });
   return scored.map(({ id, score, pinned }) => ({ id, score, pinned }));
 }
+
+export interface CategoryTile {
+  id: string;
+  count: number;
+  /** Sum of the songs' frecency: how much this category is used lately. */
+  usage: number;
+}
+
+/**
+ * Order of the library's category tiles: what's in season first (Hanukkah in Hanukkah), then
+ * the categories she uses most, then the bigger ones; ties keep the taxonomy order.
+ */
+export function orderCategoryTiles(tiles: CategoryTile[], inSeason: string[] = []): CategoryTile[] {
+  const pos = new Map(tiles.map((t, i) => [t.id, i]));
+  const season = (id: string) => (inSeason.includes(id) ? 0 : 1);
+  return [...tiles].sort(
+    (a, b) =>
+      season(a.id) - season(b.id) ||
+      b.usage - a.usage ||
+      b.count - a.count ||
+      pos.get(a.id)! - pos.get(b.id)!,
+  );
+}

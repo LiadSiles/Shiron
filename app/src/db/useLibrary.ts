@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { activeCategoryIds, CATEGORIES, getCategory, UNSORTED_ID } from '../core/categories';
-import { frecency, rankSongs } from '../core/ranking';
+import { CategoryTile, frecency, orderCategoryTiles, rankSongs } from '../core/ranking';
 import type { PlayEvent, SongWithCategories } from '../core/types';
 import { listSongs, onLibraryChange, playsBySong, recentlyPlayedIds } from './repo';
 
@@ -61,15 +61,13 @@ export function rankedCategory(lib: LibraryState, categoryId: string, now = Date
   return ranked.map((r) => lib.byId.get(r.id)!).filter(Boolean);
 }
 
-export interface CategoryCount {
-  id: string;
-  count: number;
-}
-
-export function categoryCounts(lib: LibraryState): CategoryCount[] {
-  return CATEGORIES.map((c) => ({ id: c.id, count: rankedCategory(lib, c.id).length })).filter(
-    (c) => c.count > 0,
-  );
+/** Library tiles: categories that have songs, in season and most used first. */
+export function categoryTiles(lib: LibraryState, now = Date.now()): CategoryTile[] {
+  const tiles = CATEGORIES.map((c) => {
+    const songs = rankedCategory(lib, c.id, now);
+    return { id: c.id, count: songs.length, usage: songs.reduce((sum, s) => sum + (lib.usage[s.id] ?? 0), 0) };
+  }).filter((t) => t.count > 0);
+  return orderCategoryTiles(tiles, activeCategoryIds(new Date(now)).seasonal);
 }
 
 export interface HomeSection {

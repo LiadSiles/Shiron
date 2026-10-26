@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { editDistance, MATCH, normalize, phonetic, skeleton, stems, tokenMatch } from '../src/core/hebrew';
 import { highlight, matchCategories, pushRecent, searchSongs } from '../src/core/search';
 import { formatTime } from '../src/core/time';
-import { frecency, rankSongs, RANKING } from '../src/core/ranking';
-import { activeCategoryIds, inSeason, normalizeHebrewMonth, toHebrewDate, CATEGORY_BY_ID } from '../src/core/categories';
+import { frecency, orderCategoryTiles, rankSongs, RANKING } from '../src/core/ranking';
+import { textOn } from '../src/core/color';
+import { CATEGORIES, activeCategoryIds, inSeason, normalizeHebrewMonth, toHebrewDate, CATEGORY_BY_ID } from '../src/core/categories';
 import { decideStatus, fallbackTitle, isNativelyPlayable, keepCategories, youtubeIdFrom } from '../src/core/ingestRules';
 import type { SongWithCategories } from '../src/core/types';
 
@@ -219,5 +220,22 @@ describe('ingest rules', () => {
   it('keeps at most three suggestions, at least one', () => {
     expect(keepCategories([{ id: 'a', confidence: 0.2 }, { id: 'b', confidence: 0.1 }]).map((c) => c.id)).toEqual(['a']);
     expect(keepCategories([{ id: 'a', confidence: 0.9 }, { id: 'b', confidence: 0.7 }, { id: 'c', confidence: 0.6 }, { id: 'd', confidence: 0.55 }])).toHaveLength(3);
+  });
+});
+
+describe('library tiles', () => {
+  it('puts in-season categories first, then most used, then bigger', () => {
+    const tiles = [
+      { id: 'morning', count: 9, usage: 1 },
+      { id: 'rest', count: 2, usage: 4 },
+      { id: 'hanukkah', count: 1, usage: 0 },
+      { id: 'rain', count: 3, usage: 1 },
+    ];
+    expect(orderCategoryTiles(tiles, ['hanukkah']).map((t) => t.id)).toEqual(['hanukkah', 'rest', 'morning', 'rain']);
+  });
+  it('picks readable text on every category colour', () => {
+    expect(textOn('#1F3A8A')).toBe('#FFFFFF');
+    expect(textOn('#F2C94C')).toBe('#1B1B22');
+    for (const c of CATEGORIES) expect(['#FFFFFF', '#1B1B22']).toContain(textOn(c.color));
   });
 });
