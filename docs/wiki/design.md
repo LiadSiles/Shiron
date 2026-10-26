@@ -35,7 +35,7 @@ _Last verified: 2026-10-26 (0.1.0)_
   (`direction: 'ltr'`).
 - Feminine second person in all strings ("נגני", "שמרי", "נסי").
 
-## Diagnostics (0.2.1)
+## Diagnostics (0.3.0)
 
 Device-only problems are diagnosed from the phone, not from logs we can't reach:
 - `src/diag/log.ts` → `diag(event, …details)`: a 150-line ring buffer in `settings.diagLog`,
