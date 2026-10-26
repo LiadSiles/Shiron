@@ -4,8 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCategory } from '../../core/categories';
 import { rankSongs } from '../../core/ranking';
 import { rankedCategory, useLibrary } from '../../db/useLibrary';
-import { playSong } from '../../player/player';
-import { Button, CategoryBadge, EmptyState, SongRow, T } from '../../ui/components';
+import { Button, CategoryBadge, EmptyState, playAll, SongRow, T } from '../../ui/components';
 import { MiniPlayer } from '../../ui/MiniPlayer';
 import { space } from '../../ui/theme';
 
@@ -37,7 +36,7 @@ export default function CategoryScreen() {
               <T soft>{songs.length} שירים · השירים הנפוצים למעלה</T>
             </View>
             {playable.length > 1 ? (
-              <Button label="נגני הכול" icon="▶︎" onPress={() => playSong(playable[0], playable)} />
+              <Button label="נגני הכול" icon="▶︎" onPress={() => playAll(playable)} />
             ) : null}
           </View>
         }

@@ -25,7 +25,10 @@ export function ToastHost() {
       Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }).start();
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => {
-        Animated.timing(opacity, { toValue: 0, duration: 250, useNativeDriver: true }).start(() => setMsg(null));
+        // A new toast during the fade interrupts it (finished = false): keep showing that one.
+        Animated.timing(opacity, { toValue: 0, duration: 250, useNativeDriver: true }).start(({ finished }) => {
+          if (finished) setMsg(null);
+        });
       }, 2800);
     };
     listeners.add(l);

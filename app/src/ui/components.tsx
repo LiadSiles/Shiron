@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View,
 import { getCategory } from '../core/categories';
 import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
-import { MissingFileError, NotPlayableError, playOrToggle, usePlayer } from '../player/player';
+import { MissingFileError, NotPlayableError, playOrToggle, playSong, usePlayer } from '../player/player';
 import { PauseIcon, PlayIcon } from './icons';
 import { font, radius, space, TOUCH, useTheme } from './theme';
 
@@ -68,24 +68,37 @@ export function statusLabel(song: SongWithCategories): string | null {
   return null;
 }
 
-/** Tap = play now. Long press = open the song screen. */
-export async function playOrOpen(song: SongWithCategories, queue: SongWithCategories[]) {
+/** Tap = play now (or pause, if it is the song playing). YouTube songs open their screen. */
+export function playOrOpen(song: SongWithCategories, queue: SongWithCategories[]) {
   if (song.kind === 'youtube') {
     router.push({ pathname: '/youtube/[id]', params: { id: song.id } });
-    return;
+    return Promise.resolve();
   }
+  Haptics.selectionAsync().catch(() => undefined);
+  return explainPlayErrors(song, () => playOrToggle(song, queue));
+}
+
+/** "נגני הכול": always starts the first song, even if it is the one playing. */
+export function playAll(queue: SongWithCategories[]) {
+  const first = queue[0];
+  return first ? explainPlayErrors(first, () => playSong(first, queue)) : Promise.resolve();
+}
+
+async function explainPlayErrors(song: SongWithCategories, play: () => Promise<void>) {
   try {
-    Haptics.selectionAsync().catch(() => undefined);
-    await playOrToggle(song, queue);
+    await play();
   } catch (e) {
     if (e instanceof NotPlayableError) {
+      const unsupported = song.audioState === 'unsupported';
       Alert.alert(
-        song.audioState === 'unsupported' ? 'לא ניתן לנגן' : 'עוד רגע',
-        song.audioState === 'unsupported' ? 'הפורמט של הקובץ הזה לא נתמך במכשיר.' : 'השיר עדיין בהכנה. הוא יהיה מוכן לניגון בעוד כמה שניות.',
+        unsupported ? 'לא ניתן לנגן' : 'עוד רגע',
+        unsupported ? 'הפורמט של הקובץ הזה לא נתמך במכשיר.' : 'השיר עדיין בהכנה. הוא יהיה מוכן לניגון בעוד כמה שניות.',
       );
+    } else if (e instanceof MissingFileError) {
+      Alert.alert('לא ניתן לנגן', 'קובץ השמע של השיר חסר. אפשר למחוק את השיר ולשתף אותו שוב.');
+    } else {
+      Alert.alert('לא הצלחנו לנגן', String((e as Error)?.message ?? e));
     }
-    else if (e instanceof MissingFileError) Alert.alert('לא ניתן לנגן', 'קובץ השמע של השיר חסר. אפשר למחוק את השיר ולשתף אותו שוב.');
-    else Alert.alert('לא הצלחנו לנגן', String((e as Error)?.message ?? e));
   }
 }
 
