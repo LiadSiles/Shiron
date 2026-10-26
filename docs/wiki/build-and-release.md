@@ -126,3 +126,8 @@ Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+.
   entries under `[Unreleased]` first; don't add the version heading by hand (it duplicates).
 - Patched native dependencies: Expo modules come with prebuilt Android AARs; list any module
   with a patch in `app/package.json → expo.autolinking.android.buildFromSource` (see player.md).
+- "The job was not started because recent account payments have failed or your spending limit
+  needs to be increased" = the owner's GitHub Actions billing (private repo; macOS minutes
+  count 10×), not the workflow. The APK/IPA are still downloadable as run artifacts
+  (`android`, `ios`, kept 90 days); once billing is fixed, "Re-run failed jobs" on the run
+  publishes the release. Sessions here can't create releases themselves (403).

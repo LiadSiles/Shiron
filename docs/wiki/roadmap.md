@@ -13,7 +13,7 @@ _Last updated: 2026-10-26_
 | 0.3.4 | Owner feedback: YouTube spinner (DB v4), live player refresh, two processing lanes (play at once, names later), review songs visible, "נוספו עכשיו" | ✅ released as v0.3.4 (APK + IPA) |
 | 0.4.0 | Gemini as a second AI service (owner's choice: with the recording, behind a training/human-review warning); preferred service + automatic fallback on quota; provider-neutral AI layer | ✅ released as v0.4.0 (APK + IPA); Gemini untested against the live API |
 | 0.4.1 | Gemini `AQ.` keys recognised; hand-pasted keys checked by the service, not by pattern | ✅ released as v0.4.1 (APK + IPA) |
-| 0.5.0 | Owner feedback: YouTube songs in the queue / full player (IFrame API), repeat off/all/one, YouTube lyrics via Gemini, no review step (DB v5), "נוספו לאחרונה" (home + tile), search bar instead of a search tab | releasing |
+| 0.5.0 | Owner feedback: YouTube songs in the queue / full player (IFrame API), repeat off/all/one, YouTube lyrics via Gemini, no review step (DB v5), "נוספו לאחרונה" (home + tile), search bar instead of a search tab | built (APK + IPA as run artifacts); GitHub Release blocked: Actions billing on the owner's account (publish job not started) — re-run failed jobs once fixed |
 | 0.5.x | Why a shared song didn't play on the owner's Xiaomi (read his technical log); app icon and splash; tune confidence thresholds on ~200 real songs; swipe-to-approve | next |
 | 0.6 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.7 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
