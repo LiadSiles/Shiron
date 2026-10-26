@@ -1,7 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { connectedProviders } from '../../api/keys';
 import { CATEGORIES } from '../../core/categories';
+import { canTranscribe } from '../../core/ingestRules';
 import { formatTime } from '../../core/time';
 import type { SongWithCategories } from '../../core/types';
 import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
@@ -49,6 +51,32 @@ export default function SongScreen() {
     await setCategories(song.id, next.map((cid) => ({ id: cid, confidence: 1, confirmed: true })));
   };
 
+  /**
+   * Runs the AI step again: new lyrics, summary and keywords (and a new name and category,
+   * unless she set them herself — her choices are kept).
+   */
+  const transcribeAgain = async () => {
+    const connected = await connectedProviders();
+    if (!connected.length) {
+      Alert.alert('אין שירות AI מחובר', 'כדי לתמלל צריך לחבר שירות AI חינמי (פעם אחת, כשתי דקות).', [
+        { text: 'ביטול', style: 'cancel' },
+        { text: 'לחיבור', onPress: () => router.push('/connect') },
+      ]);
+      return;
+    }
+    const run = () => {
+      retrySong(song.id);
+      toast(song.kind === 'youtube' && !connected.includes('gemini')
+        ? 'בלי Gemini, שירי יוטיוב מקבלים רק שם מהכותרת, בלי מילים'
+        : 'מתמללת מחדש…');
+    };
+    if (!song.lyrics) return run();
+    Alert.alert('לתמלל מחדש?', 'המילים הנוכחיות יוחלפו בתמלול החדש.', [
+      { text: 'ביטול', style: 'cancel' },
+      { text: 'תמלול מחדש', onPress: run },
+    ]);
+  };
+
   const togglePin = () => updateSong(song.id, { pinnedAt: song.pinnedAt ? null : Date.now() });
 
   const saveLyrics = async () => {
@@ -91,9 +119,7 @@ export default function SongScreen() {
         <Button label="ניגון" icon="▶︎" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
         <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon="📌" kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
       </View>
-      {song.status === 'pending' || song.error || (song.kind === 'youtube' && !song.lyrics) ? (
-        <Button label="לעבד שוב" kind="quiet" icon="↻" onPress={() => retrySong(song.id)} style={{ marginTop: space.s }} />
-      ) : null}
+      {song.error ? <T size={14} style={{ marginTop: space.xs, color: c.warn }}>{song.error}</T> : null}
 
       <T weight="bold" size={18} style={styles.h}>קטגוריות</T>
       <View style={[styles.chips, { marginBottom: space.s }]}>
@@ -120,6 +146,16 @@ export default function SongScreen() {
           <T weight="medium" style={{ color: c.primary }}>{editingLyrics ? 'שמירה' : 'עריכה'}</T>
         </Pressable>
       </View>
+      {canTranscribe(song) && !editingLyrics ? (
+        <Button
+          label={song.status === 'pending' ? 'מתמללת…' : 'תמלול מחדש'}
+          icon="↻"
+          kind="quiet"
+          disabled={song.status === 'pending'}
+          onPress={transcribeAgain}
+          style={{ marginBottom: space.m }}
+        />
+      ) : null}
       {editingLyrics ? (
         <TextInput
           value={lyrics}

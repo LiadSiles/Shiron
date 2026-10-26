@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
+import { fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -29,6 +29,16 @@ describe('preparing', () => {
     expect(isPreparing({ kind: 'audio', audioState: 'raw', playableUri: null })).toBe(true);
     expect(isPreparing({ kind: 'audio', audioState: 'raw', playableUri: 'songs/a.mp3' })).toBe(false);
     expect(isPreparing({ kind: 'youtube', audioState: 'raw', playableUri: null })).toBe(false);
+  });
+});
+
+describe('transcribing again', () => {
+  const base = { kind: 'audio', playableUri: null, originalUri: null, youtubeId: null };
+  it('needs a file, or a YouTube video', () => {
+    expect(canTranscribe({ ...base, playableUri: 'songs/a.m4a' })).toBe(true);
+    expect(canTranscribe({ ...base, originalUri: 'songs/a-original.opus' })).toBe(true);
+    expect(canTranscribe(base)).toBe(false);
+    expect(canTranscribe({ ...base, kind: 'youtube', youtubeId: 'dQw4w9WgXcQ' })).toBe(true);
   });
 });
 

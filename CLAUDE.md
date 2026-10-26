@@ -80,8 +80,8 @@ app/                         Expo app (React Native, TypeScript, expo-router)
   src/player/player.ts       expo-audio playlist: background, lock screen + notification
                              next/previous, fade-out pause, seek, queue
   src/screens/, src/ui/      tabs (home, library), search results, components, theme
-  src/app/                   expo-router routes (layout, shell, category, song, player, youtube,
-                             settings, connect, log)
+  src/app/                   expo-router routes (layout, shell, category, song, player, settings,
+                             connect, log)
   modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a
     ios/Core/                plain AVFoundation (Ogg Opus demux, asset reader, encoder)
     android/                 MediaExtractor/MediaCodec/MediaMuxer; unit + instrumented tests

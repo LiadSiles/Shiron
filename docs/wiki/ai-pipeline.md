@@ -39,9 +39,8 @@ Google's own feature, so nothing is downloaded by us and YouTube's terms aren't 
 gives YouTube songs lyrics and a better name. For a YouTube song `nameSong` puts Gemini first
 when it is connected (Groq can only name it from the title). Limits: public videos only; free
 tier up to 8 hours of YouTube video per day; marked "preview" by Google (may change). Timeout
-180 s. A refused video (private, too long) → again from the title and context alone. The song
-screen offers "לעבד שוב" for YouTube songs without lyrics (e.g. named before Gemini was
-connected).
+180 s. A refused video (private, too long) → again from the title and context alone. Any song
+can be sent through the AI step again from its screen ("תמלול מחדש", see below).
 
 `generateContent` is labelled "legacy" since Google's Interactions API went GA (June 2026) but
 "remains fully supported"; it is the documented way to send inline audio. Revisit if Google
@@ -95,6 +94,15 @@ Timeouts (`fetchWithTimeout`): chat 90 s (reasoning models can be slow), key che
 oEmbed and search expansion 15 s. A timeout is a retryable `network` error. The transcription
 upload (`File.upload`) has no timeout option in expo-file-system; a hang there would hold the
 queue until the app is restarted — not seen yet, revisit if the log shows it.
+
+## Transcribing again (0.5.1)
+
+The song screen has "תמלול מחדש" under the lyrics for every song with something to listen to
+(`canTranscribe`: an audio file, or a YouTube video). It asks first when lyrics exist (they will
+be replaced), sends her to connect a service when none is connected, and warns that YouTube
+songs get lyrics only with Gemini. It calls `retrySong` (status → `pending`, pauses cleared);
+her own title and confirmed categories are kept as always. The button reads "מתמללת…" while
+the song is pending. An AI error shows under the title on the song screen.
 
 ## Prompt (Hebrew, `SYSTEM_PROMPT`)
 

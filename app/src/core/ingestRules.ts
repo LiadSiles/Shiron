@@ -43,6 +43,11 @@ export function isPreparing(song: { kind: string; audioState: string; playableUr
   return song.kind === 'audio' && song.audioState === 'raw' && !song.playableUri;
 }
 
+/** Something an AI service can listen to: the song's audio file, or (Gemini) its YouTube video. */
+export function canTranscribe(song: { kind: string; playableUri: string | null; originalUri: string | null; youtubeId: string | null }): boolean {
+  return song.kind === 'youtube' ? !!song.youtubeId : !!(song.playableUri ?? song.originalUri);
+}
+
 /** MIME type to send with an upload, from the file name. */
 export function mimeOf(fileName: string): string {
   const ext = extensionOf(fileName);
