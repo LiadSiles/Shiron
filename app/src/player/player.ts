@@ -45,6 +45,10 @@ export function usePlayer(): PlayerState {
 }
 
 let player: AudioPlayer | null = null;
+/** While a fade-out runs, status updates still say "playing": don't let them flip the button back. */
+let fading = false;
+/** Ignore stale positions for a moment after a seek, so the scrubber doesn't jump back. */
+let seekingUntil = 0;
 let notificationsAsked = false;
 
 /** Listening-time accounting for the ranking. */
@@ -72,9 +76,17 @@ function onStatus(status: AudioStatus) {
     diag('play failed', state.song?.title ?? '?', status.error);
     set({ error: status.error });
   }
-  set({ playing: status.playing, position: status.currentTime, duration: status.duration || state.duration });
+  set({
+    playing: fading ? false : status.playing,
+    position: Date.now() < seekingUntil ? state.position : status.currentTime,
+    duration: status.duration || state.duration,
+  });
   if (status.didJustFinish && !state.repeat) {
-    void (state.index < state.queue.length - 1 ? next() : finishSession());
+    if (state.index < state.queue.length - 1) void next();
+    else {
+      set({ playing: false });
+      void finishSession();
+    }
   }
 }
 
@@ -127,16 +139,23 @@ export async function playSong(song: SongWithCategories, queue: SongWithCategori
   p.setActiveForLockScreen(true, { title: song.title, artist: category, albumTitle: 'שירון' });
 }
 
-export function toggle() {
-  if (!player || !state.song) return;
-  if (state.playing) player.pause();
-  else player.play();
-}
-
-/** Quiet stop: a half-second fade instead of an abrupt cut in front of the children. */
-export function stop(): Promise<void> {
+/**
+ * The one play/pause action used by every button (mini player, full player, the playing row).
+ * Pausing fades out over half a second — never an abrupt cut in front of the children — and the
+ * button changes at once instead of waiting for the next status update.
+ */
+export function togglePlay(): Promise<void> {
   const p = player;
-  if (!p || !state.playing) return Promise.resolve();
+  if (!p || !state.song) return Promise.resolve();
+  if (!state.playing) {
+    p.volume = 1;
+    p.play();
+    set({ playing: true });
+    return Promise.resolve();
+  }
+  if (fading) return Promise.resolve();
+  fading = true;
+  set({ playing: false });
   return new Promise((resolve) => {
     const steps = 10;
     let i = 0;
@@ -147,10 +166,23 @@ export function stop(): Promise<void> {
         clearInterval(timer);
         p.pause();
         p.volume = 1;
+        fading = false;
+        set({ playing: false });
         resolve();
       }
     }, 50);
   });
+}
+
+/** Pause (with the fade) if something is playing. */
+export function pause(): Promise<void> {
+  return state.playing ? togglePlay() : Promise.resolve();
+}
+
+/** Tapping a song: the one already loaded pauses/resumes; any other starts from the beginning. */
+export async function playOrToggle(song: SongWithCategories, queue: SongWithCategories[]) {
+  if (state.song?.id === song.id && player) return togglePlay();
+  return playSong(song, queue);
 }
 
 export async function next() {
@@ -161,7 +193,7 @@ export async function next() {
 
 export async function previous() {
   if (state.position > 3 && player) {
-    await player.seekTo(0);
+    await seek(0);
     return;
   }
   const i = state.index - 1;
@@ -174,7 +206,11 @@ export function setRepeat(repeat: boolean) {
 }
 
 export async function seek(seconds: number) {
-  await player?.seekTo(seconds);
+  if (!player) return;
+  const to = Math.max(0, Math.min(seconds, state.duration || seconds));
+  seekingUntil = Date.now() + 800;
+  set({ position: to });
+  await player.seekTo(to);
 }
 
 /** Keep the lock screen in sync after a rename. */

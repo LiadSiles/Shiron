@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { getCategory } from '../core/categories';
-import { next, stop, toggle, usePlayer } from '../player/player';
+import { next, togglePlay, usePlayer } from '../player/player';
+import { NextIcon, PauseIcon, PlayIcon } from './icons';
 import { CategoryBadge, T } from './components';
 import { radius, space, TOUCH, useTheme } from './theme';
 
@@ -31,19 +32,22 @@ export function MiniPlayer() {
           <T soft size={12} numberOfLines={1}>{getCategory(catId).name}</T>
         )}
       </View>
-      <Pressable
-        onPress={() => (p.playing ? stop() : toggle())}
-        accessibilityLabel={p.playing ? 'עצירה' : 'ניגון'}
-        hitSlop={8}
-        style={[styles.btn, { backgroundColor: c.primary }]}
-      >
-        <Text style={{ fontSize: 18, color: c.primaryInk }}>{p.playing ? '■' : '▶︎'}</Text>
-      </Pressable>
-      {p.index < p.queue.length - 1 ? (
-        <Pressable onPress={() => next()} accessibilityLabel="השיר הבא" hitSlop={8} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
-          <Text style={{ fontSize: 18, color: c.ink }}>⏭︎</Text>
+      {/* Media controls stay left-to-right (not mirrored in RTL): play, then next to its right. */}
+      <View style={styles.controls}>
+        <Pressable
+          onPress={() => togglePlay()}
+          accessibilityLabel={p.playing ? 'השהיה' : 'ניגון'}
+          hitSlop={8}
+          style={[styles.btn, { backgroundColor: c.primary }]}
+        >
+          {p.playing ? <PauseIcon size={16} color={c.primaryInk} /> : <PlayIcon size={16} color={c.primaryInk} />}
         </Pressable>
-      ) : null}
+        {p.index < p.queue.length - 1 ? (
+          <Pressable onPress={() => next()} accessibilityLabel="השיר הבא" hitSlop={8} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
+            <NextIcon size={14} color={c.ink} />
+          </Pressable>
+        ) : null}
+      </View>
     </Pressable>
   );
 }
@@ -67,5 +71,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   progress: { position: 'absolute', top: 0, start: 0, height: 3 },
+  controls: { direction: 'ltr', flexDirection: 'row', gap: space.s },
   btn: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center' },
 });

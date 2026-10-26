@@ -4,7 +4,8 @@ import React from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
 import { getCategory } from '../core/categories';
 import type { SongWithCategories } from '../core/types';
-import { MissingFileError, NotPlayableError, playSong, usePlayer } from '../player/player';
+import { MissingFileError, NotPlayableError, playOrToggle, usePlayer } from '../player/player';
+import { PauseIcon, PlayIcon } from './icons';
 import { font, radius, space, TOUCH, useTheme } from './theme';
 
 export function T({ style, weight = 'regular', size = 16, soft, ...rest }: TextProps & {
@@ -76,7 +77,7 @@ export async function playOrOpen(song: SongWithCategories, queue: SongWithCatego
   }
   try {
     Haptics.selectionAsync().catch(() => undefined);
-    await playSong(song, queue);
+    await playOrToggle(song, queue);
   } catch (e) {
     if (e instanceof NotPlayableError) {
       Alert.alert(
@@ -102,7 +103,7 @@ export function SongRow({ song, queue, showCategory = true }: {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`נגני ${song.title}`}
+      accessibilityLabel={active && player.playing ? `השהיית ${song.title}` : `נגני ${song.title}`}
       accessibilityHint="לחיצה ארוכה פותחת את פרטי השיר"
       onPress={() => playOrOpen(song, queue)}
       onLongPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
@@ -122,9 +123,7 @@ export function SongRow({ song, queue, showCategory = true }: {
         <ActivityIndicator color={c.inkSoft} />
       ) : (
         <View style={[styles.playDot, { backgroundColor: active && player.playing ? c.primary : c.surfaceAlt }]}>
-          <Text style={{ fontSize: 16, color: active && player.playing ? c.primaryInk : c.ink }}>
-            {active && player.playing ? '❚❚' : song.kind === 'youtube' ? '▶︎' : '▶︎'}
-          </Text>
+          {active && player.playing ? <PauseIcon size={16} color={c.primaryInk} /> : <PlayIcon size={16} color={c.ink} />}
         </View>
       )}
     </Pressable>

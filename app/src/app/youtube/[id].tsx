@@ -4,7 +4,7 @@ import { Linking, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import type { Song } from '../../core/types';
 import { getSong, recordPlay } from '../../db/repo';
-import { stop } from '../../player/player';
+import { pause } from '../../player/player';
 import { Button, T } from '../../ui/components';
 import { space } from '../../ui/theme';
 
@@ -17,7 +17,7 @@ export default function YoutubeScreen() {
   const [song, setSong] = useState<Song | null>(null);
 
   useEffect(() => {
-    stop();
+    pause();
     getSong(id).then(setSong);
     const startedAt = Date.now();
     return () => {
