@@ -1,6 +1,6 @@
 # Build from the repository root (the server shares the category list with the app):
 #   docker build -f server/Dockerfile -t shiron-server .
-FROM node:22-bookworm-slim
+FROM node:26-bookworm-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ffmpeg ca-certificates \
