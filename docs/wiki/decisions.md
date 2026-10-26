@@ -113,3 +113,9 @@ and lets human reviewers read it, and recordings may contain children. Options o
 only (transcription stays on Groq), full Gemini with a warning, or no Gemini. **Owner chose
 full Gemini with a warning**, and automatic fallback between connected services when one runs
 out of quota. Groq stays the recommended default. Earlier decision "Groq only" is superseded.
+
+### 2026-10-26 — Hand-pasted keys are not format-checked
+0.4.0 recognised only `AIza…` Gemini keys; Google had moved to `AQ.…` keys, so the owner could
+neither have his key detected nor save it. Clipboard detection stays pattern-based (it must not
+grab unrelated text), but a key pasted into the field is accepted if it is one token of 20–200
+printable characters and the service's own check decides.

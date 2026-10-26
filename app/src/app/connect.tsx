@@ -6,7 +6,7 @@ import { ActivityIndicator, AppState, Linking, Platform, Pressable, ScrollView, 
 import { checkGeminiKey } from '../api/gemini';
 import { checkGroqKey } from '../api/groq';
 import { saveKey } from '../api/keys';
-import { AiError, findKey, PROVIDER_IDS, PROVIDERS, ProviderId } from '../core/ai';
+import { AiError, findKey, pastedKey, PROVIDER_IDS, PROVIDERS, ProviderId } from '../core/ai';
 import { diag } from '../diag/log';
 import { processQueue } from '../ingest/processor';
 import { Button, T } from '../ui/components';
@@ -123,7 +123,7 @@ export default function ConnectScreen() {
     if (Platform.OS === 'ios') await checkClipboard();
   };
 
-  const manualKey = findKey(provider, manual);
+  const manualKey = pastedKey(provider, manual);
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -187,7 +187,7 @@ export default function ConnectScreen() {
       <TextInput
         value={manual}
         onChangeText={setManual}
-        placeholder={provider === 'groq' ? 'gsk_…' : 'AIza…'}
+        placeholder={provider === 'groq' ? 'gsk_…' : 'AQ.…'}
         placeholderTextColor={c.inkSoft}
         autoCapitalize="none"
         autoCorrect={false}

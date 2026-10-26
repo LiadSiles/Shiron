@@ -10,6 +10,7 @@ export interface Provider {
   name: string;
   /** Where she creates a key; the connect screen opens it. */
   keysPage: string;
+  /** The key is the first capture group when there is one (no lookbehind: keep Hermes-safe). */
   keyPattern: RegExp;
   /** The service may use what it receives to train its models (free tier). */
   trainsOnData: boolean;
@@ -27,8 +28,9 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     id: 'gemini',
     name: 'Gemini',
     keysPage: 'https://aistudio.google.com/apikey',
-    // Google API keys: "AIza" + 35 characters.
-    keyPattern: /\bAIza[0-9A-Za-z_-]{35}(?![0-9A-Za-z_-])/,
+    // Since mid-2026 AI Studio issues "AQ." keys (e.g. "AQ.Ab…"; length not documented); older
+    // "AIza" + 35 characters keys stop working in September 2026 but are still recognised.
+    keyPattern: /(?:^|[^0-9A-Za-z_.-])(AQ\.[0-9A-Za-z_.-]{20,}|AIza[0-9A-Za-z_-]{35})(?![0-9A-Za-z_.-])/,
     // Gemini API terms (unpaid services): content may be used to improve Google's models and
     // read by human reviewers. Shown on the connect screen; the owner chose to offer it anyway.
     trainsOnData: true,
@@ -39,7 +41,18 @@ export const PROVIDER_IDS = Object.keys(PROVIDERS) as ProviderId[];
 
 /** Finds a key for this service in text (e.g. the clipboard after copying it). */
 export function findKey(provider: ProviderId, text: string | null | undefined): string | null {
-  return text ? PROVIDERS[provider].keyPattern.exec(text)?.[0] ?? null : null;
+  const m = text ? PROVIDERS[provider].keyPattern.exec(text) : null;
+  return m ? m[1] ?? m[0] : null;
+}
+
+/**
+ * A key she pasted by hand: a recognised key, or else any single token that could be one —
+ * services change their key formats (Google did in 2026), and the check against the service
+ * decides. Clipboard detection stays strict so it never grabs unrelated text.
+ */
+export function pastedKey(provider: ProviderId, text: string): string | null {
+  const t = text.trim();
+  return findKey(provider, t) ?? (/^[\x21-\x7e]{20,200}$/.test(t) ? t : null);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AiError, describeAiError, findKey, parseRetryAfter, providerOrder } from '../src/core/ai';
+import { AiError, describeAiError, findKey, pastedKey, parseRetryAfter, providerOrder } from '../src/core/ai';
 import { errorFromGemini, geminiAudioMime, geminiText } from '../src/core/geminiRules';
 import { errorFromGroq } from '../src/core/groqRules';
 import { buildUserMessage } from '../src/core/understand';
@@ -16,6 +16,18 @@ describe('providers', () => {
     expect(findKey('gemini', 'AIzaSyShort')).toBeNull();
     expect(findKey('gemini', 'gsk_abcdefghijklmnopqrstuvwxyz0123456789')).toBeNull();
     expect(findKey('groq', google)).toBeNull();
+    // AI Studio's 2026 format.
+    const aq = 'AQ.Ab8RN6Kx_q2-mZ0vLwYt3pHcD9sEfGjU7iOkB1nA4rTe';
+    expect(findKey('gemini', `המפתח שלך: ${aq} `)).toBe(aq);
+    expect(findKey('gemini', 'AQ.short')).toBeNull();
+    expect(findKey('groq', aq)).toBeNull();
+  });
+
+  it('accepts a hand-pasted key of an unknown format, but not prose', () => {
+    expect(pastedKey('gemini', '  XYZ.NewFormat-0123456789abcdef  ')).toBe('XYZ.NewFormat-0123456789abcdef');
+    expect(pastedKey('gemini', 'זה לא מפתח בכלל')).toBeNull();
+    expect(pastedKey('gemini', 'too short')).toBeNull();
+    expect(pastedKey('groq', 'gsk_abcdefghijklmnopqrstuvwxyz0123456789')).toBe('gsk_abcdefghijklmnopqrstuvwxyz0123456789');
   });
 
   it('tries the chosen service first, then any other connected one', () => {

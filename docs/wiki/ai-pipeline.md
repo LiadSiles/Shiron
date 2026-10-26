@@ -1,6 +1,6 @@
 # AI pipeline (Groq, Gemini)
 
-_Last verified: 2026-10-26 (0.4.0; request shapes from the services' docs — not yet run against the live APIs)_
+_Last verified: 2026-10-26 (0.4.1; request shapes from the services' docs — not yet run against the live APIs)_
 
 There is no Shiron server. The app calls the AI services directly with **the teacher's own
 free API keys**, which she connects from inside the app. Owner's decisions (2026-10-26):
@@ -31,7 +31,7 @@ Groq first, and since 0.4.0 also **Gemini** (Google AI Studio key) — see "Two 
 | One call | Gemini **listens to the recording** and writes the lyrics itself (`audioAttached` in the prompt) — no separate transcription step |
 | Limits | request ≤ 20 MB incl. base64 → audio ≤ 14 MB (`GEMINI_MAX_AUDIO_BYTES`, ~20 min); 32 tokens per second of audio; free quotas per project, shown at aistudio.google.com/rate-limit (~10 RPM / ~1,500 per day for Flash per third-party trackers) |
 | Errors | bad key = **400** `INVALID_ARGUMENT` + reason `API_KEY_INVALID`; quota = 429 `RESOURCE_EXHAUSTED` + `RetryInfo.retryDelay` ("41s"); see `errorFromGemini` |
-| Key | `AIza` + 35 chars, from `aistudio.google.com/apikey`; checked with `GET /v1beta/models?pageSize=1` |
+| Key | from `aistudio.google.com/apikey`. **Since mid-2026 new keys look like `AQ.Ab…`** (length undocumented); old `AIza` + 35 chars keys are being rejected (unrestricted ones since 19 Jun 2026, all by Sep 2026). Both recognised; a hand-pasted key of any shape is sent for checking (`pastedKey`). Sent as `x-goog-api-key` (works for `AQ.`; `Authorization: Bearer` fails for them on the OpenAI-compatible route). Checked with `GET /v1beta/models?pageSize=1` |
 
 `generateContent` is labelled "legacy" since Google's Interactions API went GA (June 2026) but
 "remains fully supported"; it is the documented way to send inline audio. Revisit if Google
