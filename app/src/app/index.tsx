@@ -1,55 +1,112 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { BackHandler, Keyboard, Pressable, StyleSheet, Text, TextInput, TextInputInstance, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLibrary } from '../db/useLibrary';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
-import { SearchScreen } from '../screens/SearchScreen';
+import { SearchResults } from '../screens/SearchResults';
 import { T } from '../ui/components';
 import { MiniPlayer } from '../ui/MiniPlayer';
-import { space, useTheme } from '../ui/theme';
+import { font, radius, space, TOUCH, useTheme } from '../ui/theme';
 
-type Tab = 'home' | 'library' | 'search';
+type Tab = 'home' | 'library';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'home', label: 'בית', icon: '🏠' },
   { key: 'library', label: 'ספרייה', icon: '📚' },
-  { key: 'search', label: 'חיפוש', icon: '🔍' },
 ];
 
 /**
- * Four tabs with a mini player above them on every tab (see the screen map in the design doc).
- * Tabs are rendered here rather than with a tab navigator so the mini player and the
- * RTL tab order stay fully under our control.
+ * The shell: a search bar at the top of every tab, the tab's content, the mini player and the
+ * tab bar. While she searches (field focused or text typed) the results replace the tab's
+ * content; clearing the field, "ביטול" or the Android back button return to it.
+ * Tabs are rendered here rather than with a tab navigator so the search bar, the mini player
+ * and the RTL tab order stay fully under our control.
  */
 export default function Shell() {
   const c = useTheme();
   const lib = useLibrary();
   const [tab, setTab] = useState<Tab>('home');
+  const [query, setQuery] = useState('');
+  const [focused, setFocused] = useState(false);
+  const [submitted, setSubmitted] = useState(0);
+  const input = useRef<TextInputInstance>(null);
+  const searching = focused || query.trim().length > 0;
+
+  const endSearch = () => {
+    setQuery('');
+    setFocused(false);
+    input.current?.blur();
+    Keyboard.dismiss();
+  };
+
+  useEffect(() => {
+    if (!searching) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      endSearch();
+      return true;
+    });
+    return () => sub.remove();
+  }, [searching]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
+      <View style={styles.searchRow}>
+        <View style={[styles.field, { backgroundColor: c.surface, borderColor: focused ? c.primary : c.line }]}>
+          <T soft size={16}>🔍</T>
+          <TextInput
+            ref={input}
+            value={query}
+            onChangeText={setQuery}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onSubmitEditing={() => setSubmitted((n) => n + 1)}
+            placeholder="חיפוש: מילה מהשיר, נושא או שם"
+            placeholderTextColor={c.inkSoft}
+            returnKeyType="search"
+            autoCorrect={false}
+            accessibilityLabel="חיפוש שיר"
+            style={[styles.input, { color: c.ink, fontFamily: font.regular }]}
+          />
+          {query ? (
+            <Pressable onPress={() => setQuery('')} hitSlop={12} accessibilityLabel="ניקוי החיפוש">
+              <T soft size={18}>✕</T>
+            </Pressable>
+          ) : null}
+        </View>
+        {searching ? (
+          <Pressable onPress={endSearch} hitSlop={8} accessibilityRole="button" style={styles.cancel}>
+            <T weight="medium" style={{ color: c.primary }}>ביטול</T>
+          </Pressable>
+        ) : null}
+      </View>
+
       <View style={{ flex: 1 }}>
-        {tab === 'home' && <HomeScreen lib={lib} />}
-        {tab === 'library' && <LibraryScreen lib={lib} />}
-        {tab === 'search' && <SearchScreen lib={lib} />}
+        {searching ? (
+          <SearchResults lib={lib} query={query} setQuery={setQuery} submitted={submitted} />
+        ) : tab === 'home' ? (
+          <HomeScreen lib={lib} />
+        ) : (
+          <LibraryScreen lib={lib} />
+        )}
       </View>
       <MiniPlayer />
       <SafeAreaView edges={['bottom']} style={[styles.bar, { backgroundColor: c.surface, borderColor: c.line }]}>
         {TABS.map((t) => {
-          const active = t.key === tab;
+          const active = t.key === tab && !searching;
           return (
             <Pressable
               key={t.key}
-              onPress={() => setTab(t.key)}
+              onPress={() => {
+                if (searching) endSearch();
+                setTab(t.key);
+              }}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               accessibilityLabel={t.label}
               style={styles.tab}
             >
-              <View>
-                <Text style={{ fontSize: 22, opacity: active ? 1 : 0.55 }}>{t.icon}</Text>
-              </View>
+              <Text style={{ fontSize: 22, opacity: active ? 1 : 0.55 }}>{t.icon}</Text>
               <T size={12} weight={active ? 'bold' : 'regular'} style={{ color: active ? c.primary : c.inkSoft }}>
                 {t.label}
               </T>
@@ -62,6 +119,19 @@ export default function Shell() {
 }
 
 const styles = StyleSheet.create({
+  searchRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingHorizontal: space.l, paddingTop: space.s, paddingBottom: space.xs },
+  field: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s,
+    minHeight: TOUCH,
+    borderRadius: radius.m,
+    borderWidth: 1,
+    paddingHorizontal: space.m,
+  },
+  input: { flex: 1, fontSize: 17, paddingVertical: space.s },
+  cancel: { minHeight: TOUCH, justifyContent: 'center' },
   bar: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space.xs },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 56, gap: 2 },
 });

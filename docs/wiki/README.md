@@ -22,19 +22,22 @@ made it stale.
 The owner's Hebrew planning document (claude.ai doc "שירון הגן — תוכנית מוצר ועיצוב") is
 the product-level source; this wiki is the engineering one.
 
-## UI map (0.3.3)
+## UI map (0.5.0)
 
 `src/app/_layout.tsx` (fonts, RTL, share-intent provider, toast, processing on app foreground)
-→ `src/app/index.tsx` — the shell: four tabs rendered in-place + `MiniPlayer` above the tab bar:
+→ `src/app/index.tsx` — the shell: a **search bar at the top**, the tab's content, `MiniPlayer`,
+and two tabs. While she searches (field focused or text typed) `screens/SearchResults`
+replaces the tab's content (recent searches, forgiving live results with highlights, category
+chips, related songs by meaning when few match); "ביטול", clearing or Android back return.
 
-- **בית** `screens/HomeScreen` — "now" sections (holiday, time of day), pinned, recent;
-  review banner; empty state with import instructions.
-- **ספרייה** `screens/LibraryScreen` — one flat grid of square category tiles (2 columns) →
-  `app/category/[id]` (ranked list, "נגני הכול"; `id = all` for every song).
-- **חיפוש** `screens/SearchScreen` — forgiving live search, highlights, recent searches,
-  category chips, related songs by meaning (Groq) when few match.
-- **לבדיקה** `screens/ReviewScreen` — review cards (approve, pick categories, listen; Groq
-  error + retry when naming failed).
+- **בית** `screens/HomeScreen` — "נוספו לאחרונה" (last 2 weeks), "now" sections (holiday,
+  time of day), pinned, recently played; "הכול ›" opens the full list; empty state with
+  import instructions.
+- **ספרייה** `screens/LibraryScreen` — square tiles in 2 columns: "כל השירים", "נוספו
+  לאחרונה", then one per category → `app/category/[id]` (`all`, `recent`, or a category id;
+  "נגני הכול").
+
+There is no review tab (removed in 0.5.0) and no search tab (the bar replaced it in 0.5.0).
 
 Stack screens: `song/[id]` (rename, categories, pin, lyrics edit, delete), `player` (modal,
 full controls, scrubber, lyrics), `youtube/[id]` (embedded player), `settings` (Groq status,

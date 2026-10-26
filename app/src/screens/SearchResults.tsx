@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { relatedWords } from '../api/ai';
 import { connectedProviders } from '../api/keys';
 import { getCategory } from '../core/categories';
@@ -10,7 +10,7 @@ import { getSetting, setSetting } from '../db/repo';
 import { LibraryState } from '../db/useLibrary';
 import { diag } from '../diag/log';
 import { CategoryBadge, EmptyState, Highlighted, SongRow, T } from '../ui/components';
-import { font, radius, space, useTheme } from '../ui/theme';
+import { radius, space, useTheme } from '../ui/theme';
 
 const RECENT_KEY = 'recentSearches';
 /** Ask the AI for related words only when the typed words find fewer songs than this. */
@@ -18,9 +18,19 @@ const FEW_HITS = 3;
 
 type Row = { type: 'hit'; hit: SearchHit } | { type: 'header'; text: string };
 
-export function SearchScreen({ lib }: { lib: LibraryState }) {
+/**
+ * What the search bar at the top of the app shows while she searches (it replaces the tab's
+ * content): recent searches when the field is empty, then live results. The query lives in the
+ * shell (src/app/index.tsx), which owns the bar.
+ */
+export function SearchResults({ lib, query, setQuery, submitted }: {
+  lib: LibraryState;
+  query: string;
+  setQuery: (q: string) => void;
+  /** Bumped by the shell when she presses "search" on the keyboard: remember the query. */
+  submitted: number;
+}) {
   const c = useTheme();
-  const [query, setQuery] = useState('');
   const deferred = useDeferredValue(query);
   const [recent, setRecent] = useState<string[]>([]);
   const [related, setRelated] = useState<{ query: string; words: string[] } | null>(null);
@@ -42,6 +52,10 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
     setRecent(next);
     setSetting(RECENT_KEY, JSON.stringify(next));
   };
+  useEffect(() => {
+    if (submitted) remember(query);
+  }, [submitted]);
+
   const clearRecent = () => {
     setRecent([]);
     setSetting(RECENT_KEY, '[]');
@@ -97,23 +111,9 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
   const typing = deferred.trim().length > 0;
 
   return (
-    <View style={{ flex: 1, padding: space.l }}>
-      <T weight="bold" size={28} style={{ marginBottom: space.m }}>חיפוש</T>
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        onSubmitEditing={() => remember(query)}
-        placeholder="מילה מהשיר, נושא או שם…"
-        placeholderTextColor={c.inkSoft}
-        returnKeyType="search"
-        clearButtonMode="while-editing"
-        autoCorrect={false}
-        accessibilityLabel="חיפוש שיר"
-        style={[styles.input, { backgroundColor: c.surface, borderColor: c.line, color: c.ink, fontFamily: font.regular }]}
-      />
-
+    <View style={{ flex: 1, paddingHorizontal: space.l }}>
       {!typing && recent.length ? (
-        <View style={{ marginTop: space.m, gap: space.s }}>
+        <View style={{ marginTop: space.s, gap: space.s }}>
           <View style={styles.recentHead}>
             <T soft size={14}>חיפושים אחרונים</T>
             <Pressable onPress={clearRecent} hitSlop={12} accessibilityRole="button" accessibilityLabel="ניקוי חיפושים אחרונים">
@@ -201,13 +201,6 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
 }
 
 const styles = StyleSheet.create({
-  input: {
-    minHeight: 52,
-    borderRadius: radius.m,
-    borderWidth: 1,
-    paddingHorizontal: space.l,
-    fontSize: 18,
-  },
   recentHead: { flexDirection: 'row', justifyContent: 'space-between' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   chip: {
