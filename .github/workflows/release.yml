@@ -127,6 +127,10 @@ jobs:
         run: |
           APK=app/android/app/build/outputs/apk/release/app-release.apk
           unzip -l "$APK" | grep -q 'assets/index.android.bundle' || { echo "::error::JS bundle missing from APK"; exit 1; }
+          # app/patches/ must reach the build: expo-audio ships a prebuilt AAR that ignores the
+          # patched source unless package.json → expo.autolinking.android.buildFromSource has it.
+          unzip -p "$APK" 'classes*.dex' | grep -aq 'expo.modules.audio.action.DISMISS' \
+            || { echo "::error::expo-audio patch missing from the APK (prebuilt AAR used?)"; exit 1; }
           echo "::notice::APK $(( $(stat -c%s "$APK") / 1024 / 1024 )) MB"
           cp "$APK" "${{ needs.plan.outputs.name }}.apk"
 

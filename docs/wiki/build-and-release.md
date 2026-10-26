@@ -124,3 +124,5 @@ Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+.
   Claude sessions. Use REST: `gh api repos/LiadSiles/shiron/releases/tags/v<version>`.
 - `npm run version:bump` turns `## [Unreleased]` into the new version heading. Write the
   entries under `[Unreleased]` first; don't add the version heading by hand (it duplicates).
+- Patched native dependencies: Expo modules come with prebuilt Android AARs; list any module
+  with a patch in `app/package.json → expo.autolinking.android.buildFromSource` (see player.md).

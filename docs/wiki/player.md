@@ -86,6 +86,12 @@ media notification could never be swiped away and stayed after leaving the app (
   13+ shows as a draggable bar; we pass `isLiveStream: false` explicitly. The owner saw no bar
   in 0.3.0 on his Xiaomi — unknown whether HyperOS hides it; check on 0.3.1.
 
+**Gotcha (cost us 0.3.1):** Expo SDK 58 modules ship a prebuilt AAR in
+`node_modules/<pkg>/local-maven-repo`, and Gradle uses it instead of the source — so a patch to
+the Kotlin source silently does nothing. `app/package.json → expo.autolinking.android.
+buildFromSource: ["expo-audio"]` forces the source build, and the release workflow fails if the
+patched string is missing from the APK's dex.
+
 When upgrading expo-audio, the patch fails loudly in `npm ci` if it no longer applies: re-check
 whether upstream fixed this (then drop the patch) or regenerate it with
 `npx patch-package expo-audio`.
