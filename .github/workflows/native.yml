@@ -65,8 +65,9 @@ jobs:
         working-directory: app/android
         run: |
           set -o pipefail
-          if ! ./gradlew :shiron-audio:testDebugUnitTest --console=plain 2>&1 | tee unit.log; then
-            grep -E '^e: |error:|FAILED|What went wrong|Test.*>' -A3 unit.log | head -40 | while IFS= read -r line; do echo "::error::${line}"; done
+          if ! ./gradlew :shiron-audio:testDebugUnitTest --console=plain --stacktrace 2>&1 | tee unit.log; then
+            # One annotation (GitHub keeps 10 per step): the reason Gradle gives, joined.
+            echo "::error::$(grep -E '^e: |error:|FAILED|What went wrong|Caused by|Test.*>' -A4 unit.log | grep -v '^\s*at ' | head -60 | tr '\n' '|' | cut -c1-6000)"
             exit 1
           fi
       - name: Enable KVM
