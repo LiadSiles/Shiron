@@ -23,5 +23,7 @@ mono AAC at 44.1 kHz.
 | `video.webm` | VP8 + Opus (Android only) |
 | `not-audio.mp3` | garbage with an audio extension — must be rejected |
 
-Regenerate with ffmpeg; the exact commands are in the 0.2.0 commit message that added them.
+Regenerate with ffmpeg (commands in the commit that last changed this folder). Mind that ffmpeg's
+`sine` source has amplitude 1/8: `volume=0.36` gives the −30 dBFS tone. The first set used
+`volume=0.045` and sat at −45 dB, right on the silence threshold — nothing was trimmed.
 No AMR fixture: the ffmpeg build used has no AMR encoder.
