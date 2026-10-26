@@ -1,6 +1,6 @@
 # Build and release
 
-_Last verified: 2026-10-26 (workflows written; first CI run pending)_
+_Last verified: 2026-10-26 (CI green; v0.1.0 released with APK 45 MB + IPA 11.6 MB)_
 
 ## Toolchain
 
@@ -37,6 +37,10 @@ target `Shiron` (`ios/Shiron/`).
 
 - The very first push of `main` to the new repo did not trigger `release.yml` (path filters
   had nothing to diff against). Later pushes do.
+- 0.1.0's first two publish attempts failed at `gh release create` (exit 1, no message in
+  annotations). Adding `--repo "$GITHUB_REPOSITORY"` (and stderr → annotations) fixed it on
+  the next run. Likely cause: `gh` inferring the repo from the checkout's remote after the
+  repo was renamed to `Shiron`; not proven. Keep `--repo` explicit.
 - `ubuntu-latest` moved to Ubuntu 26 in October 2026: the server job now runs ffmpeg 8.0.
 - The server's tests import `app/src/core/categories.ts`, and the server CI job installs
   no app dependencies. vite/oxc resolves the *nearest* tsconfig, which was
