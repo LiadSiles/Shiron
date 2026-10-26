@@ -25,7 +25,11 @@ export function MiniPlayer() {
       <CategoryBadge id={catId} size={40} />
       <View style={{ flex: 1 }}>
         <T weight="medium" numberOfLines={1}>{p.song.title}</T>
-        <T soft size={12} numberOfLines={1}>{getCategory(catId).name}</T>
+        {p.error ? (
+          <T size={12} numberOfLines={2} style={{ color: c.bad }}>לא הצלחנו לנגן את השיר: {p.error}</T>
+        ) : (
+          <T soft size={12} numberOfLines={1}>{getCategory(catId).name}</T>
+        )}
       </View>
       <Pressable
         onPress={() => (p.playing ? stop() : toggle())}

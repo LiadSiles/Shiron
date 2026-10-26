@@ -58,6 +58,11 @@ priming children's-song vocabulary.
   closed, or app back in foreground) the clipboard is read **only then**, a `gsk_…` key is found
   (`findGroqKey`), checked with `GET /models`, saved, and the clipboard is cleared. A paste
   field is the fallback.
+- Android: `openBrowserAsync` needs a browser with Custom Tabs support and throws
+  `NoMatchingActivityException` otherwise — the owner's Xiaomi had none, and 0.2.0 swallowed the
+  error ("the button does nothing"). Since 0.2.1 it falls back to `Linking.openURL` (system
+  browser). On Android `openBrowserAsync` returns immediately, so the clipboard is checked on
+  the next foreground (AppState), not after the call.
 - Offered automatically once, after the first imported song (`settings.connectOffered`); after
   that the home banner and Settings lead to it.
 - Privacy note shown in the app: recordings are sent to Groq for transcription.

@@ -5,7 +5,7 @@ import { CATEGORIES, CategoryGroup, GROUP_NAMES } from '../../core/categories';
 import type { SongWithCategories } from '../../core/types';
 import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
 import { retrySong } from '../../ingest/processor';
-import { deleteStored } from '../../ingest/storage';
+import { deleteStored, resolveStored } from '../../ingest/storage';
 import { clearIfCurrent, refreshCurrent } from '../../player/player';
 import { Button, CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
 import { toast } from '../../ui/toast';
@@ -154,6 +154,8 @@ export default function SongScreen() {
       {song.contextText ? <T soft size={14}>נשלח עם ההודעה: “{song.contextText}”</T> : null}
       {song.summary ? <T soft size={14}>תקציר: {song.summary}</T> : null}
 
+      <TechDetails song={song} />
+
       <Button label="מחיקת השיר" kind="quiet" onPress={remove} style={{ marginTop: space.xxl }} />
     </ScrollView>
   );
@@ -168,3 +170,42 @@ const styles = StyleSheet.create({
   lyricsHeader: { flexDirection: 'row', alignItems: 'center', marginTop: space.xl, marginBottom: space.s },
   lyricsInput: { minHeight: 200, borderWidth: 1, borderRadius: radius.m, padding: space.m, fontSize: 16, textAlignVertical: 'top' },
 });
+
+/** Collapsed by default: what the app knows about this song's files — for screenshots when something fails. */
+function TechDetails({ song }: { song: SongWithCategories }) {
+  const [open, setOpen] = useState(false);
+  const c = useTheme();
+  const fileLine = (label: string, stored: string | null) => {
+    if (!stored) return `${label}: —`;
+    try {
+      const f = resolveStored(stored);
+      return `${label}: ${f.name} · ${f.exists ? `${Math.round((f.size ?? 0) / 1024)} KB` : 'חסר!'}`;
+    } catch (e) {
+      return `${label}: ${stored} (${String(e)})`;
+    }
+  };
+  const rows = [
+    `שמע: ${song.audioState} · AI: ${song.status}`,
+    song.error ? `שגיאה: ${song.error}` : null,
+    fileLine('לניגון', song.playableUri),
+    fileLine('מקור', song.originalUri),
+    `אורך: ${song.durationSec ? `${song.durationSec.toFixed(1)} s` : '—'}`,
+    `קובץ ששותף: ${song.sourceName ?? '—'}`,
+    `נוסף: ${new Date(song.createdAt).toLocaleString('he-IL')}`,
+    `מזהה: ${song.id}`,
+  ].filter(Boolean) as string[];
+  return (
+    <View style={{ marginTop: space.xl }}>
+      <Pressable onPress={() => setOpen(!open)} hitSlop={8}>
+        <T weight="medium" style={{ color: c.inkSoft }}>{open ? '▾' : '◂'} פרטים טכניים</T>
+      </Pressable>
+      {open ? (
+        <View style={{ marginTop: space.s, gap: 2 }}>
+          {rows.map((r) => (
+            <T key={r} soft size={13} selectable style={{ writingDirection: 'rtl' }}>{r}</T>
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}

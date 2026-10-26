@@ -6,6 +6,7 @@ import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, youtubeIdF
 import type { Song } from '../core/types';
 import { findBySha, findByYoutube, insertSong } from '../db/repo';
 import { processQueue } from './processor';
+import { diag } from '../diag/log';
 import { songsDir, toStoredPath } from './storage';
 
 export interface ImportSummary {
@@ -40,6 +41,7 @@ export async function importMediaFile(
   const dest = new File(songsDir(), `${id}-original.${ext}`);
   await source.copy(dest);
 
+  diag('import', fileName, `${Math.round((dest.size ?? 0) / 1024)} KB`, `from ${source.uri.slice(0, 60)}`);
   const sha256 = await dest.digest('SHA-256');
   const existing = await findBySha(sha256);
   if (existing) {
@@ -92,6 +94,8 @@ export async function importShareIntent(intent: ShareIntent): Promise<ImportSumm
   const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
   const text = intent.text?.trim() || null;
 
+  diag('share received', `type ${intent.type}`, `${intent.files?.length ?? 0} files`,
+    (intent.files ?? []).map((f) => `${f.fileName} (${f.mimeType}) ${f.path.slice(0, 50)}`).join(', ') || intent.webUrl || '');
   for (const f of intent.files ?? []) {
     if (!isMediaFile(f.fileName, f.mimeType)) {
       summary.unsupported.push(f.fileName);
@@ -100,7 +104,7 @@ export async function importShareIntent(intent: ShareIntent): Promise<ImportSumm
     try {
       await importMediaFile(new File(toFileUri(f.path)), f.fileName, text, summary);
     } catch (e) {
-      console.warn('import failed', f.fileName, e);
+      diag('import failed', f.fileName, e);
       summary.unsupported.push(f.fileName);
     }
   }

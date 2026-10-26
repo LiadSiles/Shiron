@@ -6,6 +6,7 @@ import { decideStatus, keepCategories, mimeOf } from '../core/ingestRules';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
 import { getSong, listSongs, setCategories, updateSong } from '../db/repo';
+import { diag } from '../diag/log';
 import { deleteStored, resolveStored, songsDir, toStoredPath } from './storage';
 
 /**
@@ -85,6 +86,7 @@ async function run() {
         await understandSong(song, key);
         setState({ notice: null });
       } catch (e) {
+        diag('groq failed', song.title, e instanceof GroqError ? `${e.kind}: ${e.message}` : e);
         const err = e instanceof GroqError ? e : new GroqError('bad-request', String((e as Error)?.message ?? e));
         if (err.retryable || err.kind === 'invalid-key') {
           // Leave this and the rest pending; resume on next foreground or import.
@@ -114,8 +116,11 @@ async function convert(song: Song) {
   }
   const input = resolveStored(song.originalUri);
   const output = new File(songsDir(), `${song.id}.m4a`);
+  const started = Date.now();
   try {
     const result = await processAudio(input.uri, output.uri);
+    diag('converted', song.sourceName ?? song.id, `${result.durationSec.toFixed(1)} s of ${result.sourceDurationSec.toFixed(1)} s`,
+      `gain ${result.gainDb} dB`, `${Math.round((output.size ?? 0) / 1024)} KB`, `${Date.now() - started} ms`);
     const keepOriginal = song.originalUri;
     await updateSong(song.id, {
       audioState: 'done',
@@ -127,7 +132,7 @@ async function convert(song: Song) {
     if (keepOriginal !== toStoredPath(output)) deleteStored(keepOriginal);
   } catch (e) {
     const code = audioErrorCode(e);
-    console.warn('audio processing failed', song.sourceName, code, e);
+    diag('convert failed', song.sourceName ?? song.id, e, `${Date.now() - started} ms`);
     // The original stays; it is still playable when the platform reads its format.
     await updateSong(song.id, {
       audioState: 'unsupported',
@@ -157,7 +162,9 @@ async function understandSong(song: Song, key: string) {
       if (file.exists) transcript = await transcribe(key, file, mimeOf(file.name));
     }
   }
+  diag('transcribed', song.sourceName ?? song.title, transcript ? `${transcript.length} chars` : 'no text');
   const result = await understand(key, await inputFor(song, transcript));
+  diag('named', result.title, result.categories.map((c) => `${c.id} ${c.confidence}`).join(', '));
   await applyUnderstanding(song, result, null);
 }
 

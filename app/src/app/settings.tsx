@@ -62,6 +62,9 @@ export default function SettingsScreen() {
           if (s) toast(describeSummary(s));
         }}
       />
+
+      <T weight="bold" size={18} style={{ marginTop: space.l }}>תמיכה</T>
+      <Button label="יומן טכני" icon="🧾" kind="quiet" onPress={() => router.push('/log')} />
     </ScrollView>
   );
 }

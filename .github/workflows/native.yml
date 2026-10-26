@@ -3,9 +3,10 @@ name: Native audio
 # Tests the on-device audio module (app/modules/shiron-audio):
 #  • apple: the Swift core on macOS (same AVFoundation/AudioToolbox as iOS) against every fixture;
 #    per-format results appear as annotations.
-#  • android: compiles the Kotlin module and runs the LoudnessPlan unit tests. The instrumented
-#    tests (src/androidTest, real MediaCodec on the fixtures) need an emulator, which didn't start
-#    on GitHub runners in Oct 2026 — run them locally: ./gradlew :shiron-audio:connectedDebugAndroidTest
+#  • android: compiles the Kotlin module and runs the LoudnessPlan unit tests, then tries the
+#    instrumented tests (src/androidTest, real MediaCodec on the fixtures) on an emulator. The
+#    emulator has been unreliable on GitHub runners, so that step doesn't fail the job; its
+#    results appear as annotations.
 on:
   push:
     branches: [main, "dev/**"]
@@ -73,3 +74,31 @@ jobs:
             echo "::error::$(grep -E '^e: |error:|FAILED|What went wrong|Caused by|Test.*>' -A4 unit.log | grep -v '^\s*at ' | head -60 | tr '\n' '|' | cut -c1-6000)"
             exit 1
           fi
+      - name: Enable KVM
+        run: |
+          ls -l /dev/kvm || echo "::warning::no /dev/kvm on this runner"
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Instrumented tests on an emulator (real MediaCodec)
+        id: emulator
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-boot-timeout: 1200
+          disable-animations: false
+          script: bash scripts/ci-android-instrumented.sh
+      - name: Report instrumented results
+        if: always()
+        run: |
+          echo "::notice::emulator step: ${{ steps.emulator.outcome }}"
+          [ -f connected.log ] && echo "::notice::$(grep -vE '^\s*$' connected.log | grep -vE '^> Task .*(UP-TO-DATE|NO-SOURCE|SKIPPED)|Deprecated Gradle|^\s*at ' | tail -60 | tr '\n' '|' | cut -c1-6000)"
+          for f in $(find app -path '*androidTest-results*' -name 'TEST-*.xml' 2>/dev/null); do
+            echo "::notice::$(basename "$f"): $(grep -oE 'tests="[0-9]+"' "$f" | head -1) $(grep -oE 'failures="[0-9]+"' "$f" | head -1)"
+            grep -q '<failure' "$f" && echo "::error::$(grep -A12 '<failure' "$f" | grep -v '^\s*at ' | head -40 | tr '\n' '|' | cut -c1-6000)"
+          done
+          true
+

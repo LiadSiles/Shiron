@@ -2,15 +2,16 @@ import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, AppState, Linking, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { checkGroqKey, saveGroqKey } from '../api/groq';
 import { findGroqKey, GROQ_KEYS_PAGE, GroqError } from '../core/groqRules';
+import { diag } from '../diag/log';
 import { processQueue } from '../ingest/processor';
 import { Button, T } from '../ui/components';
 import { toast } from '../ui/toast';
 import { font, radius, space, useTheme } from '../ui/theme';
 
-type Phase = 'idle' | 'checking' | 'invalid' | 'offline';
+type Phase = 'idle' | 'checking' | 'invalid' | 'offline' | 'no-browser';
 
 /**
  * Connects the teacher's own free Groq account. The app opens the keys page, and when she comes
@@ -64,14 +65,30 @@ export default function ConnectScreen() {
     return () => sub.remove();
   }, [checkClipboard]);
 
+  /**
+   * In-app browser first (she stays in Shiron). On Android it needs a browser with Custom Tabs
+   * support — Xiaomi's default browser often has none — so fall back to the system browser.
+   * Android returns from openBrowserAsync at once; the AppState listener picks up her return.
+   */
   const openGroq = async () => {
     opened.current = true;
     setPhase('idle');
-    await WebBrowser.openBrowserAsync(GROQ_KEYS_PAGE, {
-      dismissButtonStyle: 'done',
-      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
-    }).catch(() => undefined);
-    await checkClipboard();
+    try {
+      await WebBrowser.openBrowserAsync(GROQ_KEYS_PAGE, {
+        dismissButtonStyle: 'done',
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+      });
+    } catch (e) {
+      diag('in-app browser unavailable', e);
+      try {
+        await Linking.openURL(GROQ_KEYS_PAGE);
+      } catch (e2) {
+        diag('system browser unavailable', e2);
+        setPhase('no-browser');
+        return;
+      }
+    }
+    if (Platform.OS === 'ios') await checkClipboard();
   };
 
   const manualKey = findGroqKey(manual);
@@ -99,6 +116,11 @@ export default function ConnectScreen() {
       ) : null}
       {phase === 'invalid' ? <T style={{ color: c.bad }}>המפתח לא עבד. נסי להעתיק אותו שוב מעמוד Groq.</T> : null}
       {phase === 'offline' ? <T style={{ color: c.warn }}>אין חיבור לאינטרנט. נסי שוב כשתהיה רשת.</T> : null}
+      {phase === 'no-browser' ? (
+        <T style={{ color: c.bad }} selectable>
+          לא הצלחנו לפתוח דפדפן. אפשר לפתוח ידנית את הכתובת {GROQ_KEYS_PAGE} ולהדביק את המפתח למטה.
+        </T>
+      ) : null}
 
       <T soft size={14} style={{ marginTop: space.xl }}>המפתח לא זוהה? אפשר להדביק אותו כאן:</T>
       <TextInput

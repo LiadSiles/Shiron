@@ -21,10 +21,6 @@ export function resolveStored(stored: string): File {
   return stored.startsWith('file://') ? new File(stored) : new File(Paths.document, stored);
 }
 
-export function resolveUri(stored: string | null): string | null {
-  return stored ? resolveStored(stored).uri : null;
-}
-
 /** Remove a song's audio files from the device. */
 export function deleteStored(...stored: (string | null)[]) {
   for (const s of stored) {

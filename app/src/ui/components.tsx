@@ -4,7 +4,7 @@ import React from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
 import { getCategory } from '../core/categories';
 import type { SongWithCategories } from '../core/types';
-import { NotPlayableError, playSong, usePlayer } from '../player/player';
+import { MissingFileError, NotPlayableError, playSong, usePlayer } from '../player/player';
 import { font, radius, space, TOUCH, useTheme } from './theme';
 
 export function T({ style, weight = 'regular', size = 16, soft, ...rest }: TextProps & {
@@ -84,7 +84,8 @@ export async function playOrOpen(song: SongWithCategories, queue: SongWithCatego
         song.audioState === 'unsupported' ? 'הפורמט של הקובץ הזה לא נתמך במכשיר.' : 'השיר עדיין בהכנה. הוא יהיה מוכן לניגון בעוד כמה שניות.',
       );
     }
-    else Alert.alert('לא הצלחנו לנגן', String(e));
+    else if (e instanceof MissingFileError) Alert.alert('לא ניתן לנגן', 'קובץ השמע של השיר חסר. אפשר למחוק את השיר ולשתף אותו שוב.');
+    else Alert.alert('לא הצלחנו לנגן', String((e as Error)?.message ?? e));
   }
 }
 

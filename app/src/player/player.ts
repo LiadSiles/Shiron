@@ -10,7 +10,8 @@ import { Platform } from 'react-native';
 import { getCategory } from '../core/categories';
 import type { Song, SongWithCategories } from '../core/types';
 import { recordPlay } from '../db/repo';
-import { resolveUri } from '../ingest/storage';
+import { diag } from '../diag/log';
+import { resolveStored } from '../ingest/storage';
 
 export interface PlayerState {
   song: SongWithCategories | null;
@@ -20,9 +21,13 @@ export interface PlayerState {
   position: number;
   duration: number;
   repeat: boolean;
+  /** Why the current song didn't play (from the platform player), or null. */
+  error: string | null;
 }
 
-let state: PlayerState = { song: null, queue: [], index: -1, playing: false, position: 0, duration: 0, repeat: false };
+let state: PlayerState = {
+  song: null, queue: [], index: -1, playing: false, position: 0, duration: 0, repeat: false, error: null,
+};
 const subscribers = new Set<() => void>();
 function set(patch: Partial<PlayerState>) {
   state = { ...state, ...patch };
@@ -63,6 +68,10 @@ function onStatus(status: AudioStatus) {
     if (delta > 0 && delta < 2) session.listened += delta;
     session.lastTime = status.currentTime;
   }
+  if (status.error && status.error !== state.error) {
+    diag('play failed', state.song?.title ?? '?', status.error);
+    set({ error: status.error });
+  }
   set({ playing: status.playing, position: status.currentTime, duration: status.duration || state.duration });
   if (status.didJustFinish && !state.repeat) {
     void (state.index < state.queue.length - 1 ? next() : finishSession());
@@ -78,6 +87,7 @@ async function finishSession() {
 }
 
 export class NotPlayableError extends Error {}
+export class MissingFileError extends Error {}
 
 export function isPlayable(song: Song): boolean {
   return song.kind === 'audio' && !!song.playableUri;
@@ -89,6 +99,11 @@ export function isPlayable(song: Song): boolean {
  */
 export async function playSong(song: SongWithCategories, queue: SongWithCategories[] = [song]) {
   if (!isPlayable(song)) throw new NotPlayableError('השיר עדיין בעיבוד');
+  const file = resolveStored(song.playableUri!);
+  if (!file.exists) {
+    diag('play: file missing', song.title, song.playableUri);
+    throw new MissingFileError('קובץ השמע של השיר חסר במכשיר');
+  }
   const p = await ensurePlayer();
   await finishSession();
 
@@ -99,9 +114,10 @@ export async function playSong(song: SongWithCategories, queue: SongWithCategori
 
   const playable = queue.filter(isPlayable);
   const index = Math.max(0, playable.findIndex((s) => s.id === song.id));
-  set({ song, queue: playable.length ? playable : [song], index, position: 0, duration: song.durationSec ?? 0 });
+  set({ song, queue: playable.length ? playable : [song], index, position: 0, duration: song.durationSec ?? 0, error: null });
 
-  p.replace({ uri: resolveUri(song.playableUri)! });
+  diag('play', song.title, `${file.name} ${Math.round((file.size ?? 0) / 1024)} KB`);
+  p.replace({ uri: file.uri });
   p.loop = state.repeat;
   p.volume = 1;
   p.play();

@@ -91,6 +91,7 @@ export default function RootLayout() {
           <Stack.Screen name="youtube/[id]" options={{ title: 'יוטיוב' }} />
           <Stack.Screen name="settings" options={{ title: 'הגדרות' }} />
           <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור Groq' }} />
+          <Stack.Screen name="log" options={{ title: 'יומן טכני' }} />
         </Stack>
         <ToastHost />
       </SafeAreaProvider>

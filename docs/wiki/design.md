@@ -35,6 +35,21 @@ _Last verified: 2026-10-26 (0.1.0)_
   (`direction: 'ltr'`).
 - Feminine second person in all strings ("נגני", "שמרי", "נסי").
 
+## Diagnostics (0.2.1)
+
+Device-only problems are diagnosed from the phone, not from logs we can't reach:
+- `src/diag/log.ts` → `diag(event, …details)`: a 150-line ring buffer in `settings.diagLog`,
+  shown in Settings → יומן טכני (newest first, copy button with app version and OS). Logged:
+  share received (type, file names, MIME, paths), import (size), converted (duration, gain,
+  size, ms) / convert failed (code, message), transcribed, named, groq failed, play (file, size),
+  play failed (the player's `status.error`), browser fallbacks.
+- Song screen → "פרטים טכניים" (collapsed): audio/AI state, error, both files with existence
+  and size, duration, shared file name, id.
+- The mini player shows the platform player's error in red instead of silently not playing.
+
+When the owner reports a problem, ask for the copied log or a screenshot of the song's
+technical details first.
+
 ## Not done yet
 
 App icon and splash are Expo defaults. Swipe-to-approve on review cards (design doc) is a
