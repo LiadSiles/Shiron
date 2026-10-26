@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { importFromPicker, describeSummary } from '../ingest/ingest';
-import { onProcessorState } from '../ingest/processor';
+import { onProcessorState, ProcessorState } from '../ingest/processor';
 import { homeSections, LibraryState } from '../db/useLibrary';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
 import { toast } from '../ui/toast';
@@ -16,7 +16,7 @@ function greeting(hour: number) {
 
 export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview: () => void }) {
   const c = useTheme();
-  const [proc, setProc] = useState({ running: false, serverMissing: false });
+  const [proc, setProc] = useState<ProcessorState | null>(null);
   useEffect(() => onProcessorState(setProc), []);
 
   const sections = homeSections(lib);
@@ -45,11 +45,21 @@ export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview:
         </Pressable>
       </View>
 
-      {proc.serverMissing && pendingCount > 0 ? (
-        <Pressable onPress={() => router.push('/settings')} style={[styles.banner, { backgroundColor: c.surfaceAlt }]}>
-          <T weight="medium">{pendingCount} שירים מחכים לעיבוד</T>
-          <T soft size={14}>צריך לחבר את שרת העיבוד בהגדרות כדי לתת להם שם וקטגוריה.</T>
+      {proc?.needsKey && pendingCount > 0 ? (
+        <Pressable
+          onPress={() => router.push('/connect')}
+          accessibilityRole="button"
+          style={[styles.banner, { backgroundColor: c.surfaceAlt }]}
+        >
+          <T weight="medium">
+            {pendingCount === 1 ? 'שיר אחד מחכה לשם ולקטגוריה' : `${pendingCount} שירים מחכים לשם ולקטגוריה`}
+          </T>
+          <T soft size={14}>חיבור חד-פעמי ל-Groq, שירות חינמי, כשתי דקות ›</T>
         </Pressable>
+      ) : null}
+
+      {proc?.notice && !proc.needsKey && pendingCount > 0 ? (
+        <T soft size={13} style={{ marginTop: space.s }}>{proc.notice}</T>
       ) : null}
 
       {reviewCount > 0 ? (
@@ -65,7 +75,7 @@ export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview:
         </Pressable>
       ) : null}
 
-      {proc.running ? <T soft size={13} style={{ marginTop: space.s }}>מעבד שירים חדשים…</T> : null}
+      {proc?.running ? <T soft size={13} style={{ marginTop: space.s }}>מעבדת שירים חדשים…</T> : null}
 
       {sections.map((sec) => (
         <View key={sec.key}>
@@ -80,7 +90,7 @@ export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview:
         <EmptyState
           icon="🎶"
           title="הספרייה עוד ריקה"
-          body={'בוואטסאפ: לחיצה ארוכה על הקלטה או שיר ← שיתוף ← שירון.\nאפשר לבחור כמה הקלטות יחד.\nהשירים יקבלו שם וקטגוריה לבד.'}
+          body={'בוואטסאפ: לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← Shiron.\nאפשר לבחור כמה יחד.\nהשירים יקבלו שם וקטגוריה לבד.'}
         >
           <Button label="ייבוא מתיקיית קבצים" kind="quiet" icon="📁" onPress={importFiles} />
         </EmptyState>

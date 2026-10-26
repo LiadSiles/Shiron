@@ -59,8 +59,10 @@ export function CategoryBadge({ id, size = 44 }: { id: string; size?: number }) 
 }
 
 export function statusLabel(song: SongWithCategories): string | null {
-  if (song.kind === 'youtube') return 'יוטיוב';
-  if (song.status === 'pending') return song.playableUri ? 'מעבד ברקע…' : 'מעבד… עוד רגע אפשר לנגן';
+  if (song.kind === 'youtube') return song.status === 'pending' ? 'יוטיוב · ממתין לשם וקטגוריה' : 'יוטיוב';
+  if (song.audioState === 'unsupported' && !song.playableUri) return song.error ?? 'הפורמט לא נתמך במכשיר הזה';
+  if (song.audioState === 'raw' && !song.playableUri) return 'מכינה לניגון…';
+  if (song.status === 'pending') return 'ממתין לשם וקטגוריה';
   if (song.status === 'failed') return 'העיבוד נכשל';
   if (song.status === 'review') return 'ממתין לאישור';
   return null;
@@ -76,7 +78,12 @@ export async function playOrOpen(song: SongWithCategories, queue: SongWithCatego
     Haptics.selectionAsync().catch(() => undefined);
     await playSong(song, queue);
   } catch (e) {
-    if (e instanceof NotPlayableError) Alert.alert('עוד רגע', 'השיר עדיין עובר עיבוד. הוא יהיה מוכן לניגון בקרוב.');
+    if (e instanceof NotPlayableError) {
+      Alert.alert(
+        song.audioState === 'unsupported' ? 'לא ניתן לנגן' : 'עוד רגע',
+        song.audioState === 'unsupported' ? 'הפורמט של הקובץ הזה לא נתמך במכשיר.' : 'השיר עדיין בהכנה. הוא יהיה מוכן לניגון בעוד כמה שניות.',
+      );
+    }
     else Alert.alert('לא הצלחנו לנגן', String(e));
   }
 }
@@ -110,7 +117,7 @@ export function SongRow({ song, queue, showCategory = true }: {
           {[showCategory ? getCategory(catId).name : null, status].filter(Boolean).join(' · ')}
         </T>
       </View>
-      {song.status === 'pending' && !song.playableUri ? (
+      {song.audioState === 'raw' && !song.playableUri ? (
         <ActivityIndicator color={c.inkSoft} />
       ) : (
         <View style={[styles.playDot, { backgroundColor: active && player.playing ? c.primary : c.surfaceAlt }]}>

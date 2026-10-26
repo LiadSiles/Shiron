@@ -3,7 +3,7 @@
     "name": "שירון",
     "slug": "shiron",
     "scheme": "shiron",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -52,6 +52,7 @@
         {
           "iosActivationRules": {
             "NSExtensionActivationSupportsFileWithMaxCount": 20,
+            "NSExtensionActivationSupportsMovieWithMaxCount": 20,
             "NSExtensionActivationSupportsWebURLWithMaxCount": 1,
             "NSExtensionActivationSupportsWebPageWithMaxCount": 1,
             "NSExtensionActivationSupportsText": true
@@ -60,23 +61,23 @@
           "androidIntentFilters": [
             "text/*",
             "audio/*",
+            "video/*",
             "application/ogg",
             "application/octet-stream"
           ],
           "androidMultiIntentFilters": [
             "audio/*",
+            "video/*",
             "application/ogg"
           ]
         }
       ],
-      "./plugins/withSigningKey"
+      "./plugins/withSigningKey",
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "serverUrl": "",
-      "serverToken": ""
     }
   }
 }

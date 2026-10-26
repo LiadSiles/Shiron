@@ -1,10 +1,12 @@
 import { Rubik_400Regular, Rubik_500Medium, Rubik_700Bold, useFonts } from '@expo-google-fonts/rubik';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef } from 'react';
 import { AppState, I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { getGroqKey } from '../api/groq';
+import { getSetting, setSetting } from '../db/repo';
 import { describeSummary, importShareIntent } from '../ingest/ingest';
 import { processQueue } from '../ingest/processor';
 import { font, useTheme } from '../ui/theme';
@@ -27,7 +29,10 @@ function ShareHandler() {
     busy.current = true;
     toast('שומרת…');
     importShareIntent(shareIntent)
-      .then((s) => toast(describeSummary(s)))
+      .then(async (s) => {
+        toast(describeSummary(s));
+        if (s.added.length) await offerConnectOnce();
+      })
       .catch((e) => toast(`השמירה נכשלה: ${String(e)}`))
       .finally(() => {
         resetShareIntent();
@@ -40,6 +45,14 @@ function ShareHandler() {
   }, [error]);
 
   return null;
+}
+
+/** After the first song arrives, show how to connect Groq — once; later the home banner reminds. */
+async function offerConnectOnce() {
+  if (await getGroqKey()) return;
+  if (await getSetting('connectOffered')) return;
+  await setSetting('connectOffered', '1');
+  router.push('/connect');
 }
 
 export default function RootLayout() {
@@ -77,6 +90,7 @@ export default function RootLayout() {
           <Stack.Screen name="player" options={{ presentation: 'modal', title: 'מתנגן עכשיו' }} />
           <Stack.Screen name="youtube/[id]" options={{ title: 'יוטיוב' }} />
           <Stack.Screen name="settings" options={{ title: 'הגדרות' }} />
+          <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור Groq' }} />
         </Stack>
         <ToastHost />
       </SafeAreaProvider>
