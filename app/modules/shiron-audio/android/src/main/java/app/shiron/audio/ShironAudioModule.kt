@@ -17,7 +17,12 @@ class ShironAudioModule : Module() {
       try {
         AudioProcessor.process(input, output).toMap()
       } catch (e: AudioProcessingException) {
+        output.delete()
         throw CodedException("ERR_AUDIO_${e.code}", e.message ?: "Processing failed", e)
+      } catch (e: Exception) {
+        // Anything unexpected (I/O, out of memory in a codec) still reports a code the app knows.
+        output.delete()
+        throw CodedException("ERR_AUDIO_FAILED", e.message ?: e.toString(), e)
       }
     }
   }

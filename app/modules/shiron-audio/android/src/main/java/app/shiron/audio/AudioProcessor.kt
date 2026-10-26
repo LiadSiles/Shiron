@@ -43,6 +43,8 @@ object AudioProcessor {
   private const val RATE = LoudnessPlan.SAMPLE_RATE
   private const val MAX_FRAMES = 60 * 60 * RATE
   private const val TIMEOUT_US = 10_000L
+  /** A codec that stops producing output after end of input (~10 s of empty polls) is broken. */
+  private const val MAX_IDLE_POLLS = 1_000
 
   fun process(input: File, output: File): ProcessResult {
     val tmp = File(output.parentFile, ".${System.nanoTime()}.f32")
@@ -81,17 +83,24 @@ object AudioProcessor {
       val format = extractor.getTrackFormat(track)
       val mime = format.getString(MediaFormat.KEY_MIME)!!
       val codec = try {
-        MediaCodec.createDecoderByType(mime).apply { configure(format, null, null, 0) }
+        MediaCodec.createDecoderByType(mime)
       } catch (e: Exception) {
         throw AudioProcessingException("UNSUPPORTED", "No decoder for $mime")
       }
-      codec.start()
+      try {
+        codec.configure(format, null, null, 0)
+        codec.start()
+      } catch (e: Exception) {
+        codec.release()
+        throw AudioProcessingException("UNSUPPORTED", "Decoder for $mime refused the file: ${e.message}")
+      }
       try {
         var channels = format.getIntegerOrNull(MediaFormat.KEY_CHANNEL_COUNT) ?: 1
         var resampler = Resampler(format.getIntegerOrNull(MediaFormat.KEY_SAMPLE_RATE) ?: RATE, RATE)
         var pcmFloat = false
         val info = MediaCodec.BufferInfo()
         var inputDone = false
+        var idle = 0
         while (true) {
           if (!inputDone) {
             val i = codec.dequeueInputBuffer(TIMEOUT_US)
@@ -108,6 +117,9 @@ object AudioProcessor {
             }
           }
           val o = codec.dequeueOutputBuffer(info, TIMEOUT_US)
+          if (o == MediaCodec.INFO_TRY_AGAIN_LATER && inputDone && ++idle > MAX_IDLE_POLLS) {
+            throw AudioProcessingException("CORRUPT", "Decoder stopped before the end of the file")
+          }
           when {
             o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
               val f = codec.outputFormat
@@ -116,6 +128,7 @@ object AudioProcessor {
               pcmFloat = f.getIntegerOrNull(MediaFormat.KEY_PCM_ENCODING) == android.media.AudioFormat.ENCODING_PCM_FLOAT
             }
             o >= 0 -> {
+              idle = 0
               val buf = codec.getOutputBuffer(o)!!
               buf.position(info.offset).limit(info.offset + info.size)
               val mono = toMono(buf.order(ByteOrder.nativeOrder()), channels, pcmFloat)
@@ -128,7 +141,8 @@ object AudioProcessor {
       } catch (e: IllegalStateException) {
         throw AudioProcessingException("CORRUPT", "Decoding failed: ${e.message}")
       } finally {
-        codec.stop()
+        // stop() throws on a codec in the error state; release() must still run.
+        runCatching { codec.stop() }
         codec.release()
       }
     } finally {
@@ -168,11 +182,18 @@ object AudioProcessor {
       setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 16_384)
     }
     val codec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC)
-    codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-    codec.start()
-    val muxer = MediaMuxer(output.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+    val muxer: MediaMuxer
+    try {
+      codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+      codec.start()
+      muxer = MediaMuxer(output.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+    } catch (e: Exception) {
+      codec.release()
+      throw AudioProcessingException("FAILED", "AAC encoder: ${e.message}")
+    }
     var muxTrack = -1
     var written = 0
+    var ok = false
     val gain = 10.0.pow(plan.gainDb / 20).toFloat()
     val input = DataInputStream(BufferedInputStream(FileInputStream(pcm), 1 shl 16))
     try {
@@ -185,6 +206,7 @@ object AudioProcessor {
       var remaining = plan.endFrame - plan.startFrame
       val info = MediaCodec.BufferInfo()
       var inputDone = false
+      var idle = 0
       val raw = ByteArray(4 * 4096)
       while (true) {
         if (!inputDone) {
@@ -211,12 +233,16 @@ object AudioProcessor {
           }
         }
         val o = codec.dequeueOutputBuffer(info, TIMEOUT_US)
+        if (o == MediaCodec.INFO_TRY_AGAIN_LATER && inputDone && ++idle > MAX_IDLE_POLLS) {
+          throw AudioProcessingException("FAILED", "AAC encoder stopped before the end")
+        }
         when {
           o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
             muxTrack = muxer.addTrack(codec.outputFormat)
             muxer.start()
           }
           o >= 0 -> {
+            idle = 0
             val buf = codec.getOutputBuffer(o)!!
             val isConfig = info.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0
             if (!isConfig && info.size > 0 && muxTrack >= 0) {
@@ -228,14 +254,22 @@ object AudioProcessor {
           }
         }
       }
+      if (muxTrack < 0) throw AudioProcessingException("FAILED", "AAC encoder produced no output")
+      muxer.stop()
+      muxTrack = -1 // stopped: nothing left for the cleanup below
+      ok = true
+    } catch (e: AudioProcessingException) {
+      throw e
     } catch (e: Exception) {
       throw AudioProcessingException("FAILED", "AAC encoder: ${e.message}")
     } finally {
-      input.close()
-      codec.stop()
+      // Cleanup must not throw over the real error, and a half-written .m4a must not stay.
+      runCatching { input.close() }
+      runCatching { codec.stop() }
       codec.release()
-      if (muxTrack >= 0) muxer.stop()
+      if (muxTrack >= 0) runCatching { muxer.stop() }
       muxer.release()
+      if (!ok) output.delete()
     }
     return written
   }
@@ -306,20 +340,22 @@ object AudioProcessor {
       if (from == to) return input
       if (input.isEmpty()) return input
       // Virtual signal: [last] + input, indices -1 … n-1 when a previous sample exists.
-      val out = ArrayList<Float>((input.size * to / from) + 2)
       val offset = if (hasLast) 1 else 0
       fun at(i: Int): Float = if (i < offset) last else input[i - offset]
       val n = input.size + offset
+      // Primitive array (no boxing): an hour of audio is ~160 M samples.
+      val out = FloatArray(((n - pos) / step).toInt() + 2)
+      var count = 0
       while (pos + 1 < n) {
         val i = pos.toInt()
         val frac = (pos - i).toFloat()
-        out.add(at(i) * (1 - frac) + at(i + 1) * frac)
+        out[count++] = at(i) * (1 - frac) + at(i + 1) * frac
         pos += step
       }
       pos -= (n - 1)
       last = input.last()
       hasLast = true
-      return out.toFloatArray()
+      return out.copyOf(count)
     }
   }
 }

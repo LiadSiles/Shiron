@@ -12,10 +12,13 @@ public class ShironAudioModule: Module {
       }
       do {
         return try AudioProcessor.process(input: input, output: output).dictionary
-      } catch let error as AudioProcessingError {
+      } catch {
+        // No half-written .m4a left behind, and every failure carries a code the app knows.
+        try? FileManager.default.removeItem(at: output)
+        let code = (error as? AudioProcessingError)?.code ?? "FAILED"
         throw Exception(
-          name: "ShironAudio", description: error.errorDescription ?? "Processing failed",
-          code: "ERR_AUDIO_\(error.code)")
+          name: "ShironAudio", description: (error as? LocalizedError)?.errorDescription ?? error.localizedDescription,
+          code: "ERR_AUDIO_\(code)")
       }
     }
   }

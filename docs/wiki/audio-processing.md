@@ -54,6 +54,19 @@ sourceDurationSec, gainDb, trimStartSec, trimEndSec }`; errors carry codes `ERR_
   Ubuntu 24.04 with API 33 default / API 34 google_apis → the emulator action failed within a
   minute, no reason readable without raw logs.
 
+## Failure handling (both platforms)
+
+- Every failure leaves no output: a half-written `.m4a` is deleted (module level and, on
+  Android, in `encode`), so a retry starts clean. Errors always carry an `ERR_AUDIO_*` code;
+  unexpected ones map to `FAILED`.
+- Android: codec/muxer cleanup runs in `runCatching` (`stop()` throws on a codec in the error
+  state and would hide the real error); a decoder or encoder that keeps returning
+  `INFO_TRY_AGAIN_LATER` after end of input for ~10 s is treated as broken (`CORRUPT` /
+  `FAILED`) instead of spinning forever. The resampler writes into a primitive `FloatArray`
+  (it boxed every sample into an `ArrayList<Float>` before 0.3.3).
+- iOS: each `CMSampleBuffer` is read inside its own `autoreleasepool`, so memory stays flat on
+  long recordings.
+
 ## In the app (`src/ingest/processor.ts`)
 
 Step 1 of the queue, before any AI: songs with `audioState = 'raw'` are converted oldest first.

@@ -100,24 +100,33 @@ public enum AudioProcessor {
     guard reader.startReading() else {
       throw AudioProcessingError.unsupported("\(url.pathExtension): \(reader.error?.localizedDescription ?? "cannot read")")
     }
-    while let sample = output.copyNextSampleBuffer() {
-      guard let block = CMSampleBufferGetDataBuffer(sample) else { continue }
-      var length = 0
-      var pointer: UnsafeMutablePointer<Int8>?
-      guard CMBlockBufferGetDataPointer(block, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &length,
-                                        dataPointerOut: &pointer) == kCMBlockBufferNoErr, let pointer else {
-        // Non-contiguous buffer: copy it out.
-        var data = Data(count: CMBlockBufferGetDataLength(block))
-        _ = data.withUnsafeMutableBytes { CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: $0.count, destination: $0.baseAddress!) }
-        try data.withUnsafeBytes { try sink.append($0.bindMemory(to: Float.self)) }
-        continue
-      }
-      try pointer.withMemoryRebound(to: Float.self, capacity: length / 4) {
-        try sink.append(UnsafeBufferPointer(start: $0, count: length / 4))
-      }
-    }
+    // Sample buffers are Core Foundation objects handed out autoreleased: drain them per buffer,
+    // or an hour-long recording holds every decoded buffer in memory until the end.
+    while try autoreleasepool(invoking: { () throws -> Bool in
+      guard let sample = output.copyNextSampleBuffer() else { return false }
+      try append(sample, to: sink)
+      return true
+    }) {}
     if reader.status == .failed {
       throw AudioProcessingError.corrupt(reader.error?.localizedDescription ?? "read failed")
+    }
+  }
+
+  /// Float32 mono samples of one buffer into the sink (contiguous or not).
+  private static func append(_ sample: CMSampleBuffer, to sink: PcmSink) throws {
+    guard let block = CMSampleBufferGetDataBuffer(sample) else { return }
+    var length = 0
+    var pointer: UnsafeMutablePointer<Int8>?
+    guard CMBlockBufferGetDataPointer(block, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &length,
+                                      dataPointerOut: &pointer) == kCMBlockBufferNoErr, let pointer else {
+      // Non-contiguous buffer: copy it out.
+      var data = Data(count: CMBlockBufferGetDataLength(block))
+      _ = data.withUnsafeMutableBytes { CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: $0.count, destination: $0.baseAddress!) }
+      try data.withUnsafeBytes { try sink.append($0.bindMemory(to: Float.self)) }
+      return
+    }
+    try pointer.withMemoryRebound(to: Float.self, capacity: length / 4) {
+      try sink.append(UnsafeBufferPointer(start: $0, count: length / 4))
     }
   }
 
