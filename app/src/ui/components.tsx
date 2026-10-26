@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
 import { getCategory } from '../core/categories';
+import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
 import { MissingFileError, NotPlayableError, playOrToggle, usePlayer } from '../player/player';
 import { PauseIcon, PlayIcon } from './icons';
@@ -90,10 +91,29 @@ export async function playOrOpen(song: SongWithCategories, queue: SongWithCatego
   }
 }
 
-export function SongRow({ song, queue, showCategory = true }: {
+/** Text with the words matching a search in bold and the accent colour. */
+export function Highlighted({ text, query, ...props }: React.ComponentProps<typeof T> & { text: string; query?: string }) {
+  const c = useTheme();
+  if (!query) return <T {...props}>{text}</T>;
+  return (
+    <T {...props}>
+      {highlight(text, query).map((seg, i) =>
+        seg.hit ? (
+          <T key={i} weight="bold" size={props.size} style={{ color: c.primary }}>{seg.text}</T>
+        ) : (
+          seg.text
+        ),
+      )}
+    </T>
+  );
+}
+
+export function SongRow({ song, queue, showCategory = true, query }: {
   song: SongWithCategories;
   queue: SongWithCategories[];
   showCategory?: boolean;
+  /** Search text: matching words in the title are highlighted. */
+  query?: string;
 }) {
   const c = useTheme();
   const player = usePlayer();
@@ -114,7 +134,7 @@ export function SongRow({ song, queue, showCategory = true }: {
     >
       <CategoryBadge id={catId} />
       <View style={{ flex: 1, gap: 2 }}>
-        <T weight="medium" size={18} numberOfLines={1}>{song.title}</T>
+        <Highlighted weight="medium" size={18} numberOfLines={1} text={song.title} query={query} />
         <T soft size={13} numberOfLines={1}>
           {[showCategory ? getCategory(catId).name : null, status].filter(Boolean).join(' · ')}
         </T>

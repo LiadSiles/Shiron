@@ -1,6 +1,6 @@
 # Search and ranking
 
-_Last verified: 2026-10-26 (0.1.0, unit-tested in `app/tests/core.test.ts`)_
+_Last verified: 2026-10-26 (0.3.0, unit-tested in `app/tests/core.test.ts`)_
 
 ## Hebrew normalization (`core/hebrew.ts`)
 
@@ -9,18 +9,45 @@ _Last verified: 2026-10-26 (0.1.0, unit-tested in `app/tests/core.test.ts`)_
 - `stems`: the token plus the token with one attached prefix removed (ו ה ב ל מ ש כ and
   common pairs like וה, שב, כש), keeping ≥ 2 letters.
 - `skeleton`: inner ו/י removed for full vs. defective spelling (שולחן ≈ שלחן).
-- `tokenMatch(query, doc)`: 3 exact stem, 2 prefix (typing; query ≥ 2 letters),
-  1 skeleton match (query ≥ 3 letters).
+- `phonetic`: skeleton with letters that sound alike (and that a teacher typing fast swaps)
+  folded together: ט→ת, ח→כ, ק→כ, ש→ס, ע→א.
+- `editDistance`: Damerau–Levenshtein (a swap of two adjacent letters = 1), with early exit.
+  Allowed typos: 0 for words < 4 letters, 1 for 4–7, 2 for 8+.
+- `tokenMatch(query, doc)` → `MATCH` scale: exact stem 3, prefix while typing 2 (query ≥ 2),
+  spelling (skeleton) 1.5, sound-alike (phonetic) 1.2, typo 0.8, typo in a prefix 0.6.
+  Doc stems are tried against the query as typed; the query's own prefix-stripped forms
+  ("בגשם" → "גשם") count only as **whole-word** matches (×0.9) — as prefixes they made "שמש"
+  match everything starting with "מש".
 
 ## Search (`core/search.ts`)
 
 - In-memory over the whole library (fine to a few thousand songs).
 - Every query token must match some field (AND). Field weights: title 5, keywords 3,
-  category name + hint 3, lyrics 2, summary 1.
+  category name + hint 3, lyrics 2, WhatsApp message it came with (`contextText`) 1.5,
+  summary 1, file name 1 (extension dropped, `_`/`-` → space). Indexes are cached per song
+  object (`WeakMap`), so a library reload rebuilds them.
 - Phrase bonus: whole query inside title +10, inside lyrics +6.
 - Tie-break by usage (`min(frecency, 5) × 0.2`).
-- Snippet: first lyrics line containing a prefix-or-better match; shown unless the match was
-  in the title.
+- Snippet: the lyrics line with the highest summed match; if there are no lyrics and the
+  match was in the WhatsApp message, its first line. Shown unless the match was in the title.
+- `highlight(text, query)` splits into segments marking words with a match ≥ typo; the title
+  and snippet render them bold in the accent colour (`Highlighted` in `ui/components.tsx`).
+- Recent searches: last 8 (`pushRecent`, setting `recentSearches`), saved on submit, on
+  touching a result, on scrolling results, or on opening a category chip — not on every
+  keystroke.
+
+## Search by meaning (Groq)
+
+- When the typed words find fewer than 3 songs, after 700 ms without typing, the search
+  screen asks Groq for up to 12 related Hebrew words (`expandQuery`, `EXPAND_PROMPT`,
+  `parseExpansion`). Smaller chat model (`CHAT_MODELS` last), `json_object`, cached per query
+  for the session, aborted when she keeps typing.
+- **Only the query text is sent**, never the library — same service and key as processing,
+  so no new privacy decision.
+- Related words are OR'd: a song qualifies if one of them matches at ≥ 2.25 weighted
+  (spelling in a title-weighted field, or exact in lyrics, etc.), scored ×0.4, marked
+  `related`, listed after direct hits under "שירים בנושא דומה". Without a key or on error
+  (logged to the technical log) nothing changes.
 - `matchCategories(query)`: typed category names ("חנוכה", "מנוחה") show category chips above
   results.
 - Songs in `review` are excluded from search and the library until approved.

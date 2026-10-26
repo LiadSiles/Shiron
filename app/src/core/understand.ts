@@ -154,3 +154,29 @@ export function fallbackUnderstanding(input: SongInput): Understanding {
     keywords: [],
   };
 }
+
+// ---------------------------------------------------------------- search by meaning
+
+/**
+ * When a search finds little, the AI suggests Hebrew words a matching song would contain
+ * ("אביב" → פרחים, פורחת, ניצנים…). Only the query is sent — never the library.
+ */
+export const EXPAND_PROMPT = `את עוזרת חיפוש בשירון של גננת. קיבלת מה שהגננת הקלידה בחיפוש.
+החזירי JSON בלבד בצורה {"words": [...]}: עד 12 מילים בעברית, בלי ניקוד, שסביר שיופיעו במילים של שיר ילדים בגן על הנושא הזה או בשם שלו —
+מילים נרדפות, צורות אחרות של אותה מילה, דברים שקשורים לנושא, חגים ועונות מתאימים. מילה אחת לכל פריט, בלי משפטים, בלי לחזור על מה שהוקלד.`;
+
+/** Cleans the model's word list: Hebrew/Latin single words, de-duplicated, at most 12. */
+export function parseExpansion(content: string, query: string): string[] {
+  const v = parseModelJson(content) as { words?: unknown } | null;
+  const raw = Array.isArray(v?.words) ? v!.words : [];
+  const typed = new Set(query.trim().split(/\s+/));
+  const out: string[] = [];
+  for (const w of raw) {
+    if (typeof w !== 'string') continue;
+    const word = w.trim().replace(/[֑-ׇ]/g, '');
+    if (!/^[\p{L}'"״׳-]{2,20}$/u.test(word) || typed.has(word) || out.includes(word)) continue;
+    out.push(word);
+    if (out.length === 12) break;
+  }
+  return out;
+}

@@ -10,6 +10,8 @@ import {
 } from '../core/groqRules';
 import {
   buildUserMessage,
+  EXPAND_PROMPT,
+  parseExpansion,
   fallbackUnderstanding,
   parseModelJson,
   sanitize,
@@ -148,6 +150,41 @@ export async function understand(key: string, input: SongInput): Promise<Underst
     }
   }
   throw last!;
+}
+
+// ---------------------------------------------------------------- search by meaning
+
+const expansionCache = new Map<string, string[]>();
+
+/**
+ * Words related in meaning to a search, for songs that never use the typed word. Sends only the
+ * query. Uses the small model (fast, separate rate limit); failures just mean no extra results.
+ */
+export async function expandQuery(key: string, query: string, signal?: AbortSignal): Promise<string[]> {
+  const q = query.trim();
+  const cached = expansionCache.get(q);
+  if (cached) return cached;
+  const res = await fetch(`${GROQ_API}/chat/completions`, {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: CHAT_MODELS[CHAT_MODELS.length - 1],
+      temperature: 0.3,
+      reasoning_effort: 'low',
+      messages: [
+        { role: 'system', content: EXPAND_PROMPT },
+        { role: 'user', content: q },
+      ],
+      response_format: { type: 'json_object' },
+    }),
+  });
+  const body = await res.text();
+  if (!res.ok) throw errorFromResponse(res.status, body, (h) => res.headers.get(h));
+  const content = (JSON.parse(body) as { choices?: { message?: { content?: string } }[] }).choices?.[0]?.message?.content ?? '';
+  const words = parseExpansion(content, q);
+  expansionCache.set(q, words);
+  return words;
 }
 
 // ---------------------------------------------------------------- YouTube

@@ -66,3 +66,9 @@ priming children's-song vocabulary.
 - Offered automatically once, after the first imported song (`settings.connectOffered`); after
   that the home banner and Settings lead to it.
 - Privacy note shown in the app: recordings are sent to Groq for transcription.
+
+## Search by meaning (0.3.0)
+
+`expandQuery(key, query)` in `src/api/groq.ts`: the search query alone → up to 12 related
+Hebrew words (`EXPAND_PROMPT`, `json_object`, smaller chat model). Details and scoring in
+`search-and-ranking.md`.

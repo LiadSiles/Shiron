@@ -133,3 +133,12 @@ describe('formats', () => {
     expect(mimeOf('x.zzz')).toBe('application/octet-stream');
   });
 });
+
+describe('search by meaning', () => {
+  it('keeps clean single Hebrew words, drops repeats, sentences and the typed word', async () => {
+    const { parseExpansion } = await import('../src/core/understand');
+    const out = parseExpansion('```json\n{"words": ["פְּרָחִים", "אביב", "פרחים", "ניצנים", "עץ שקדיה פורח", 7, "x"]}\n```', 'אביב');
+    expect(out).toEqual(['פרחים', 'ניצנים']);
+    expect(parseExpansion('not json', 'אביב')).toEqual([]);
+  });
+});

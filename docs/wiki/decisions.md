@@ -68,3 +68,21 @@ logic pure and unit-tested (`core/`). Revisit with SQLite FTS5 past ~2,000 songs
 `src/app/index.tsx` renders four tabs itself so the mini player sits above the tab bar on
 every tab and the RTL tab order is fully controlled. Trade-off: tabs don't have their own
 URL/back history.
+
+### 2026-10-26 — Media controls stay left-to-right in the RTL UI
+Owner reported next/previous reversed in 0.2.0. Media players (including Hebrew apps) keep
+▶ pointing right, next on the right and time running left → right; only the surrounding layout
+is mirrored. Control rows and the scrubber are `direction: 'ltr'`, icons drawn with Views.
+
+### 2026-10-26 — One play/pause, no stop button
+0.2.0 had a stop (■) in the mini player and play/pause in the full player, and they drifted
+apart. A song row, the mini player and the full player now all use one toggle with
+optimistic state. Pausing still fades out; "stop" adds nothing for a teacher.
+
+### 2026-10-26 — Forgiving local search, plus Groq for meaning only when needed
+Search stays local and instant: typos (Damerau–Levenshtein), Hebrew sound-alike letters and
+spelling variants, the WhatsApp message and the file name. Meaning ("אביב" → a song about
+blossoming almonds) needs a model; local embeddings are ruled out (no local models), so Groq
+suggests related words — only the query is sent, only when fewer than 3 songs match, and the
+result is marked as "בנושא דומה". Rejected: sending lyrics/library to the model per search
+(privacy, rate limits).
