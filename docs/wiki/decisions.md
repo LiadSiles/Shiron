@@ -98,3 +98,10 @@ The non-dismissible notification is in expo-audio's native service. A config plu
 library code, a fork means maintaining a whole module, and react-native-track-player would
 replace the player for one behaviour. `patch-package` keeps a ~60-line diff that fails loudly
 on upgrade. See player.md.
+
+### 2026-10-26 — Songs waiting for review are visible everywhere but category tiles
+Owner: a new song must be playable at once, with its details filling in later. Songs in
+`review` used to be hidden from search, "כל השירים" and the home screen until approved — an
+approval step the zero-maintenance rule says she may never do. Now they appear (with "ממתין
+לאישור") everywhere except inside category tiles, where their unconfirmed AI category could
+put them in the wrong place. Home has a "נוספו עכשיו" section (last 2 days, any status).

@@ -45,11 +45,18 @@ can't read becomes `audioState = 'unsupported'`.
 
 ## Processing queue (`ingest/processor.ts`)
 
-- `processQueue()` is idempotent; a call during a run schedules one more pass.
-- Step 1 (audio, on the phone) for every `raw` song first, then step 2 (Groq) for `pending`
-  songs. See [audio-processing.md](audio-processing.md) and [ai-pipeline.md](ai-pipeline.md).
-- Step 2 re-reads the song before writing (the teacher may have edited it): `user` titles and
-  confirmed categories are kept.
+- Two independent serial lanes (since 0.3.4): **audio** (`convertNew`, on the phone) and
+  **naming** (`nameSongs`, Groq). `processQueue()` triggers both; each lane is idempotent (a
+  trigger during a run schedules one more pass) and never rejects. The audio lane triggers
+  the naming lane when it finishes. See [audio-processing.md](audio-processing.md) and
+  [ai-pipeline.md](ai-pipeline.md).
+- Why two lanes: in 0.3.3 one loop converted everything, then named everything, so a song
+  shared while Groq worked through a backlog waited minutes before it could play on iPhone
+  (owner report: "don't make me wait for the whole process"). Now it converts in seconds,
+  plays, and its name/category/lyrics appear when they arrive (UI and player update live).
+- The naming lane re-reads each song before working on it (skips deleted, approved, and
+  still-raw ones) and again before writing: `user` titles and confirmed categories are kept.
+- `processor.running` is true while either lane works.
 - `keepCategories()`: ≥ 0.5 confidence, max 3, always at least the top one.
 - Auto-accept: top category ≥ 0.85 **and** title ≥ 0.85 (`AUTO_ACCEPT_CONFIDENCE`). Both
   thresholds are guesses to be tuned on ~200 real songs (open roadmap item).

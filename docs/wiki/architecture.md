@@ -14,7 +14,7 @@ WhatsApp ──share──▶ iOS share extension / Android intent      (expo-sh
                         ▼
   SQLite songs(audio_state = raw, status = pending)  ◀── UI reads everything via useLibrary()
                         │
-  processor.ts — one song at a time, oldest first
+  processor.ts — two independent lanes, each one song at a time, oldest first
     step 1, on the phone ── shiron-audio native module ── decode → trim → loudness → AAC .m4a
                         │     songs(audio_state = done, playable_uri = songs/<id>.m4a)
     step 2, Groq (needs key) ── Whisper transcription → gpt-oss title / categories / lyrics

@@ -16,7 +16,7 @@ export default function CategoryScreen() {
 
   const songs = isAll
     ? rankSongs(
-        lib.songs.filter((s) => s.status !== 'review').map((s) => ({ song: s, events: lib.plays.get(s.id) ?? [], seasonal: false })),
+        lib.songs.map((s) => ({ song: s, events: lib.plays.get(s.id) ?? [], seasonal: false })),
         Date.now(),
       ).map((r) => lib.byId.get(r.id)!)
     : rankedCategory(lib, id);

@@ -7,13 +7,16 @@ import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
 import { getSong, listSongs, setCategories, updateSong } from '../db/repo';
 import { diag } from '../diag/log';
+import { isQueued } from '../player/player';
 import { deleteStored, resolveStored, songsDir, toStoredPath } from './storage';
 
 /**
- * Two steps per song, one song at a time, oldest first:
+ * Two lanes, each one song at a time, oldest first:
  *  1. audio (on the phone, no network): decode → trim silence → loudness → AAC .m4a
  *  2. AI (Groq, needs the teacher's key): Whisper transcription → title, categories, lyrics
- * Step 1 never waits for step 2: a song is playable as soon as it is converted.
+ * The lanes run independently: a song shared while Groq works on others is converted (and
+ * playable) within seconds, and its name and category arrive later. The UI picks up every
+ * change through the repo's library events.
  */
 
 export interface ProcessorState {
@@ -41,81 +44,117 @@ export function onProcessorState(l: Listener): () => void {
   return () => listeners.delete(l);
 }
 
-let running: Promise<void> | null = null;
-let again = false;
-
 /**
- * Safe to call often: concurrent calls share one run, and a call during a run schedules one more.
- * Never rejects (callers fire and forget); failures go to the technical log.
+ * A serial worker: concurrent triggers share one run, and a trigger during a run schedules one
+ * more pass. Never rejects (callers fire and forget); failures go to the technical log.
  */
-export function processQueue(): Promise<void> {
-  if (running) {
-    again = true;
+function lane(name: string, work: () => Promise<void>, onIdle: () => void): () => Promise<void> {
+  let running: Promise<void> | null = null;
+  let again = false;
+  return () => {
+    if (running) {
+      again = true;
+      return running;
+    }
+    running = (async () => {
+      do {
+        again = false;
+        try {
+          await work();
+        } catch (e) {
+          diag(`${name} stopped`, e);
+        }
+      } while (again);
+    })().finally(() => {
+      running = null;
+      onIdle();
+    });
     return running;
-  }
-  running = (async () => {
-    do {
-      again = false;
-      try {
-        await run();
-      } catch (e) {
-        diag('processing stopped', e);
-      }
-    } while (again);
-  })().finally(() => {
-    running = null;
-  });
-  return running;
+  };
 }
 
-async function run() {
-  setState({ running: true });
-  try {
-    // Step 1 for everything first, so every new song becomes playable quickly.
-    const raw = (await listSongs()).filter((s) => s.kind === 'audio' && s.audioState === 'raw').reverse();
-    for (const song of raw) await convert(song);
+let busy = 0;
+function track<T>(work: () => Promise<T>): () => Promise<T> {
+  return async () => {
+    busy += 1;
+    setState({ running: true });
+    try {
+      return await work();
+    } finally {
+      busy -= 1;
+      if (!busy) setState({ running: false });
+    }
+  };
+}
 
-    const pending = (await listSongs(['pending'])).reverse();
-    if (!pending.length) {
-      setState({ needsKey: false });
-      return;
-    }
-    const key = await getGroqKey();
-    if (!key) {
-      setState({ needsKey: true });
-      return;
-    }
+const audioLane = lane('conversion', track(convertNew), () => void aiLane());
+const aiLane = lane('naming', track(nameSongs), () => undefined);
+
+/** Safe to call often (app start, foreground, import, connect, retry). */
+export function processQueue(): Promise<void> {
+  // The AI lane also starts after conversions finish (audioLane's onIdle), so a new song is
+  // transcribed from its small .m4a rather than the original.
+  void aiLane();
+  return audioLane();
+}
+
+async function nameSongs() {
+  const pending = (await listSongs(['pending'])).reverse();
+  if (!pending.length) {
     setState({ needsKey: false });
-    if (Date.now() < state.pausedUntil) return;
+    return;
+  }
+  const key = await getGroqKey();
+  if (!key) {
+    setState({ needsKey: true });
+    return;
+  }
+  setState({ needsKey: false });
+  if (Date.now() < state.pausedUntil) return;
 
-    for (const song of pending) {
-      try {
-        await understandSong(song, key);
-        setState({ notice: null });
-      } catch (e) {
-        diag('groq failed', song.title, e instanceof GroqError ? `${e.kind}: ${e.message}` : e);
-        const err = e instanceof GroqError ? e : new GroqError('bad-request', String((e as Error)?.message ?? e));
-        if (err.retryable || err.kind === 'invalid-key') {
-          // Leave this and the rest pending; resume on next foreground or import.
-          setState({
-            notice: describeGroqError(err),
-            needsKey: err.kind === 'invalid-key',
-            pausedUntil: err.kind === 'rate-limited' ? Date.now() + (err.retryAfterSec ?? 600) * 1000 : 0,
-          });
-          await updateSong(song.id, { error: describeGroqError(err) });
-          return;
-        }
-        // Not a Groq answer we can use (understandSong handles Groq's own refusals): name the song
-        // from what we know and send it to review, so the queue moves on.
-        await applyUnderstanding(song, fallbackUnderstanding(await inputFor(song, null)), describeGroqError(err));
+  for (const queued of pending) {
+    const song = await getSong(queued.id);
+    if (!song || song.status !== 'pending') continue; // deleted or approved meanwhile
+    if (song.kind === 'audio' && song.audioState === 'raw') continue; // the audio lane comes back for it
+    try {
+      await understandSong(song, key);
+      setState({ notice: null });
+    } catch (e) {
+      diag('groq failed', song.title, e instanceof GroqError ? `${e.kind}: ${e.message}` : e);
+      const err = e instanceof GroqError ? e : new GroqError('bad-request', String((e as Error)?.message ?? e));
+      if (err.retryable || err.kind === 'invalid-key') {
+        // Leave this and the rest pending; resume on next foreground or import.
+        setState({
+          notice: describeGroqError(err),
+          needsKey: err.kind === 'invalid-key',
+          pausedUntil: err.kind === 'rate-limited' ? Date.now() + (err.retryAfterSec ?? 600) * 1000 : 0,
+        });
+        await updateSong(song.id, { error: describeGroqError(err) });
+        return;
       }
+      // Not a Groq answer we can use (understandSong handles Groq's own refusals): name the song
+      // from what we know and send it to review, so the queue moves on.
+      await applyUnderstanding(song, fallbackUnderstanding(await inputFor(song, null)), describeGroqError(err));
     }
-  } finally {
-    setState({ running: false });
   }
 }
 
 // ---------------------------------------------------------------- step 1: audio
+
+/** Converts every song still `raw`, oldest first, and tidies originals no longer playing. */
+async function convertNew() {
+  const songs = await listSongs();
+  for (const song of songs.filter((s) => s.kind === 'audio' && s.audioState === 'raw').reverse()) {
+    await convert(song);
+  }
+  // Originals kept because they were playing when their conversion finished (see convert).
+  for (const song of songs) {
+    if (song.audioState === 'done' && song.originalUri && song.originalUri !== song.playableUri && !isQueued(song.id)) {
+      deleteStored(song.originalUri);
+      await updateSong(song.id, { originalUri: null });
+    }
+  }
+}
 
 async function convert(song: Song) {
   if (!song.originalUri) {
@@ -129,15 +168,17 @@ async function convert(song: Song) {
     const result = await processAudio(input.uri, output.uri);
     diag('converted', song.sourceName ?? song.id, `${result.durationSec.toFixed(1)} s of ${result.sourceDurationSec.toFixed(1)} s`,
       `gain ${result.gainDb} dB`, `${Math.round((output.size ?? 0) / 1024)} KB`, `${Date.now() - started} ms`);
-    const keepOriginal = song.originalUri;
+    // The m4a replaces the original (videos can be large; dedupe keeps using the stored hash).
+    // If she is already listening to the original (Android plays it before conversion), it is
+    // still in the player's queue: delete it on a later pass, not under the player.
+    const playing = isQueued(song.id);
     await updateSong(song.id, {
       audioState: 'done',
       playableUri: toStoredPath(output),
-      originalUri: null,
+      originalUri: playing ? song.originalUri : null,
       durationSec: result.durationSec,
     });
-    // The m4a replaces the original (videos can be large); dedupe keeps using the stored hash.
-    if (keepOriginal !== toStoredPath(output)) deleteStored(keepOriginal);
+    if (!playing) deleteStored(song.originalUri);
   } catch (e) {
     const code = audioErrorCode(e);
     diag('convert failed', song.sourceName ?? song.id, e, `${Date.now() - started} ms`);

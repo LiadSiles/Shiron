@@ -51,7 +51,11 @@ export function useLibrary(): LibraryState {
   }, [state, load]);
 }
 
-/** Songs that appear in the library (not waiting for review), in a category, ranked by use. */
+/**
+ * Songs in a category, ranked by use. Songs waiting for review are left out here only: their
+ * categories are the AI's unconfirmed guess. They play, search and show under "כל השירים" and
+ * "חדשים" like any other song.
+ */
 export function rankedCategory(
   lib: LibraryState,
   categoryId: string,
@@ -84,6 +88,9 @@ export function categoryTiles(lib: LibraryState, now = Date.now()): CategoryTile
   return orderCategoryTiles(tiles, seasonal);
 }
 
+/** How long a song stays in the home screen's "נוספו עכשיו". */
+const NEW_FOR_MS = 2 * 24 * 60 * 60 * 1000;
+
 export interface HomeSection {
   key: string;
   title: string;
@@ -96,6 +103,10 @@ export function homeSections(lib: LibraryState, now = Date.now()): HomeSection[]
   const sections: HomeSection[] = [];
   const seen = new Set<string>();
 
+  // Just shared: playable at once, while the name and category are still on their way.
+  const fresh = lib.songs.filter((s) => now - s.createdAt < NEW_FOR_MS).slice(0, 5);
+  if (fresh.length) sections.push({ key: 'new', title: 'נוספו עכשיו', songs: fresh });
+
   for (const id of [...seasonal, ...timeOfDay]) {
     if (seen.has(id)) continue;
     seen.add(id);
@@ -104,7 +115,7 @@ export function homeSections(lib: LibraryState, now = Date.now()): HomeSection[]
   }
 
   const pinned = lib.songs
-    .filter((s) => s.pinnedAt != null && s.status !== 'review')
+    .filter((s) => s.pinnedAt != null)
     .sort((a, b) => (b.pinnedAt ?? 0) - (a.pinnedAt ?? 0))
     .slice(0, 6);
   if (pinned.length) sections.push({ key: 'pinned', title: 'מוצמדים', songs: pinned });

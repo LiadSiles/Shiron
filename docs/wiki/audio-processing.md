@@ -69,9 +69,12 @@ sourceDurationSec, gainDb, trimStartSec, trimEndSec }`; errors carry codes `ERR_
 
 ## In the app (`src/ingest/processor.ts`)
 
-Step 1 of the queue, before any AI: songs with `audioState = 'raw'` are converted oldest first.
-On success the `.m4a` becomes `playableUri`, the original is deleted (videos can be large; the
-SHA-256 for dedupe is already stored) and `durationSec` is set. On failure the original stays
+The audio lane (`convertNew`, independent of Groq): songs with `audioState = 'raw'` are
+converted oldest first. On success the `.m4a` becomes `playableUri`, the original is deleted
+(videos can be large; the SHA-256 for dedupe is already stored) and `durationSec` is set. If
+the song is in the player's queue at that moment (Android plays the original before
+conversion; the native playlist holds its path), the original is kept and deleted by a later
+pass once it left the queue (`isQueued`). On failure the original stays
 and is played if the platform reads it (`isNativelyPlayable`), otherwise the song shows
 "הפורמט לא נתמך במכשיר הזה".
 

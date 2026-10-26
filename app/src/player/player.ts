@@ -289,6 +289,11 @@ export async function seek(seconds: number) {
   await player.seekTo(to);
 }
 
+/** Is this song loaded in the player's queue (its file may be read at any moment)? */
+export function isQueued(songId: string): boolean {
+  return state.queue.some((s) => s.id === songId);
+}
+
 /** Stop and forget the current song (e.g. it was deleted). */
 export async function clearIfCurrent(songId: string) {
   if (state.song?.id !== songId || !player) return;

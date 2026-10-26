@@ -46,8 +46,7 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
     setSetting(RECENT_KEY, '[]');
   };
 
-  const searchable = useMemo(() => lib.songs.filter((s) => s.status !== 'review'), [lib.songs]);
-  const direct = useMemo(() => searchSongs(searchable, deferred, lib.usage), [searchable, deferred, lib.usage]);
+  const direct = useMemo(() => searchSongs(lib.songs, deferred, lib.usage), [lib.songs, deferred, lib.usage]);
   const cats = useMemo(() => matchCategories(deferred), [deferred]);
 
   // Few direct results: after she pauses typing, ask Groq for words related in meaning.
@@ -55,7 +54,7 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
   useEffect(() => {
     const q = deferred.trim();
     setRelated((r) => (r && normalize(r.query) === normalize(q) ? r : null));
-    if (q.length < 2 || directCount >= FEW_HITS || !searchable.length) return;
+    if (q.length < 2 || directCount >= FEW_HITS || !lib.songs.length) return;
     const abort = new AbortController();
     const timer = setTimeout(async () => {
       const key = await getGroqKey();
@@ -75,14 +74,14 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
       clearTimeout(timer);
       setThinking(false);
     };
-  }, [deferred, directCount, searchable.length]);
+  }, [deferred, directCount, lib.songs.length]);
 
   const hits = useMemo(
     () =>
       related && related.words.length
-        ? searchSongs(searchable, deferred, lib.usage, related.words)
+        ? searchSongs(lib.songs, deferred, lib.usage, related.words)
         : direct,
-    [related, direct, searchable, deferred, lib.usage],
+    [related, direct, lib.songs, deferred, lib.usage],
   );
   const queue = hits.map((h) => h.song);
   const rows: Row[] = [];
