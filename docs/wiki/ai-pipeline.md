@@ -95,6 +95,26 @@ oEmbed and search expansion 15 s. A timeout is a retryable `network` error. The 
 upload (`File.upload`) has no timeout option in expo-file-system; a hang there would hold the
 queue until the app is restarted — not seen yet, revisit if the log shows it.
 
+## Accuracy: invented words (0.5.2)
+
+Owner report: lyrics contained words never sung, e.g. "תודה רבה". Whisper does this over music
+and silence — it learned stock phrases from subtitled videos ("תודה רבה", "תודה שצפיתם",
+subtitle credits) — and it can loop on one line over an instrumental. Defences, in order:
+
+1. On-device silence trimming (audio step) removes the quiet ends where it happens most.
+2. Groq transcription uses `response_format=verbose_json` (per-segment `avg_logprob`,
+   `no_speech_prob`, `compression_ratio`); `core/transcript.ts → cleanTranscript` drops
+   phantom segments: known stock phrases (exact, or credit-line prefixes), Whisper's own
+   no-speech rule (no_speech_prob > 0.6 and avg_logprob < -1), loops (compression_ratio > 2.4
+   and avg_logprob < -1), and more than four identical lines in a row (three or four repeats
+   are normal in children's songs and stay).
+3. The naming prompt asks for accuracy over completeness: only words actually sung, no filling
+   in, drop stock phrases, leave out unclear stretches. Gemini (which transcribes itself) gets
+   the same rules.
+4. `sanitize()` runs `stripPhantomLines` on whatever lyrics come back, from either service.
+
+Lists live in `transcript.ts` (`PHANTOM_EXACT`, `PHANTOM_PREFIX`); add phrases the log shows.
+
 ## Transcribing again (0.5.1)
 
 The song screen has "תמלול מחדש" under the lyrics for every song with something to listen to

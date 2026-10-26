@@ -14,6 +14,7 @@ import {
   UNDERSTANDING_SCHEMA,
   Understanding,
 } from '../core/understand';
+import { cleanTranscript } from '../core/transcript';
 import { eachModel, fetchWithTimeout } from './http';
 
 /** Groq: Whisper transcription, then a chat model names the song from the transcript. */
@@ -37,7 +38,15 @@ export async function transcribe(key: string, audio: File, mimeType: string): Pr
         fieldName: 'file',
         mimeType,
         headers: { Authorization: `Bearer ${key}` },
-        parameters: { model, language: 'he', prompt: TRANSCRIPTION_PROMPT, response_format: 'json', temperature: '0' },
+        // verbose_json: per-segment confidence, so invented phrases can be dropped (cleanTranscript).
+        parameters: {
+          model,
+          language: 'he',
+          prompt: TRANSCRIPTION_PROMPT,
+          response_format: 'verbose_json',
+          'timestamp_granularities[]': 'segment',
+          temperature: '0',
+        },
         sessionType: 'foreground',
       });
     } catch (e) {
@@ -49,7 +58,7 @@ export async function transcribe(key: string, audio: File, mimeType: string): Pr
         Object.entries(headers).find(([k]) => k.toLowerCase() === h)?.[1] ?? null);
     }
     try {
-      return (JSON.parse(res.body) as { text?: string }).text?.trim() || null;
+      return cleanTranscript(JSON.parse(res.body));
     } catch {
       return null;
     }

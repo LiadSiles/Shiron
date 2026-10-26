@@ -3,6 +3,7 @@
  * answer. Pure TypeScript; the network calls live in src/api/ (Groq, Gemini).
  */
 import { CATEGORIES, UNSORTED_ID } from './categories';
+import { stripPhantomLines } from './transcript';
 
 export interface SongInput {
   fileName: string | null;
@@ -72,8 +73,12 @@ export const SYSTEM_PROMPT = `את עוזרת לגננת בישראל לסדר �
    - אם ההודעה שנשלחה עם הקובץ מציינת את שם השיר, היא הרמז החזק ביותר.
 2. categories — עד 3 מזהים (id) מתוך הרשימה בלבד, עם ביטחון 0–1.
    ביטחון 0.85 ומעלה רק כשהנושא ברור מתוך המילים או ההודעה.
-3. lyrics — סדרי את התמלול לשורות לפי מבנה השיר. תקני רק שגיאות תמלול ברורות. אל תוסיפי מילים שלא נשמעו.
-   אם אין תמלול, החזירי null.
+3. lyrics — סדרי את התמלול לשורות לפי מבנה השיר. הדיוק חשוב יותר מהשלמות:
+   - כתבי רק מילים שבאמת מושרות או נאמרות בהקלטה. אל תוסיפי מילים, ואל תשלימי חלקים שלא נשמעו.
+   - תקני רק שגיאות תמלול ברורות (מילה שנשמעה לא נכון כשההקשר ברור).
+   - מוזיקה ברקע גורמת לתמלול אוטומטי "לשמוע" משפטים שלא נאמרו, כמו "תודה רבה", "תודה שצפיתם", "כתוביות" או קרדיטים. השמיטי אותם.
+   - קטע שלא ברור מה שרים בו — השמיטי אותו, אל תנחשי.
+   אם אין תמלול ואין הקלטה, החזירי null.
 4. summary — משפט אחד.
 5. keywords — מילים שגננת עשויה להקליד כדי למצוא את השיר: נושאים, חפצים, חגים, מילים נרדפות.
 
@@ -117,7 +122,7 @@ export function sanitize(raw: Partial<RawUnderstanding> | null | undefined): Und
     title: (text(raw?.title) ?? '').replace(/^["'״]+|["'״]+$/g, '').slice(0, 60) || 'שיר ללא שם',
     titleConfidence: clamp(raw?.title_confidence),
     categories: categories.length ? categories : [{ id: UNSORTED_ID, confidence: 0.2 }],
-    lyrics: text(raw?.lyrics),
+    lyrics: stripPhantomLines(text(raw?.lyrics)),
     summary: text(raw?.summary),
     keywords: [...new Set((Array.isArray(raw?.keywords) ? raw.keywords : [])
       .filter((k): k is string => typeof k === 'string')
