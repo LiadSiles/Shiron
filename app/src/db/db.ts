@@ -60,6 +60,10 @@ const MIGRATIONS: string[] = [
   `
   UPDATE songs SET status = 'pending', error = NULL WHERE status = 'failed';
   `,
+  // v4 — YouTube songs were saved with audio_state 'raw' and showed a spinner forever.
+  `
+  UPDATE songs SET audio_state = 'done' WHERE kind = 'youtube';
+  `,
 ];
 
 async function migrate(db: SQLite.SQLiteDatabase) {

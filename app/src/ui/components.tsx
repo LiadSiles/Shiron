@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
 import { getCategory } from '../core/categories';
+import { isPreparing } from '../core/ingestRules';
 import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
 import { MissingFileError, NotPlayableError, playOrToggle, playSong, usePlayer } from '../player/player';
@@ -62,7 +63,7 @@ export function CategoryBadge({ id, size = 44 }: { id: string; size?: number }) 
 export function statusLabel(song: SongWithCategories): string | null {
   if (song.kind === 'youtube') return song.status === 'pending' ? 'יוטיוב · ממתין לשם וקטגוריה' : 'יוטיוב';
   if (song.audioState === 'unsupported' && !song.playableUri) return song.error ?? 'הפורמט לא נתמך במכשיר הזה';
-  if (song.audioState === 'raw' && !song.playableUri) return 'מכינה לניגון…';
+  if (isPreparing(song)) return 'מכינה לניגון…';
   if (song.status === 'pending') return 'ממתין לשם וקטגוריה';
   if (song.status === 'review') return 'ממתין לאישור';
   return null;
@@ -150,7 +151,7 @@ export function SongRow({ song, queue, showCategory = true, query }: {
           {[showCategory ? getCategory(catId).name : null, status].filter(Boolean).join(' · ')}
         </T>
       </View>
-      {song.audioState === 'raw' && !song.playableUri ? (
+      {isPreparing(song) ? (
         <ActivityIndicator color={c.inkSoft} />
       ) : (
         <View style={[styles.playDot, { backgroundColor: active && player.playing ? c.primary : c.surfaceAlt }]}>

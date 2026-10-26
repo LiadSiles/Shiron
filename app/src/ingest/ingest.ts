@@ -86,6 +86,7 @@ async function importYoutube(url: string, context: string | null, title: string 
     newSong({
       id,
       kind: 'youtube',
+      audioState: 'done', // no audio step: played in YouTube's own player
       title: title?.trim() || 'שיר מיוטיוב',
       youtubeId,
       sourceName: url,

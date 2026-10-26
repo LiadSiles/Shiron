@@ -38,7 +38,9 @@ The Groq key is **not** in SQLite: `expo-secure-store`.
 
 Migrations: append a SQL string to `MIGRATIONS`; `PRAGMA user_version` tracks the applied
 count. Never edit an existing migration. v2 (0.2.0) added `audio_state`; v3 (0.3.3) moved the
-old server's `failed` status back to `pending` (the status no longer exists).
+old server's `failed` status back to `pending` (the status no longer exists). v4 (0.3.4) set
+`audio_state = 'done'` on YouTube songs (they were saved as `raw`, and a raw song without a
+playable file shows a spinner — `isPreparing()` now also checks `kind`).
 
 **Paths are stored relative** to the document directory (`songs/<file>`), resolved with
 `ingest/storage.ts → resolveStored()`. iOS changes the absolute container path on app

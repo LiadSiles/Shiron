@@ -36,6 +36,14 @@ export function isNativelyPlayable(fileName: string, platform: 'ios' | 'android'
   return false;
 }
 
+/**
+ * An audio song that can't play yet because the phone is still converting it (seconds).
+ * YouTube songs never are: they have no audio step.
+ */
+export function isPreparing(song: { kind: string; audioState: string; playableUri: string | null }): boolean {
+  return song.kind === 'audio' && song.audioState === 'raw' && !song.playableUri;
+}
+
 /** MIME type to send with an upload, from the file name. */
 export function mimeOf(fileName: string): string {
   const ext = extensionOf(fileName);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideStatus, fallbackTitle, isMediaFile, isNativelyPlayable, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
+import { decideStatus, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -26,6 +26,14 @@ describe('ingest rules', () => {
   it('keeps at most three suggestions, at least one', () => {
     expect(keepCategories([{ id: 'a', confidence: 0.2 }, { id: 'b', confidence: 0.1 }]).map((c) => c.id)).toEqual(['a']);
     expect(keepCategories([{ id: 'a', confidence: 0.9 }, { id: 'b', confidence: 0.7 }, { id: 'c', confidence: 0.6 }, { id: 'd', confidence: 0.55 }])).toHaveLength(3);
+  });
+});
+
+describe('preparing', () => {
+  it('only audio still being converted', () => {
+    expect(isPreparing({ kind: 'audio', audioState: 'raw', playableUri: null })).toBe(true);
+    expect(isPreparing({ kind: 'audio', audioState: 'raw', playableUri: 'songs/a.mp3' })).toBe(false);
+    expect(isPreparing({ kind: 'youtube', audioState: 'raw', playableUri: null })).toBe(false);
   });
 });
 
