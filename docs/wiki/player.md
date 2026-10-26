@@ -33,6 +33,10 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   reports the index we asked for.
 - Repeat = playlist `loop: 'single'`. Previous in the app: back to 0:00 if > 3 s in, otherwise
   the previous song; previous in the notification goes straight to the previous song.
+- Live song data: `PlayerState.song` is a snapshot, so the player subscribes to
+  `onLibraryChange` and on track changes re-reads the current song (`refreshCurrent`, compares
+  `updatedAt` + category ids). An edit to the lyrics or the AI naming the song shows at once in
+  the full player, the mini player and the lock screen (0.3.3 needed a song switch).
 - Playback errors: `status.error` (untyped; `{message, code}` on Android) → `PlayerState.error`.
 - One play/pause action everywhere: `togglePlay()` (mini player, full player) and
   `playOrToggle(song)` (a song row: same song → toggle, other song → play it). There is no

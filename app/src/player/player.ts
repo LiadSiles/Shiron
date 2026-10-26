@@ -10,7 +10,7 @@ import { useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
 import { getCategory } from '../core/categories';
 import type { Song, SongWithCategories } from '../core/types';
-import { recordPlay } from '../db/repo';
+import { getSong, onLibraryChange, recordPlay } from '../db/repo';
 import { diag } from '../diag/log';
 import { resolveStored } from '../ingest/storage';
 
@@ -84,6 +84,7 @@ async function ensurePlayer(): Promise<AudioPlaylist> {
     interruptionMode: 'doNotMix', // required for lock-screen controls
   });
   player = createAudioPlaylist({ updateInterval: 500, loop: 'none' });
+  onLibraryChange(() => void refreshCurrent());
   player.addListener('playlistStatusUpdate', onStatus);
   player.addListener('trackChanged', ({ currentIndex }) => onIndex(currentIndex));
   return player;
@@ -105,6 +106,28 @@ function moveTo(index: number) {
   session = { songId: song.id, startedAt: Date.now(), listened: 0, lastTime: 0 };
   set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null });
   player?.updateLockScreenMetadata(lockScreenInfo(song));
+  void refreshCurrent(); // the queue was captured when playback started; names may have come since
+}
+
+/**
+ * The player keeps the song as it was when playback started. When the library changes — she
+ * edited the lyrics, or the AI just named the song — show the fresh version right away
+ * (full player, mini player, lock screen) instead of after switching songs.
+ */
+let refreshSeq = 0;
+async function refreshCurrent() {
+  const current = state.song;
+  if (!current) return;
+  const seq = ++refreshSeq;
+  const fresh = await getSong(current.id).catch(() => null);
+  if (!fresh || seq !== refreshSeq || state.song?.id !== fresh.id) return;
+  if (fresh.updatedAt === state.song.updatedAt && sameCategories(fresh, state.song)) return;
+  set({ song: fresh, queue: state.queue.map((s) => (s.id === fresh.id ? fresh : s)) });
+  player?.updateLockScreenMetadata(lockScreenInfo(fresh));
+}
+
+function sameCategories(a: SongWithCategories, b: SongWithCategories): boolean {
+  return a.categories.map((c) => c.categoryId).join() === b.categories.map((c) => c.categoryId).join();
 }
 
 function onStatus(status: AudioPlaylistStatus) {
@@ -264,17 +287,6 @@ export async function seek(seconds: number) {
   seekingUntil = Date.now() + 800;
   set({ position: to });
   await player.seekTo(to);
-}
-
-/** Keep the lock screen in sync after a rename. */
-export function refreshCurrent(song: SongWithCategories) {
-  const queue = state.queue.map((s) => (s.id === song.id ? song : s));
-  if (state.song?.id !== song.id) {
-    set({ queue });
-    return;
-  }
-  set({ song, queue });
-  player?.updateLockScreenMetadata(lockScreenInfo(song));
 }
 
 /** Stop and forget the current song (e.g. it was deleted). */

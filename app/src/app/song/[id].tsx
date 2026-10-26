@@ -7,7 +7,7 @@ import type { SongWithCategories } from '../../core/types';
 import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
 import { retrySong } from '../../ingest/processor';
 import { deleteStored, resolveStored } from '../../ingest/storage';
-import { clearIfCurrent, refreshCurrent } from '../../player/player';
+import { clearIfCurrent } from '../../player/player';
 import { Button, CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
 import { toast } from '../../ui/toast';
 import { font, radius, space, useTheme } from '../../ui/theme';
@@ -41,7 +41,6 @@ export default function SongScreen() {
     const t = title.trim();
     if (!t || t === song.title) return;
     await updateSong(song.id, { title: t, titleSource: 'user' });
-    refreshCurrent({ ...song, title: t });
     toast('השם נשמר');
   };
 
