@@ -86,11 +86,22 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 900
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: cd app/android && ./gradlew :shiron-audio:connectedDebugAndroidTest --console=plain
+          # Output goes to a file: the next step turns it into one readable annotation.
+          script: cd app/android && ./gradlew :shiron-audio:connectedDebugAndroidTest --console=plain > $GITHUB_WORKSPACE/connected.log 2>&1
       - name: Report test results
         if: always()
         run: |
-          find app -path '*androidTest-results*' -name 'TEST-*.xml' 2>/dev/null | while read -r f; do
-            grep -oE '<testcase name="[^"]+"' "$f" | sed 's/<testcase name=/::notice::passed or ran /'
-            grep -A6 '<failure' "$f" | head -30 | while IFS= read -r line; do echo "::error::${line}"; done
+          found=0
+          for f in $(find app -path '*androidTest-results*' -name 'TEST-*.xml' 2>/dev/null); do
+            found=1
+            tests=$(grep -oE 'tests="[0-9]+"' "$f" | head -1); failures=$(grep -oE 'failures="[0-9]+"' "$f" | head -1)
+            echo "::notice::$(basename "$f"): $tests $failures"
+            if grep -q '<failure' "$f"; then
+              echo "::error::$(grep -A12 '<failure' "$f" | grep -v '^\s*at ' | head -40 | tr '\n' '|' | cut -c1-6000)"
+            fi
           done
+          if [ -f connected.log ]; then
+            # Logged per-format results from the tests (Log.i ShironAudioTest) and Gradle's reason.
+            echo "::notice::$(grep -E 'ShironAudioTest|What went wrong|Caused by|FAILED|> Task .*connected|Tests on|INSTRUMENTATION' connected.log | head -40 | tr '\n' '|' | cut -c1-6000)"
+            [ "$found" = 1 ] || echo "::error::no test results; log tail: $(tail -40 connected.log | tr '\n' '|' | cut -c1-6000)"
+          fi
