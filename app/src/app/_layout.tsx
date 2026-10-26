@@ -2,12 +2,12 @@ import { Rubik_400Regular, Rubik_500Medium, Rubik_700Bold, useFonts } from '@exp
 import { router, Stack } from 'expo-router';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { AppState, I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { connectedProviders } from '../api/keys';
 import { getSetting, setSetting } from '../db/repo';
-import { describeSummary, importShareIntent } from '../ingest/ingest';
+import { describeSummary, enqueueShare } from '../ingest/ingest';
 import { processQueue } from '../ingest/processor';
 import { font, useTheme } from '../ui/theme';
 import { toast, ToastHost } from '../ui/toast';
@@ -19,25 +19,26 @@ if (!I18nManager.isRTL) {
   I18nManager.forceRTL(true);
 }
 
-/** Receives files and links shared from WhatsApp (or any app) into Shiron. */
+/**
+ * Receives files and links shared from WhatsApp (or any app) into Shiron. Each share is taken
+ * at once and queued (enqueueShare), so sharing again while a big batch is still saving works,
+ * as many times as she likes.
+ */
 function ShareHandler() {
   const { hasShareIntent, shareIntent, resetShareIntent, error } = useShareIntentContext();
-  const busy = useRef(false);
 
   useEffect(() => {
-    if (!hasShareIntent || busy.current) return;
-    busy.current = true;
-    toast('שומרת…');
-    importShareIntent(shareIntent)
+    if (!hasShareIntent) return;
+    const intent = shareIntent;
+    resetShareIntent(); // free the slot for the next share; the files stay where they are
+    const { ahead, done } = enqueueShare(intent, (n, total) => toast(`שומרת ${n + 1} מתוך ${total}…`));
+    toast(ahead ? 'נוסף לתור, נשמר מיד אחרי הקודמים…' : 'שומרת…');
+    done
       .then(async (s) => {
         toast(describeSummary(s));
         if (s.added.length) await offerConnectOnce();
       })
-      .catch((e) => toast(`השמירה נכשלה: ${String(e)}`))
-      .finally(() => {
-        resetShareIntent();
-        busy.current = false;
-      });
+      .catch((e) => toast(`השמירה נכשלה: ${String(e)}`));
   }, [hasShareIntent, shareIntent, resetShareIntent]);
 
   useEffect(() => {

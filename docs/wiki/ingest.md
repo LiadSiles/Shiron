@@ -68,3 +68,15 @@ Settings and the empty home state offer `File.pickFileAsync({ multipleFiles: tru
 Share sheet and picker go through the same `importFiles()`: one unreadable file is logged and
 counted as unsupported, the rest still import, and a copy whose insert failed is deleted (no
 orphan files in `songs/`). `importFromPicker()` returns the toast text itself.
+
+## Many files, many shares (0.5.2)
+
+- iOS share extension accepts up to 100 files or videos per share
+  (`iosActivationRules` in app.json; was 20). Android has no limit.
+- Each share is taken at once and queued (`enqueueShare`): the handler resets the share
+  intent immediately (`resetShareIntent` only clears the pointer; the files stay) so the next
+  share is received even while a big batch is still saving. Before 0.5.2 a share arriving
+  during an import was dropped. Batches of more than three files show "שומרת n מתוך m…".
+- Saving is serial (copy + SHA-256, quick); conversion and naming then run in their own lanes,
+  one song at a time each — conversion is seconds per song, and the AI services' per-minute
+  quotas make parallel naming pointless.

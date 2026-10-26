@@ -51,8 +51,8 @@
         "expo-share-intent",
         {
           "iosActivationRules": {
-            "NSExtensionActivationSupportsFileWithMaxCount": 20,
-            "NSExtensionActivationSupportsMovieWithMaxCount": 20,
+            "NSExtensionActivationSupportsFileWithMaxCount": 100,
+            "NSExtensionActivationSupportsMovieWithMaxCount": 100,
             "NSExtensionActivationSupportsWebURLWithMaxCount": 1,
             "NSExtensionActivationSupportsWebPageWithMaxCount": 1,
             "NSExtensionActivationSupportsText": true

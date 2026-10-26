@@ -96,13 +96,17 @@ async function importYoutube(url: string, context: string | null, title: string 
   summary.added.push(id);
 }
 
+export type ImportProgress = (done: number, total: number) => void;
+
 /** One file failing (unreadable, full disk) never stops the others. */
 async function importFiles(
   files: { file: File; name: string; mime: string | null | undefined }[],
   context: string | null,
   summary: ImportSummary,
+  onProgress?: ImportProgress,
 ) {
-  for (const f of files) {
+  for (const [i, f] of files.entries()) {
+    if (files.length > 3) onProgress?.(i, files.length);
     if (!isMediaFile(f.name, f.mime)) {
       summary.unsupported.push(f.name);
       continue;
@@ -116,8 +120,26 @@ async function importFiles(
   }
 }
 
+/**
+ * Shares are queued: she can share again (and again) while earlier ones are still being saved;
+ * each waits its turn, none is lost. Saving is quick (copy + hash); conversion and naming run
+ * afterwards in the processor's lanes.
+ */
+let shareQueue: Promise<unknown> = Promise.resolve();
+let waiting = 0;
+
+export function enqueueShare(intent: ShareIntent, onProgress?: ImportProgress): { ahead: number; done: Promise<ImportSummary> } {
+  const ahead = waiting;
+  waiting += 1;
+  const done = shareQueue.then(() => importShareIntent(intent, onProgress)).finally(() => {
+    waiting -= 1;
+  });
+  shareQueue = done.catch(() => undefined);
+  return { ahead, done };
+}
+
 /** Handles everything that arrives through the system share sheet. */
-export async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
+async function importShareIntent(intent: ShareIntent, onProgress?: ImportProgress): Promise<ImportSummary> {
   const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
   const text = intent.text?.trim() || null;
 
@@ -127,6 +149,7 @@ export async function importShareIntent(intent: ShareIntent): Promise<ImportSumm
     (intent.files ?? []).map((f) => ({ file: new File(toFileUri(f.path)), name: f.fileName, mime: f.mimeType })),
     text,
     summary,
+    onProgress,
   );
 
   const url = intent.webUrl ?? (text && youtubeIdFrom(text) ? text : null);
