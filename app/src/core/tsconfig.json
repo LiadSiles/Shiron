@@ -1,0 +1,14 @@
+{
+  // core/ is pure TypeScript shared with the server, which has no Expo installed.
+  // This standalone config keeps tools that resolve the nearest tsconfig (vite/oxc in the
+  // server's tests) from following app/tsconfig.json to `expo/tsconfig.base`.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  }
+}

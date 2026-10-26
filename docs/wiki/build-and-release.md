@@ -27,6 +27,23 @@ target `Shiron` (`ios/Shiron/`).
   with React 19.3.0 and plain `npm install` refuses.
 - No Xcode / Android SDK here: **CI is the native compile check.** Locally you can still run
   typecheck, tests, `expo prebuild` (config plugins) and `expo export` (JS bundle).
+- Raw Actions job logs are unreachable (blob storage blocked). Read results through
+  `gh api repos/LiadSiles/shiron/check-runs/<job id>/annotations`; every workflow step that
+  can fail re-emits its errors as `::error::` lines for this reason.
+- This session's token cannot dispatch workflows (`workflow_dispatch` → 403). To start a
+  release, push a commit that touches `app/**`, `scripts/**` or `release.yml`.
+
+## CI gotchas
+
+- The very first push of `main` to the new repo did not trigger `release.yml` (path filters
+  had nothing to diff against). Later pushes do.
+- `ubuntu-latest` moved to Ubuntu 26 in October 2026: the server job now runs ffmpeg 8.0.
+- The server's tests import `app/src/core/categories.ts`, and the server CI job installs
+  no app dependencies. vite/oxc resolves the *nearest* tsconfig, which was
+  `app/tsconfig.json` → `extends: expo/tsconfig.base` → "Tsconfig not found". Fixed with a
+  standalone `app/src/core/tsconfig.json`. Locally this hid behind vitest's transform cache —
+  reproduce with `app/node_modules` moved away and `server/node_modules/.vitest-cache`
+  deleted.
 
 ## Signing
 
