@@ -1,8 +1,11 @@
 name: Native audio
 
-# Tests the on-device audio module (app/modules/shiron-audio) on real Apple and Android media
-# frameworks with the same fixtures: every format a teacher may share must come out as a trimmed,
-# loudness-normalised AAC file. Results and per-format notes appear as annotations.
+# Tests the on-device audio module (app/modules/shiron-audio):
+#  • apple: the Swift core on macOS (same AVFoundation/AudioToolbox as iOS) against every fixture;
+#    per-format results appear as annotations.
+#  • android: compiles the Kotlin module and runs the LoudnessPlan unit tests. The instrumented
+#    tests (src/androidTest, real MediaCodec on the fixtures) need an emulator, which didn't start
+#    on GitHub runners in Oct 2026 — run them locally: ./gradlew :shiron-audio:connectedDebugAndroidTest
 on:
   push:
     branches: [main, "dev/**"]
@@ -40,8 +43,7 @@ jobs:
           fi
 
   android:
-    # Pinned: the emulator never finished booting on the Ubuntu 26 image (Oct 2026).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -70,38 +72,4 @@ jobs:
             # One annotation (GitHub keeps 10 per step): the reason Gradle gives, joined.
             echo "::error::$(grep -E '^e: |error:|FAILED|What went wrong|Caused by|Test.*>' -A4 unit.log | grep -v '^\s*at ' | head -60 | tr '\n' '|' | cut -c1-6000)"
             exit 1
-          fi
-      - name: Enable KVM
-        run: |
-          ls -l /dev/kvm || echo "::warning::no /dev/kvm on this runner — the emulator will be very slow"
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-      - name: Instrumented tests on an emulator (real MediaCodec)
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          arch: x86_64
-          target: google_apis
-          disable-animations: true
-          emulator-boot-timeout: 900
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          # Output goes to a file: the next step turns it into one readable annotation.
-          script: cd app/android && ./gradlew :shiron-audio:connectedDebugAndroidTest --console=plain > $GITHUB_WORKSPACE/connected.log 2>&1
-      - name: Report test results
-        if: always()
-        run: |
-          found=0
-          for f in $(find app -path '*androidTest-results*' -name 'TEST-*.xml' 2>/dev/null); do
-            found=1
-            tests=$(grep -oE 'tests="[0-9]+"' "$f" | head -1); failures=$(grep -oE 'failures="[0-9]+"' "$f" | head -1)
-            echo "::notice::$(basename "$f"): $tests $failures"
-            if grep -q '<failure' "$f"; then
-              echo "::error::$(grep -A12 '<failure' "$f" | grep -v '^\s*at ' | head -40 | tr '\n' '|' | cut -c1-6000)"
-            fi
-          done
-          if [ -f connected.log ]; then
-            # Logged per-format results from the tests (Log.i ShironAudioTest) and Gradle's reason.
-            echo "::notice::$(grep -E 'ShironAudioTest|What went wrong|Caused by|FAILED|> Task .*connected|Tests on|INSTRUMENTATION' connected.log | head -40 | tr '\n' '|' | cut -c1-6000)"
-            [ "$found" = 1 ] || echo "::error::no test results; log tail: $(tail -40 connected.log | tr '\n' '|' | cut -c1-6000)"
           fi

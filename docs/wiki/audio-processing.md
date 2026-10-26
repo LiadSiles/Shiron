@@ -1,6 +1,7 @@
 # Audio processing on the phone
 
-_Last verified: 2026-10-26 (0.2.0 written; Native audio CI results pending; not yet run on a real device)_
+_Last verified: 2026-10-26 (0.2.0). Apple: every required fixture passes on macOS in CI.
+Android: compiles, LoudnessPlan unit tests pass; decoding not yet run (emulator or device)._
 
 Every shared file becomes a **mono AAC `.m4a` at 44.1 kHz, trimmed and loudness-normalised**,
 on the phone, with no network. Local Expo module `app/modules/shiron-audio` (autolinked from
@@ -33,7 +34,11 @@ sourceDurationSec, gainDb, trimStartSec, trimEndSec }`; errors carry codes `ERR_
   tests, not required. Those songs get `audioState = 'unsupported'`.
 - Encode with `AVAudioFile(forWriting:)` (kAudioFormatMPEG4AAC).
 - Tests: `swift-tests/` builds `ios/Core` as a Swift package on macOS (same frameworks) and runs
-  it on the fixtures (`npm run test:ios-audio` on a Mac; `native.yml` in CI).
+  it on the fixtures (`npm run test:ios-audio` on a Mac; `native.yml` in CI). Verified
+  2026-10-26: Opus (20/60 ms), mp3, m4a, wav, flac, mp4, mov, 3gp → 2.45 s, −15.9 dB, gain
+  ≈ +13.8 dB; `.mpeg` (MPEG-2 PS + MP2) also decodes; Vorbis and webm don't (expected).
+  `DiagnosticsTests` prints the reader's ASBD and per-block levels — that is how the too-quiet
+  first fixtures were found.
 
 ## Android (`android/src/main/java/app/shiron/audio/`)
 
@@ -41,8 +46,13 @@ sourceDurationSec, gainDb, trimStartSec, trimEndSec }`; errors carry codes `ERR_
   flac, wav, amr, 3gp/mp4/webm/mkv video); 16-bit or float output, down-mixed to mono, linear
   resampling to 44.1 kHz.
 - `MediaCodec` AAC encoder + `MediaMuxer` (MPEG-4).
-- Tests: JVM unit tests for `LoudnessPlan`; instrumented tests on an API 34 emulator decode
-  every fixture with the real codecs (`native.yml`).
+- Tests: JVM unit tests for `LoudnessPlan` run in CI. Instrumented tests
+  (`src/androidTest`, every fixture through the real codecs) exist but run only locally —
+  `cd app && npx expo prebuild -p android && cd android && ./gradlew
+  :shiron-audio:connectedDebugAndroidTest` with a device or emulator attached. On GitHub
+  runners (Oct 2026) the emulator never came up: Ubuntu 26 image → boot timeout after 10 min;
+  Ubuntu 24.04 with API 33 default / API 34 google_apis → the emulator action failed within a
+  minute, no reason readable without raw logs.
 
 ## In the app (`src/ingest/processor.ts`)
 

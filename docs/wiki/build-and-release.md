@@ -66,10 +66,12 @@ platforms).
 
 `native.yml` (when `app/modules/**` changes): **apple** job on `macos-15` builds
 `ios/Core` as a Swift package and runs it on the fixtures (`swift-tests/run.sh`; per-format
-results as `::notice::`/`::warning::` annotations); **android** job runs the JVM unit tests of
-`LoudnessPlan`, then the instrumented tests on an API 34 x86_64 emulator
-(`reactivecircus/android-emulator-runner`, KVM enabled) — real MediaCodec on every fixture.
-Gradle project of the local module: `:shiron-audio`.
+results as `::notice::`/`::warning::` annotations); **android** job compiles the module and runs
+the JVM unit tests of `LoudnessPlan`. The emulator-based instrumented tests are local-only (see
+audio-processing.md). Gradle project of the local module: `:shiron-audio`.
+
+**GitHub keeps at most 10 annotations of each level per step.** Anything diagnostic must be
+joined into one annotation (`tr '\n' '|'`) or get its own step, or it is silently dropped.
 
 ## Releases (`.github/workflows/release.yml`)
 
