@@ -15,6 +15,7 @@ _Last updated: 2026-10-26_
 | 0.4.1 | Gemini `AQ.` keys recognised; hand-pasted keys checked by the service, not by pattern | ✅ released as v0.4.1 (APK + IPA) |
 | 0.5.0 | Owner feedback: YouTube songs in the queue / full player (IFrame API), repeat off/all/one, YouTube lyrics via Gemini, no review step (DB v5), "נוספו לאחרונה" (home + tile), search bar instead of a search tab | built (APK + IPA as run artifacts); GitHub Release blocked: Actions billing on the owner's account (publish job not started) — re-run failed jobs once fixed |
 | 0.5.1 | "תמלול מחדש" on every song screen | typecheck + tests pass locally; CI and release blocked by the owner's Actions billing — re-run once fixed |
+| 0.5.2 | Transcription accuracy (phantom phrases, loops), share queue + 100 files per iOS share, notification returns after being swiped away | typecheck + tests pass locally; waiting for Actions billing |
 | 0.5.x | Why a shared song didn't play on the owner's Xiaomi (read his technical log); app icon and splash; tune confidence thresholds on ~200 real songs; swipe-to-approve | next |
 | 0.6 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.7 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
