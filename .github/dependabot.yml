@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # Expo pins compatible versions per SDK: upgrade the app with `npx expo install --fix`
+  # during an SDK upgrade, not package by package. Only security fixes are taken here.
+  - package-ecosystem: npm
+    directory: /app
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 0
+  - package-ecosystem: npm
+    directory: /server
+    schedule: { interval: monthly }
+    groups:
+      server:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+  - package-ecosystem: docker
+    directory: /server
+    schedule: { interval: monthly }

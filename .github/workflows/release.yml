@@ -1,0 +1,262 @@
+name: Release
+
+# Every push to main that touches the app publishes a GitHub Release you can open on a phone:
+#
+#   • New version (app/app.json "version" has no tag yet) → full release `v<version>`
+#     with BOTH files: shiron-<version>.apk (Android) and shiron-<version>.ipa (iPhone).
+#   • Same version, more changes → prerelease `v<version>-build.<n>` with the APK only
+#     (cheap Linux build, for testing on Android). Run this workflow by hand with
+#     "ios: true" to attach an IPA to a build as well.
+#
+# The iOS job runs on macOS, which costs 10× the Actions minutes of Linux on a private repo;
+# that's why it runs per version and not per push. See docs/wiki/build-and-release.md.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "scripts/**"
+      - ".github/workflows/release.yml"
+  workflow_dispatch:
+    inputs:
+      ios:
+        description: "Also build the iPhone IPA for this build"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      build: ${{ steps.plan.outputs.build }}
+      tag: ${{ steps.plan.outputs.tag }}
+      full: ${{ steps.plan.outputs.full }}
+      ios: ${{ steps.plan.outputs.ios }}
+      name: ${{ steps.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IOS_INPUT: ${{ inputs.ios }}
+        run: |
+          VERSION=$(node -p "require('./app/app.json').expo.version")
+          # 100 + run number keeps versionCode above any manual local build (which uses 1).
+          BUILD=$((100 + ${{ github.run_number }}))
+          if gh api "repos/${{ github.repository }}/git/ref/tags/v${VERSION}" > /dev/null 2>&1; then
+            FULL=false; TAG="v${VERSION}-build.${BUILD}"; NAME="shiron-${VERSION}-build.${BUILD}"
+          else
+            FULL=true; TAG="v${VERSION}"; NAME="shiron-${VERSION}"
+          fi
+          IOS=$FULL
+          [ "$IOS_INPUT" = "true" ] && IOS=true
+          {
+            echo "version=$VERSION"; echo "build=$BUILD"; echo "tag=$TAG"
+            echo "full=$FULL"; echo "ios=$IOS"; echo "name=$NAME"
+          } >> "$GITHUB_OUTPUT"
+          echo "::notice::$TAG — full release: $FULL, iPhone build: $IOS"
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  android:
+    needs: [plan, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Stamp build number
+        run: node scripts/set-build-number.mjs ${{ needs.plan.outputs.build }}
+
+      - name: Generate Android project
+        working-directory: app
+        run: npx expo prebuild --platform android --no-install --clean
+        env:
+          CI: 1
+
+      # Compiler errors are re-emitted as annotations so they can be read through the
+      # checks API (raw job logs aren't reachable from every environment).
+      - name: Build release APK
+        working-directory: app/android
+        run: |
+          set -o pipefail
+          if ! ./gradlew assembleRelease --console=plain \
+              -PreactNativeArchitectures=arm64-v8a,armeabi-v7a 2>&1 | tee build.log; then
+            grep -E '^e: |error:|ERROR:|What went wrong|FAILED' -A3 build.log | head -40 | while IFS= read -r line; do
+              echo "::error::${line}"
+            done
+            exit 1
+          fi
+
+      - name: Check the APK
+        run: |
+          APK=app/android/app/build/outputs/apk/release/app-release.apk
+          unzip -l "$APK" | grep -q 'assets/index.android.bundle' || { echo "::error::JS bundle missing from APK"; exit 1; }
+          echo "::notice::APK $(( $(stat -c%s "$APK") / 1024 / 1024 )) MB"
+          cp "$APK" "${{ needs.plan.outputs.name }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: "*.apk"
+          if-no-files-found: error
+
+  ios:
+    needs: [plan, test]
+    if: needs.plan.outputs.ios == 'true'
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Stamp build number
+        run: node scripts/set-build-number.mjs ${{ needs.plan.outputs.build }}
+
+      - name: Generate iOS project
+        working-directory: app
+        run: npx expo prebuild --platform ios --clean
+        env:
+          CI: 1
+
+      # Unsigned archive: anyone can install it by re-signing with their own Apple ID
+      # (Sideloadly / AltStore). Signed builds for TestFlight go through the testflight job.
+      - name: Build unsigned archive
+        working-directory: app/ios
+        run: |
+          set -o pipefail
+          if ! xcodebuild \
+              -workspace app.xcworkspace -scheme app -configuration Release \
+              -sdk iphoneos -destination 'generic/platform=iOS' \
+              -archivePath "$RUNNER_TEMP/Shiron.xcarchive" archive \
+              CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+              2>&1 | tee build.log | grep -E '^\*\*|error:' ; then
+            grep -E 'error:' -A2 build.log | head -40 | while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
+
+      - name: Package IPA
+        run: |
+          APP="$RUNNER_TEMP/Shiron.xcarchive/Products/Applications/app.app"
+          test -d "$APP" || { echo "::error::app bundle not found in archive"; ls -R "$RUNNER_TEMP/Shiron.xcarchive/Products" | head; exit 1; }
+          test -d "$APP/PlugIns/Shiron.appex" || { echo "::error::share extension missing from app"; exit 1; }
+          test -f "$APP/main.jsbundle" || { echo "::error::JS bundle missing from app"; exit 1; }
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/${{ needs.plan.outputs.name }}.ipa" Payload)
+          echo "::notice::IPA $(( $(stat -f%z "${{ needs.plan.outputs.name }}.ipa") / 1024 / 1024 )) MB"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: "*.ipa"
+          if-no-files-found: error
+
+  publish:
+    needs: [plan, android, ios]
+    # Publish even when the iOS job was skipped (APK-only builds); never when a build failed.
+    if: always() && needs.android.result == 'success' && (needs.ios.result == 'success' || needs.ios.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Write release notes
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+          FULL: ${{ needs.plan.outputs.full }}
+        run: |
+          {
+            if [ "$FULL" = "true" ]; then
+              # The CHANGELOG section for this version, if there is one.
+              awk -v v="$VERSION" '$0 ~ "^## \\[" v "\\]" {on=1; next} /^## \[/ {on=0} on' CHANGELOG.md
+            else
+              echo "בנייה לבדיקה של ${VERSION} מ-\`${GITHUB_SHA::7}\`."
+              echo
+              git log -1 --format='%s'
+            fi
+            echo
+            cat .github/release-install.md
+          } > notes.md
+          cat notes.md
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.plan.outputs.tag }}
+          FULL: ${{ needs.plan.outputs.full }}
+        run: |
+          ls -la dist
+          FLAGS="--prerelease"
+          [ "$FULL" = "true" ] && FLAGS="--latest"
+          gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "$TAG" --notes-file notes.md $FLAGS
+
+  testflight:
+    needs: [plan, publish]
+    # Opt-in: set the repository variable ENABLE_TESTFLIGHT=true and the EXPO_TOKEN secret
+    # once an Apple Developer account and an Expo project exist (docs/wiki/build-and-release.md).
+    if: needs.plan.outputs.full == 'true' && vars.ENABLE_TESTFLIGHT == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Build on EAS and submit to TestFlight
+        run: npx eas-cli@latest build --platform ios --profile production --auto-submit --non-interactive --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

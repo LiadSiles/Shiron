@@ -1,0 +1,15 @@
+name: רעיון או בקשה
+description: משהו שהגננת צריכה
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: מה הצורך
+      description: באיזה רגע ביום זה קורה, ומה מפריע היום
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: הצעה לפתרון

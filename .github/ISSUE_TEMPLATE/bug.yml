@@ -1,0 +1,29 @@
+name: באג
+description: משהו לא עובד כמו שצריך
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: גרסה
+      description: מתוך שם הקובץ שהותקן, למשל 0.1.0-build.112
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: מכשיר
+      options: [אייפון, אנדרואיד]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: מה קרה
+      description: מה עשית, מה ציפית שיקרה, ומה קרה בפועל
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: צילום מסך או קובץ לדוגמה

@@ -1,0 +1,15 @@
+{
+  "name": "shiron-repo",
+  "private": true,
+  "description": "Shiron — a song library for kindergarten teachers. App (Expo) + processing server.",
+  "scripts": {
+    "install:all": "npm ci --prefix app && npm ci --prefix server",
+    "test": "npm test --prefix app && npm test --prefix server",
+    "typecheck": "npm run typecheck --prefix app && npm run typecheck --prefix server",
+    "check": "npm run typecheck && npm test",
+    "version:bump": "node scripts/bump-version.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
