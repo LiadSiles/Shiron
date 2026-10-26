@@ -58,3 +58,6 @@ can't read becomes `audioState = 'unsupported'`.
 ## File picker fallback
 
 Settings and the empty home state offer `File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] })`.
+Share sheet and picker go through the same `importFiles()`: one unreadable file is logged and
+counted as unsupported, the rest still import, and a copy whose insert failed is deleted (no
+orphan files in `songs/`). `importFromPicker()` returns the toast text itself.

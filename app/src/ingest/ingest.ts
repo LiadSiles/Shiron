@@ -39,32 +39,38 @@ async function importMediaFile(
   const id = Crypto.randomUUID();
   const ext = extensionOf(fileName) || extensionOf(source.uri) || 'audio';
   const dest = new File(songsDir(), `${id}-original.${ext}`);
-  await source.copy(dest);
-
-  diag('import', fileName, `${Math.round((dest.size ?? 0) / 1024)} KB`, `from ${source.uri.slice(0, 60)}`);
-  const sha256 = await dest.digest('SHA-256');
-  const existing = await findBySha(sha256);
-  if (existing) {
-    dest.delete();
-    summary.duplicates.push({ title: existing.title });
-    return;
+  try {
+    await source.copy(dest);
+    diag('import', fileName, `${Math.round((dest.size ?? 0) / 1024)} KB`, `from ${source.uri.slice(0, 60)}`);
+    const sha256 = await dest.digest('SHA-256');
+    const existing = await findBySha(sha256);
+    if (existing) {
+      dest.delete();
+      summary.duplicates.push({ title: existing.title });
+      return;
+    }
+    await insertSong(newAudioSong(id, dest, fileName, context, sha256));
+    summary.added.push(id);
+  } catch (e) {
+    // Don't leave an orphan copy behind (a failed insert, a full disk…).
+    if (dest.exists) dest.delete();
+    throw e;
   }
+}
 
+function newAudioSong(id: string, dest: File, fileName: string, context: string | null, sha256: string): Song {
   const createdAt = Date.now();
-  await insertSong(
-    newSong({
-      id,
-      kind: 'audio',
-      title: fallbackTitle(fileName, createdAt),
-      originalUri: toStoredPath(dest),
-      playableUri: isNativelyPlayable(fileName, Platform.OS) ? toStoredPath(dest) : null,
-      sourceName: fileName,
-      contextText: context,
-      sha256,
-      createdAt,
-    }),
-  );
-  summary.added.push(id);
+  return newSong({
+    id,
+    kind: 'audio',
+    title: fallbackTitle(fileName, createdAt),
+    originalUri: toStoredPath(dest),
+    playableUri: isNativelyPlayable(fileName, Platform.OS) ? toStoredPath(dest) : null,
+    sourceName: fileName,
+    contextText: context,
+    sha256,
+    createdAt,
+  });
 }
 
 async function importYoutube(url: string, context: string | null, title: string | null, summary: ImportSummary) {
@@ -89,6 +95,26 @@ async function importYoutube(url: string, context: string | null, title: string 
   summary.added.push(id);
 }
 
+/** One file failing (unreadable, full disk) never stops the others. */
+async function importFiles(
+  files: { file: File; name: string; mime: string | null | undefined }[],
+  context: string | null,
+  summary: ImportSummary,
+) {
+  for (const f of files) {
+    if (!isMediaFile(f.name, f.mime)) {
+      summary.unsupported.push(f.name);
+      continue;
+    }
+    try {
+      await importMediaFile(f.file, f.name, context, summary);
+    } catch (e) {
+      diag('import failed', f.name, e);
+      summary.unsupported.push(f.name);
+    }
+  }
+}
+
 /** Handles everything that arrives through the system share sheet. */
 export async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
   const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
@@ -96,18 +122,11 @@ export async function importShareIntent(intent: ShareIntent): Promise<ImportSumm
 
   diag('share received', `type ${intent.type}`, `${intent.files?.length ?? 0} files`,
     (intent.files ?? []).map((f) => `${f.fileName} (${f.mimeType}) ${f.path.slice(0, 50)}`).join(', ') || intent.webUrl || '');
-  for (const f of intent.files ?? []) {
-    if (!isMediaFile(f.fileName, f.mimeType)) {
-      summary.unsupported.push(f.fileName);
-      continue;
-    }
-    try {
-      await importMediaFile(new File(toFileUri(f.path)), f.fileName, text, summary);
-    } catch (e) {
-      diag('import failed', f.fileName, e);
-      summary.unsupported.push(f.fileName);
-    }
-  }
+  await importFiles(
+    (intent.files ?? []).map((f) => ({ file: new File(toFileUri(f.path)), name: f.fileName, mime: f.mimeType })),
+    text,
+    summary,
+  );
 
   const url = intent.webUrl ?? (text && youtubeIdFrom(text) ? text : null);
   if (url && youtubeIdFrom(url)) {
@@ -121,20 +140,22 @@ export async function importShareIntent(intent: ShareIntent): Promise<ImportSumm
   return summary;
 }
 
-/** Fallback when sharing isn't possible: pick audio or video files from the Files app. */
-export async function importFromPicker(): Promise<ImportSummary | null> {
-  const picked = await File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] });
-  if (picked.canceled) return null;
-  const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
-  for (const f of picked.result) {
-    if (!isMediaFile(f.name, f.type)) {
-      summary.unsupported.push(f.name);
-      continue;
-    }
-    await importMediaFile(f, f.name, null, summary);
+/**
+ * Fallback when sharing isn't possible: pick audio or video files from the Files app.
+ * Returns the line to show her, or null when she cancelled.
+ */
+export async function importFromPicker(): Promise<string | null> {
+  try {
+    const picked = await File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] });
+    if (picked.canceled) return null;
+    const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
+    await importFiles(picked.result.map((f) => ({ file: f, name: f.name, mime: f.type })), null, summary);
+    if (summary.added.length) processQueue();
+    return describeSummary(summary);
+  } catch (e) {
+    diag('file picker failed', e);
+    return 'לא הצלחנו לפתוח את הקבצים';
   }
-  if (summary.added.length) processQueue();
-  return summary;
 }
 
 export function describeSummary(s: ImportSummary): string {

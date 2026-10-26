@@ -44,7 +44,10 @@ export function onProcessorState(l: Listener): () => void {
 let running: Promise<void> | null = null;
 let again = false;
 
-/** Safe to call often: concurrent calls share one run, and a call during a run schedules one more. */
+/**
+ * Safe to call often: concurrent calls share one run, and a call during a run schedules one more.
+ * Never rejects (callers fire and forget); failures go to the technical log.
+ */
 export function processQueue(): Promise<void> {
   if (running) {
     again = true;
@@ -53,7 +56,11 @@ export function processQueue(): Promise<void> {
   running = (async () => {
     do {
       again = false;
-      await run();
+      try {
+        await run();
+      } catch (e) {
+        diag('processing stopped', e);
+      }
     } while (again);
   })().finally(() => {
     running = null;
@@ -98,7 +105,8 @@ async function run() {
           await updateSong(song.id, { error: describeGroqError(err) });
           return;
         }
-        // This song won't work with the AI as it is: name it from what we know, send to review.
+        // Not a Groq answer we can use (understandSong handles Groq's own refusals): name the song
+        // from what we know and send it to review, so the queue moves on.
         await applyUnderstanding(song, fallbackUnderstanding(await inputFor(song, null)), describeGroqError(err));
       }
     }
@@ -152,20 +160,39 @@ async function inputFor(song: Song, transcript: string | null): Promise<SongInpu
   };
 }
 
+/** Retryable problems (quota, offline, Groq down, bad key) are thrown: the queue stops and resumes later. */
+function isTransient(e: unknown): boolean {
+  return e instanceof GroqError && (e.retryable || e.kind === 'invalid-key');
+}
+
 async function understandSong(song: Song, key: string) {
   let transcript: string | null = null;
   if (song.kind === 'audio') {
     // Prefer the converted m4a (small, mono); fall back to the original Groq may still read.
     const stored = song.playableUri ?? song.originalUri;
-    if (stored) {
-      const file = resolveStored(stored);
-      if (file.exists) transcript = await transcribe(key, file, mimeOf(file.name));
+    const file = stored ? resolveStored(stored) : null;
+    if (file?.exists) {
+      try {
+        transcript = await transcribe(key, file, mimeOf(file.name));
+      } catch (e) {
+        if (isTransient(e)) throw e;
+        // e.g. a format Whisper rejects: the name can still come from the file name and message.
+        diag('transcription refused', song.sourceName ?? song.title, e);
+      }
     }
   }
   diag('transcribed', song.sourceName ?? song.title, transcript ? `${transcript.length} chars` : 'no text');
-  const result = await understand(key, await inputFor(song, transcript));
-  diag('named', result.title, result.categories.map((c) => `${c.id} ${c.confidence}`).join(', '));
-  await applyUnderstanding(song, result, null);
+  const input = await inputFor(song, transcript);
+  try {
+    const result = await understand(key, input);
+    diag('named', result.title, result.categories.map((c) => `${c.id} ${c.confidence}`).join(', '));
+    await applyUnderstanding(song, result, null);
+  } catch (e) {
+    if (isTransient(e)) throw e;
+    // The chat model refused this song: keep the transcript as lyrics, name it, send to review.
+    diag('naming refused', song.sourceName ?? song.title, e);
+    await applyUnderstanding(song, fallbackUnderstanding(input), e instanceof GroqError ? describeGroqError(e) : String(e));
+  }
 }
 
 async function applyUnderstanding(song: Song, u: Understanding, error: string | null) {

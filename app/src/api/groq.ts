@@ -55,18 +55,56 @@ export function onGroqKeyChange(l: KeyListener): () => void {
 
 /** True when the key works (lists models). Network errors are thrown, not reported as invalid. */
 export async function checkGroqKey(key: string): Promise<boolean> {
-  let res: Response;
-  try {
-    res = await fetch(`${GROQ_API}/models`, { headers: { Authorization: `Bearer ${key}` } });
-  } catch (e) {
-    throw new GroqError('network', String(e));
-  }
+  const res = await fetchWithTimeout(`${GROQ_API}/models`, { headers: { Authorization: `Bearer ${key}` } }, 20_000);
   if (res.ok) return true;
   if (res.status === 401 || res.status === 403) return false;
   throw errorFromResponse(res.status, await res.text(), (h) => res.headers.get(h));
 }
 
 // ---------------------------------------------------------------- calls
+
+/**
+ * fetch with a deadline: a request that hangs (bad mobile network) must not stall the processing
+ * queue forever. A timeout becomes a retryable `network` error; the caller's own abort (the
+ * teacher typed on) is passed through untouched.
+ */
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number, signal?: AbortSignal): Promise<Response> {
+  const ctrl = new AbortController();
+  const onAbort = () => ctrl.abort();
+  signal?.addEventListener('abort', onAbort);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } catch (e) {
+    if (signal?.aborted) throw e;
+    throw new GroqError('network', ctrl.signal.aborted ? `timeout after ${timeoutMs / 1000} s` : String(e));
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', onAbort);
+  }
+}
+
+/** One chat completion; returns the message text. */
+async function completion(key: string, body: object, timeoutMs: number, signal?: AbortSignal): Promise<string> {
+  const res = await fetchWithTimeout(
+    `${GROQ_API}/chat/completions`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify(body),
+    },
+    timeoutMs,
+    signal,
+  );
+  const text = await res.text();
+  if (!res.ok) throw errorFromResponse(res.status, text, (h) => res.headers.get(h));
+  try {
+    const json = JSON.parse(text) as { choices?: { message?: { content?: string } }[] };
+    return json.choices?.[0]?.message?.content ?? '';
+  } catch {
+    return '';
+  }
+}
 
 /** Whisper transcription in Hebrew. Falls back to the next model when one is rate-limited. */
 export async function transcribe(key: string, audio: File, mimeType = 'audio/mp4'): Promise<string | null> {
@@ -103,30 +141,22 @@ export async function transcribe(key: string, audio: File, mimeType = 'audio/mp4
 }
 
 async function chat(key: string, model: string, input: SongInput, strict = true): Promise<Understanding> {
-  let res: Response;
-  try {
-    res = await fetch(`${GROQ_API}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        reasoning_effort: 'low',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: buildUserMessage(input) },
-        ],
-        response_format: strict
-          ? { type: 'json_schema', json_schema: { name: 'song', strict: true, schema: UNDERSTANDING_SCHEMA } }
-          : { type: 'json_object' },
-      }),
-    });
-  } catch (e) {
-    throw new GroqError('network', String(e));
-  }
-  const body = await res.text();
-  if (!res.ok) throw errorFromResponse(res.status, body, (h) => res.headers.get(h));
-  const content = (JSON.parse(body) as { choices?: { message?: { content?: string } }[] }).choices?.[0]?.message?.content ?? '';
+  const content = await completion(
+    key,
+    {
+      model,
+      temperature: 0.2,
+      reasoning_effort: 'low',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: buildUserMessage(input) },
+      ],
+      response_format: strict
+        ? { type: 'json_schema', json_schema: { name: 'song', strict: true, schema: UNDERSTANDING_SCHEMA } }
+        : { type: 'json_object' },
+    },
+    90_000,
+  );
   const parsed = parseModelJson(content);
   return parsed ? sanitize(parsed) : fallbackUnderstanding(input);
 }
@@ -164,11 +194,9 @@ export async function expandQuery(key: string, query: string, signal?: AbortSign
   const q = query.trim();
   const cached = expansionCache.get(q);
   if (cached) return cached;
-  const res = await fetch(`${GROQ_API}/chat/completions`, {
-    method: 'POST',
-    signal,
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
+  const content = await completion(
+    key,
+    {
       model: CHAT_MODELS[CHAT_MODELS.length - 1],
       temperature: 0.3,
       reasoning_effort: 'low',
@@ -177,11 +205,10 @@ export async function expandQuery(key: string, query: string, signal?: AbortSign
         { role: 'user', content: q },
       ],
       response_format: { type: 'json_object' },
-    }),
-  });
-  const body = await res.text();
-  if (!res.ok) throw errorFromResponse(res.status, body, (h) => res.headers.get(h));
-  const content = (JSON.parse(body) as { choices?: { message?: { content?: string } }[] }).choices?.[0]?.message?.content ?? '';
+    },
+    15_000,
+    signal,
+  );
   const words = parseExpansion(content, q);
   expansionCache.set(q, words);
   return words;
@@ -193,7 +220,7 @@ export async function expandQuery(key: string, query: string, signal?: AbortSign
 export async function youtubeMeta(youtubeId: string): Promise<{ title: string; author: string | null } | null> {
   try {
     const url = `https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${youtubeId}`)}`;
-    const res = await fetch(url);
+    const res = await fetchWithTimeout(url, {}, 15_000);
     if (!res.ok) return null;
     const j = (await res.json()) as { title?: string; author_name?: string };
     return j.title ? { title: j.title, author: j.author_name ?? null } : null;

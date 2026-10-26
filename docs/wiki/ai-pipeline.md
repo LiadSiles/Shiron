@@ -35,10 +35,17 @@ Source: <https://www.eesel.ai/blog/groq-pricing>.
 |---|---|
 | 401/403 | stop the queue, `needsKey` → home banner "connect again" |
 | 429 (all models) | stop, pause until `retry-after` / `x-ratelimit-reset-*` (default 10 min), notice "daily quota" |
-| 5xx / no network | stop, retry on next foreground or import |
-| 413 / other 4xx | this song only: fallback title from context/file name → review inbox |
+| 5xx / no network / timeout | stop, retry on next foreground or import |
+| 413 / other 4xx on transcription | logged; the song is still named, without lyrics |
+| 413 / other 4xx on naming | this song only: fallback title, the transcript kept as lyrics → review inbox with the error and a retry button |
 
-The song keeps `status = 'pending'` while waiting; nothing is lost.
+The song keeps `status = 'pending'` while waiting; nothing is lost. `processQueue()` never
+rejects — anything unexpected goes to the technical log and the next trigger tries again.
+
+Timeouts (`fetchWithTimeout`): chat 90 s (reasoning models can be slow), key check 20 s,
+oEmbed and search expansion 15 s. A timeout is a retryable `network` error. The transcription
+upload (`File.upload`) has no timeout option in expo-file-system; a hang there would hold the
+queue until the app is restarted — not seen yet, revisit if the log shows it.
 
 ## Prompt (Hebrew, `SYSTEM_PROMPT`)
 

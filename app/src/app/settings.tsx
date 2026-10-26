@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { getGroqKey, onGroqKeyChange, removeGroqKey } from '../api/groq';
-import { describeSummary, importFromPicker } from '../ingest/ingest';
+import { importFromPicker } from '../ingest/ingest';
 import { onProcessorState, ProcessorState } from '../ingest/processor';
 import { Button, T } from '../ui/components';
 import { toast } from '../ui/toast';
@@ -58,8 +58,8 @@ export default function SettingsScreen() {
         icon="📁"
         kind="quiet"
         onPress={async () => {
-          const s = await importFromPicker();
-          if (s) toast(describeSummary(s));
+          const message = await importFromPicker();
+          if (message) toast(message);
         }}
       />
 

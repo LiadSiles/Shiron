@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { importFromPicker, describeSummary } from '../ingest/ingest';
+import { importFromPicker } from '../ingest/ingest';
 import { onProcessorState, ProcessorState } from '../ingest/processor';
 import { homeSections, LibraryState } from '../db/useLibrary';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
@@ -25,8 +25,8 @@ export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview:
   const pendingCount = lib.songs.filter((s) => s.status === 'pending').length;
 
   const importFiles = async () => {
-    const s = await importFromPicker();
-    if (s) toast(describeSummary(s));
+    const message = await importFromPicker();
+    if (message) toast(message);
   };
 
   return (
