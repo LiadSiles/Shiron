@@ -12,7 +12,7 @@ _Last updated: 2026-10-26_
 | 0.3.3 | Senior code review: dead code removed (`failed` status → DB v3, unused exports, noUnusedLocals in CI), atomic migrations, race-free library reloads, Groq timeouts, transcript kept on naming refusal, failure-safe imports, native codec cleanup; tests split per module | ✅ released as v0.3.3 (APK + IPA) |
 | 0.3.4 | Owner feedback: YouTube spinner (DB v4), live player refresh, two processing lanes (play at once, names later), review songs visible, "נוספו עכשיו" | ✅ released as v0.3.4 (APK + IPA) |
 | 0.4.0 | Gemini as a second AI service (owner's choice: with the recording, behind a training/human-review warning); preferred service + automatic fallback on quota; provider-neutral AI layer | releasing |
-| 0.3.x | Why a shared song didn't play on the owner's Xiaomi (read his technical log); app icon and splash; tune confidence thresholds on ~200 real songs; swipe-to-approve | next |
+| 0.4.x | Why a shared song didn't play on the owner's Xiaomi (read his technical log); app icon and splash; tune confidence thresholds on ~200 real songs; swipe-to-approve | next |
 | 0.5 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.6 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
 | 0.7 | Playlists ("מעגל בוקר"), sleep timer with fade, big-tile class mode | planned |
