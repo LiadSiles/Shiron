@@ -40,7 +40,8 @@ jobs:
           fi
 
   android:
-    runs-on: ubuntu-latest
+    # Pinned: the emulator never finished booting on the Ubuntu 26 image (Oct 2026).
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -72,16 +73,19 @@ jobs:
           fi
       - name: Enable KVM
         run: |
+          ls -l /dev/kvm || echo "::warning::no /dev/kvm on this runner — the emulator will be very slow"
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Instrumented tests on an emulator (real MediaCodec)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 33
           arch: x86_64
-          target: google_apis
+          target: default
           disable-animations: true
+          emulator-boot-timeout: 900
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           script: cd app/android && ./gradlew :shiron-audio:connectedDebugAndroidTest --console=plain
       - name: Report test results
         if: always()
