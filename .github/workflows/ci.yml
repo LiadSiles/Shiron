@@ -1,7 +1,8 @@
 name: CI
 
-# Fast checks on every push and pull request: typecheck + unit tests for the app and the
-# server, the config plugins (expo prebuild), and the server's Docker image.
+# Fast checks on every push and pull request: typecheck + unit tests, and the config
+# plugins (expo prebuild) with assertions on the generated native projects.
+# The native audio module has its own workflow (native.yml).
 on:
   push:
     branches: [main, "dev/**"]
@@ -27,39 +28,6 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci
       - run: npm run typecheck
-      - run: npx vitest run --reporter=default --reporter=github-actions
-      # Config plugins (share extension, signing, RTL, background audio) only run at prebuild:
-      # this catches a broken plugin without a full native build.
-      - name: Prebuild native projects
-        run: npx expo prebuild --no-install --clean
-        env:
-          CI: 1
-      - name: Check generated native config
-        run: |
-          grep -q '<string>audio</string>' ios/*/Info.plist || { echo "::error::UIBackgroundModes audio missing"; exit 1; }
-          grep -q 'NSExtensionActivationSupportsFileWithMaxCount' ios/Shiron/ShareExtension-Info.plist || { echo "::error::share extension missing"; exit 1; }
-          grep -q 'mediaPlayback' android/app/src/main/AndroidManifest.xml || { echo "::error::media playback service missing"; exit 1; }
-          grep -q 'audio/\*' android/app/src/main/AndroidManifest.xml || { echo "::error::audio share intent missing"; exit 1; }
-          grep -q 'signingConfigs.shiron' android/app/build.gradle || { echo "::error::project signing not applied"; exit 1; }
-
-  server:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: server/package-lock.json
-      - name: Install ffmpeg
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
-          echo "::notice::$(ffmpeg -version | head -1)"
-      - run: npm ci
-      - run: npm run typecheck
       # Failures are re-emitted as annotations, readable through the checks API when raw
       # logs aren't (github-actions reporter for assertions, the log tail for setup errors).
       - name: Test
@@ -69,16 +37,21 @@ jobs:
             grep -vE '^\s*$' test.log | tail -40 | while IFS= read -r line; do echo "::error::${line}"; done
             exit 1
           fi
-
-  server-image:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Build server image
-        run: docker build -f server/Dockerfile -t shiron-server .
-      - name: Smoke-test the image
+      # Config plugins (share extension, signing, RTL, background audio) only run at prebuild:
+      # this catches a broken plugin without a full native build.
+      - name: Prebuild native projects
+        run: npx expo prebuild --no-install --clean
+        env:
+          CI: 1
+      - name: Check generated native config
         run: |
-          docker run -d --name shiron -p 8787:8787 -e APP_TOKEN=ci shiron-server
-          for i in $(seq 1 30); do curl -sf localhost:8787/health && break; sleep 1; done
-          curl -sf -H 'Authorization: Bearer ci' localhost:8787/v1/health
-          docker logs shiron
+          fail() { echo "::error::$1"; exit 1; }
+          grep -q '<string>audio</string>' ios/*/Info.plist || fail "UIBackgroundModes audio missing"
+          grep -q 'NSExtensionActivationSupportsFileWithMaxCount' ios/Shiron/ShareExtension-Info.plist || fail "share extension missing"
+          grep -q 'NSExtensionActivationSupportsMovieWithMaxCount' ios/Shiron/ShareExtension-Info.plist || fail "share extension does not accept videos"
+          grep -q 'mediaPlayback' android/app/src/main/AndroidManifest.xml || fail "media playback service missing"
+          grep -q 'audio/\*' android/app/src/main/AndroidManifest.xml || fail "audio share intent missing"
+          grep -q 'video/\*' android/app/src/main/AndroidManifest.xml || fail "video share intent missing"
+          grep -q 'signingConfigs.shiron' android/app/build.gradle || fail "project signing not applied"
+          npx expo-modules-autolinking resolve --platform android --json | grep -q '"app.shiron.audio.ShironAudioModule"' || fail "audio module not autolinked (android)"
+          npx expo-modules-autolinking resolve --platform apple --json | grep -q '"ShironAudioModule"' || fail "audio module not autolinked (iOS)"

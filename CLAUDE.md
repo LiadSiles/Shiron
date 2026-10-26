@@ -7,16 +7,20 @@ Hebrew-first UI, forced RTL. Owner: Liad. **iPhone is the top-priority platform*
 exists so the owner can test on his own phone.
 
 Read `docs/wiki/README.md` before changing anything non-trivial. The wiki holds the facts
-that are expensive to rediscover (iOS audio limits, why there is a server, decisions
+that are expensive to rediscover (iOS audio limits, the native audio module, Groq, decisions
 already taken and why).
 
 ## Hard constraints — do not "fix" these away
 
 - **iOS first.** Every feature must work on iPhone. Test assumptions against iOS limits in
   `docs/wiki/ios-constraints.md` (e.g. iOS cannot play WhatsApp's Ogg/Opus voice notes).
-- **The library lives on the phone.** The server is stateless: it converts, transcribes and
-  classifies, then deletes the files (30 min TTL). Never add server-side storage of songs,
-  lyrics or play history without the owner's decision — recordings may contain children.
+- **No server of our own.** Audio is converted on the phone (native module); the only network
+  calls are to Groq with the user's own key and to YouTube oEmbed. The library lives on the
+  phone. Don't add a backend, analytics or any other service without the owner's decision —
+  recordings may contain children.
+- **AI = cloud models, free tier, Groq only, each user's own key.** No local models, no paid
+  services, no key in the build or the repo. Connecting must stay a guided in-app flow
+  (`src/app/connect.tsx`). Without a key, songs are still saved and playable.
 - **The AI suggests, the teacher decides.** A title or category the teacher set
   (`titleSource = 'user'`, `confirmed = true`) is never overwritten by processing.
 - **YouTube: visible embedded player only.** No downloading, no background playback of
@@ -31,14 +35,16 @@ already taken and why).
 ## Build, test, release
 
 ```bash
-npm run install:all     # app + server dependencies
-npm run check           # typecheck + unit tests, app and server
+npm run install:all     # app dependencies
+npm run check           # typecheck + unit tests
+npm run test:ios-audio  # audio module on a Mac (Swift package + fixtures)
 npm run version:bump -- minor   # when a roadmap version is reached
 ```
 
 - CI (`.github/workflows/ci.yml`): typecheck, tests, `expo prebuild` + native-config
-  assertions, server Docker image smoke test. **CI is the native compile check** — this
-  sandbox has no Xcode or Android SDK.
+  assertions. `native.yml`: the audio module on macOS (Swift package) and an Android emulator,
+  against shared fixtures. **CI is the native compile and test check** — this sandbox has no
+  Xcode or Android SDK.
 - Releases (`.github/workflows/release.yml`): every push to `main` touching the app
   publishes a GitHub Release. A new version → `v<version>` with APK **and** unsigned IPA;
   otherwise `v<version>-build.<n>` prerelease with the APK. Details and gotchas:
@@ -54,23 +60,27 @@ npm run version:bump -- minor   # when a roadmap version is reached
 
 ```
 app/                         Expo app (React Native, TypeScript, expo-router)
-  src/core/                  pure TS, unit-tested, shared with the server:
+  src/core/                  pure TS, unit-tested (no React Native imports):
     categories.ts            taxonomy (32 categories), Hebrew calendar seasons, time of day
     hebrew.ts, search.ts     Hebrew normalization + full-text search
     ranking.ts               frecency ranking (τ = 30 days), pins, seasonal boost
-    ingestRules.ts           YouTube ids, fallback titles, playability, review thresholds
+    ingestRules.ts           formats, YouTube ids, fallback titles, playability, review thresholds
+    understand.ts            prompt, strict JSON schema, sanitising the model's answer
+    groqRules.ts             models, key detection, error mapping, retry-after
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
-  src/ingest/                share-sheet import, dedupe, processing queue, file storage
-  src/api/client.ts          processing-server client
+  src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
+  src/api/groq.ts            Groq calls (Whisper, chat), key in expo-secure-store, YouTube oEmbed
   src/player/player.ts       expo-audio: background, lock screen, fade-out stop, queue
   src/screens/, src/ui/      tabs (home, library, search, review), components, theme
-  src/app/                   expo-router routes (layout, shell, category, song, player, youtube, settings)
+  src/app/                   expo-router routes (layout, shell, category, song, player, youtube,
+                             settings, connect)
+  modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a
+    ios/Core/                plain AVFoundation (Ogg Opus demux, asset reader, encoder)
+    android/                 MediaExtractor/MediaCodec/MediaMuxer; unit + instrumented tests
+    swift-tests/             runs ios/Core as a Swift package on macOS
+    fixtures/                one test signal in every format (see its README)
   plugins/withSigningKey.js  signs Android builds with app/keystore/shiron.keystore
   tests/                     vitest — core logic
-server/                      Fastify: /v1/process (audio), /v1/youtube, /v1/files, /v1/health
-  src/audio.ts               ffmpeg: trim silence → loudness → AAC m4a
-  src/transcribe.ts          OpenAI-compatible transcription (Hebrew)
-  src/understand.ts          Claude structured output → title, categories, lyrics, keywords
 scripts/                     version bump, CI build-number stamp
 docs/wiki/                   engineering knowledge (this is for you)
 ```
@@ -90,7 +100,9 @@ docs/wiki/                   engineering knowledge (this is for you)
 - Commits: imperative subject, body explains *why*. One logical change per commit.
   User-visible changes get a line under `CHANGELOG.md` → `[Unreleased]`.
 - Pure logic goes in `app/src/core/` with a test in `app/tests/`. Anything that touches
-  React Native stays out of `core/` (the server imports `categories.ts`).
+  React Native stays out of `core/`.
+- The audio algorithm (`LoudnessPlan`) exists in Swift and Kotlin: change both, and both tests.
+  A new format = a fixture in `modules/shiron-audio/fixtures/` + its expectation in both tests.
 - No dead code: remove what nothing calls (git history keeps it).
 - Prefer verifying over assuming: run the code, the tests, or a prebuild; for device-only
   behaviour, say plainly that it is untested on a device.

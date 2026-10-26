@@ -1,0 +1,87 @@
+name: Native audio
+
+# Tests the on-device audio module (app/modules/shiron-audio) on real Apple and Android media
+# frameworks with the same fixtures: every format a teacher may share must come out as a trimmed,
+# loudness-normalised AAC file. Results and per-format notes appear as annotations.
+on:
+  push:
+    branches: [main, "dev/**"]
+    paths:
+      - "app/modules/**"
+      - ".github/workflows/native.yml"
+  pull_request:
+    paths:
+      - "app/modules/**"
+  workflow_dispatch:
+
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apple:
+    # macOS has the same AVFoundation / AudioToolbox as iOS; runs the Swift core without Expo.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Swift tests
+        run: |
+          set -o pipefail
+          if ! bash app/modules/shiron-audio/swift-tests/run.sh 2>&1 | tee swift.log; then
+            grep -E 'error:|failed|XCTAssert' swift.log | head -40 | while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+      - name: Generate Android project
+        working-directory: app
+        run: npx expo prebuild --platform android --no-install --clean
+        env:
+          CI: 1
+      - name: Unit tests (loudness plan)
+        working-directory: app/android
+        run: |
+          set -o pipefail
+          if ! ./gradlew :shiron-audio:testDebugUnitTest --console=plain 2>&1 | tee unit.log; then
+            grep -E '^e: |error:|FAILED|What went wrong|Test.*>' -A3 unit.log | head -40 | while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Instrumented tests on an emulator (real MediaCodec)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: cd app/android && ./gradlew :shiron-audio:connectedDebugAndroidTest --console=plain
+      - name: Report test results
+        if: always()
+        run: |
+          find app -path '*androidTest-results*' -name 'TEST-*.xml' 2>/dev/null | while read -r f; do
+            grep -oE '<testcase name="[^"]+"' "$f" | sed 's/<testcase name=/::notice::passed or ran /'
+            grep -A6 '<failure' "$f" | head -30 | while IFS= read -r line; do echo "::error::${line}"; done
+          done

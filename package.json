@@ -1,12 +1,13 @@
 {
   "name": "shiron-repo",
   "private": true,
-  "description": "Shiron — a song library for kindergarten teachers. App (Expo) + processing server.",
+  "description": "Shiron — a song library for kindergarten teachers (Expo app, iOS + Android).",
   "scripts": {
-    "install:all": "npm ci --prefix app && npm ci --prefix server",
-    "test": "npm test --prefix app && npm test --prefix server",
-    "typecheck": "npm run typecheck --prefix app && npm run typecheck --prefix server",
+    "install:all": "npm ci --prefix app",
+    "test": "npm test --prefix app",
+    "typecheck": "npm run typecheck --prefix app",
     "check": "npm run typecheck && npm test",
+    "test:ios-audio": "bash app/modules/shiron-audio/swift-tests/run.sh",
     "version:bump": "node scripts/bump-version.mjs"
   },
   "engines": {

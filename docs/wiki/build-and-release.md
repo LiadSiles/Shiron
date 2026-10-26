@@ -1,13 +1,13 @@
 # Build and release
 
-_Last verified: 2026-10-26 (CI green; v0.1.0 released with APK 45 MB + IPA 11.6 MB)_
+_Last verified: 2026-10-26 (v0.1.0 released with APK 45 MB + IPA 11.6 MB; 0.2.0 workflows pending)_
 
 ## Toolchain
 
-Expo SDK 58 (React Native 0.88, React 19.3, Hermes), expo-router, TypeScript 6 (app) /
-7 (server), vitest 5, Node 22 (`.nvmrc`). Server: Fastify 5, `@anthropic-ai/sdk` 1.3,
-`openai` 7, ffmpeg (6.1 in this sandbox and on CI runners, 5.1 in the Debian-based Docker image). iOS deployment target 16.4 (Expo default). Android
-`arm64-v8a` + `armeabi-v7a` in release APKs.
+Expo SDK 58 (React Native 0.88, React 19.3, Hermes), expo-router, TypeScript 6, vitest 5,
+Node 22 (`.nvmrc`). Local native module `app/modules/shiron-audio` (Swift 5.9 / Kotlin, classic
+Expo module DSL). iOS deployment target 16.4 (Expo default). Android `arm64-v8a` +
+`armeabi-v7a` in release APKs. ffmpeg is used only to (re)generate test fixtures.
 
 ## Native projects
 
@@ -41,13 +41,11 @@ target `Shiron` (`ios/Shiron/`).
   annotations). Adding `--repo "$GITHUB_REPOSITORY"` (and stderr → annotations) fixed it on
   the next run. Likely cause: `gh` inferring the repo from the checkout's remote after the
   repo was renamed to `Shiron`; not proven. Keep `--repo` explicit.
-- `ubuntu-latest` moved to Ubuntu 26 in October 2026: the server job now runs ffmpeg 8.0.
-- The server's tests import `app/src/core/categories.ts`, and the server CI job installs
-  no app dependencies. vite/oxc resolves the *nearest* tsconfig, which was
-  `app/tsconfig.json` → `extends: expo/tsconfig.base` → "Tsconfig not found". Fixed with a
-  standalone `app/src/core/tsconfig.json`. Locally this hid behind vitest's transform cache —
-  reproduce with `app/node_modules` moved away and `server/node_modules/.vitest-cache`
-  deleted.
+- `ubuntu-latest` moved to Ubuntu 26 in October 2026 (ffmpeg 8.0 if installed there).
+- vite/oxc (vitest) resolves the *nearest* tsconfig of every file it transforms; one that
+  `extends` a package that isn't installed fails with "Tsconfig not found". Hit in 0.1 when the
+  (now removed) server imported app code. Locally this hides behind vitest's transform cache
+  (`node_modules/.vitest-cache`).
 
 ## Signing
 
@@ -62,9 +60,16 @@ target `Shiron` (`ios/Shiron/`).
 ## CI (`.github/workflows/ci.yml`)
 
 Push to `main`/`dev/**` and PRs: app typecheck + tests + `expo prebuild --clean` with
-assertions on the generated config (background audio, share extension, media playback
-service, audio intent filters, signing); server typecheck + tests (installs ffmpeg);
-server Docker image build + `/health` smoke test.
+assertions on the generated config (background audio, share extension incl. movies, media
+playback service, audio/video intent filters, signing, the audio module autolinked on both
+platforms).
+
+`native.yml` (when `app/modules/**` changes): **apple** job on `macos-15` builds
+`ios/Core` as a Swift package and runs it on the fixtures (`swift-tests/run.sh`; per-format
+results as `::notice::`/`::warning::` annotations); **android** job runs the JVM unit tests of
+`LoudnessPlan`, then the instrumented tests on an API 34 x86_64 emulator
+(`reactivecircus/android-emulator-runner`, KVM enabled) — real MediaCodec on every fixture.
+Gradle project of the local module: `:shiron-audio`.
 
 ## Releases (`.github/workflows/release.yml`)
 

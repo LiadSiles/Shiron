@@ -1,9 +1,10 @@
 # שירון — ספריית השירים של הגן
 
 [![CI](https://github.com/LiadSiles/shiron/actions/workflows/ci.yml/badge.svg)](https://github.com/LiadSiles/shiron/actions/workflows/ci.yml)
+[![Native audio](https://github.com/LiadSiles/shiron/actions/workflows/native.yml/badge.svg)](https://github.com/LiadSiles/shiron/actions/workflows/native.yml)
 [![Release](https://github.com/LiadSiles/shiron/actions/workflows/release.yml/badge.svg)](https://github.com/LiadSiles/shiron/actions/workflows/release.yml)
 
-אפליקציה לגננת. משתפים אליה הקלטות מוואטסאפ, קבצי mp3 וקישורי יוטיוב, והיא:
+אפליקציה לגננת. משתפים אליה הקלטות מוואטסאפ, קבצי שמע וסרטונים, וקישורי יוטיוב, והיא:
 
 - שומרת אותם ונותנת לכל שיר שם.
 - מסווגת לקטגוריות.
@@ -24,54 +25,31 @@
 
 כל דחיפה ל-`main` מייצרת גם בנייה לבדיקה (`v<גרסה>-build.<n>`) עם APK בלבד. הוראות ההתקנה המלאות מופיעות בכל שחרור.
 
-## מבנה הריפו
+## איך זה עובד
 
-```
-app/        אפליקציית iOS + Android (Expo SDK 58, React Native, TypeScript)
-server/     שרת עיבוד: המרת שמע, תמלול עברית, שם וקטגוריה עם Claude
-docs/wiki/  ידע הנדסי: ארכיטקטורה, החלטות, מגבלות iOS, בנייה ושחרור
-scripts/    העלאת גרסה ומספור בנייה
-.github/    CI, שחרורים, תבניות issues ו-PR
-```
+אין שרת. כל העיבוד קורה באפליקציה:
 
-## למה צריך שרת?
+1. **שמע, בטלפון:** מודול נייטיב (Swift לאייפון, Kotlin לאנדרואיד) מפענח כל פורמט שעשוי להגיע:
+   - הקלטות וואטסאפ (Opus)
+   - mp3, m4a, wav, flac, amr
+   - השמע מתוך סרטוני mp4, mov, 3gp ו-mpeg
 
-הודעות קוליות מוואטסאפ מגיעות בפורמט Ogg/Opus, ש**אייפון לא מנגן**. השרת:
+   אחר כך הוא מקצץ שקט בהתחלה ובסוף, מאזן עוצמה, ושומר כ-m4a שכל טלפון מנגן. זה לא דורש אינטרנט, והשיר מתנגן תוך שניות.
+2. **הבנה, בענן:** תמלול עם Whisper, ושם, קטגוריות ומילות חיפוש ממודל שפה. שני השלבים רצים ב-[Groq](https://console.groq.com), שירות AI חינמי, עם מפתח של המשתמשת.
 
-1. ממיר אותן ל-m4a.
-2. מקצץ שקט בהתחלה ובסוף ומאזן עוצמה.
-3. מתמלל את השיר.
-4. שולח את התמלול ל-Claude, שמחזיר שם, קטגוריות ומילות חיפוש.
-
-השרת לא שומר שירים: קובץ מעובד נמחק אחרי 30 דקות, והספרייה נשמרת רק בטלפון.
+   האפליקציה מובילה אותה בחיבור: פותחת את דף המפתחות של Groq, ומזהה לבד את המפתח שהועתק. בלי מפתח, השירים נשמרים ומתנגנים, ורק השם והקטגוריה ממתינים.
 
 ## פיתוח
 
-דרישות: Node 22. לשרת צריך גם ffmpeg.
+דרישות: Node 22.
 
 ```bash
-npm run install:all        # תלויות של האפליקציה ושל השרת
-npm run check              # בדיקת טיפוסים + בדיקות, בשני הפרויקטים
+npm run install:all     # תלויות
+npm run check           # בדיקת טיפוסים + בדיקות
+npm run test:ios-audio  # בדיקות מודול השמע על מק (Swift)
 ```
 
-### שרת
-
-```bash
-cd server
-cp .env.example .env       # APP_TOKEN, ANTHROPIC_API_KEY, OPENAI_API_KEY
-npm start                  # http://localhost:8787
-```
-
-עם Docker (מתיקיית השורש):
-
-```bash
-docker build -f server/Dockerfile -t shiron-server .
-docker run --env-file server/.env -p 8787:8787 shiron-server
-```
-
-### אפליקציה
-
-האפליקציה משתמשת בקוד נייטיב (שיתוף מוואטסאפ, ניגון ברקע), ולכן לא רצה ב-Expo Go.
+האפליקציה משתמשת בקוד נייטיב (מודול השמע, שיתוף מוואטסאפ, ניגון ברקע), ולכן לא רצה ב-Expo Go:
 
 ```bash
 cd app
@@ -79,16 +57,16 @@ npx expo run:android            # טלפון אנדרואיד ב-USB, עם Andro
 npx expo run:ios --device       # מק עם Xcode
 ```
 
-חיבור לשרת: באפליקציה ⚙︎ ← שרת עיבוד ← כתובת + מפתח גישה (`APP_TOKEN`).
+ה-CI מריץ את מודול השמע על מק ועל אמולטור אנדרואיד, עם קבצי בדיקה בכל הפורמטים.
 
 ### שחרור גרסה
 
 ```bash
 npm run version:bump -- minor   # מעדכן app.json ו-package.json ומוסיף כותרת ב-CHANGELOG
-git commit -am "Release 0.2.0" && git push
+git commit -am "Release 0.3.0" && git push
 ```
 
-הדחיפה ל-`main` בונה APK ו-IPA ומפרסמת שחרור `v0.2.0` עם הערות מתוך `CHANGELOG.md`. הפרטים ב-[docs/wiki/build-and-release.md](docs/wiki/build-and-release.md).
+הדחיפה ל-`main` בונה APK ו-IPA ומפרסמת שחרור עם הערות מתוך `CHANGELOG.md`. הפרטים ב-[docs/wiki/build-and-release.md](docs/wiki/build-and-release.md).
 
 ## תיעוד
 
