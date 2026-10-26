@@ -104,7 +104,12 @@ media notification could never be swiped away and stayed after leaving the app (
   finished → `stopForeground(STOP_FOREGROUND_DETACH)`, re-posted as a normal, dismissible
   notification; resumed → `startForeground` again. This is what media3's own
   `MediaSessionService` does.
-- Swiping it away (`setDeleteIntent` → `ACTION_DISMISS`) keeps it hidden until playback resumes.
+- Swiping it away (`setDeleteIntent` → `ACTION_DISMISS`) keeps it hidden until playback resumes
+  **or a song is started**: `setPlayableOptions` (every `setActiveForLockScreen` for the same
+  player, i.e. every `playSong`) resets `dismissed` and, if playback is on, promotes the
+  service to the foreground again. 0.5.1 kept a swiped-away notification hidden for good on
+  the owner's phone (owner report). The released session is also nulled at once, so no
+  notification is built on it while the new one is being created.
 - `onTaskRemoved`: closing the app from recents while nothing plays clears the session.
 - Seek bar: the session already allows `COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM`, which Android
   13+ shows as a draggable bar; we pass `isLiveStream: false` explicitly. The owner saw no bar

@@ -1,5 +1,5 @@
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
-index 53c36f7..8f3d0b8 100644
+index 53c36f7..1bcf7aa 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 @@ -65,6 +65,11 @@ class AudioControlsService : MediaSessionService() {
@@ -47,7 +47,32 @@ index 53c36f7..8f3d0b8 100644
    }
  
    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-@@ -666,6 +676,11 @@ class AudioControlsService : MediaSessionService() {
+@@ -531,6 +541,7 @@ class AudioControlsService : MediaSessionService() {
+       updateArtwork(metadata, postUpdate = false)
+ 
+       mediaSession?.release()
++      mediaSession = null // [shiron] never build a notification on the released session
+       sessionMetadataPlayer = null
+       appContext?.mainQueue?.launch {
+         val context = appContext?.reactContext ?: return@launch
+@@ -550,7 +561,15 @@ class AudioControlsService : MediaSessionService() {
+         sessionMetadataPlayer = sessionPlayer
+ 
+         updateSessionCustomLayout(playable.player.isPlaying)
+-        postOrStartForegroundNotification(startInForeground = false)
++        // [shiron] Every song started shows the controls again, even after she swiped them away
++        // (0.5.1 kept a swiped-away notification hidden for good).
++        dismissed = false
++        if (playable.player.playWhenReady) {
++          detached = false
++          postOrStartForegroundNotification(startInForeground = true)
++        } else {
++          postOrStartForegroundNotification(startInForeground = false)
++        }
+       }
+     } else {
+       setActivePlayableInternal(playable, metadata, options)
+@@ -666,6 +685,11 @@ class AudioControlsService : MediaSessionService() {
  
        override fun onPlaybackStateChanged(playbackState: Int) {
          postOrStartForegroundNotification(startInForeground = false)
@@ -59,7 +84,7 @@ index 53c36f7..8f3d0b8 100644
        }
      }
      playbackListener = listener
-@@ -683,7 +698,42 @@ class AudioControlsService : MediaSessionService() {
+@@ -683,7 +707,42 @@ class AudioControlsService : MediaSessionService() {
      }
    }
  
