@@ -143,7 +143,7 @@ async function finishSession() {
 export class NotPlayableError extends Error {}
 export class MissingFileError extends Error {}
 
-export function isPlayable(song: Song): boolean {
+function isPlayable(song: Song): boolean {
   return song.kind === 'audio' && !!song.playableUri;
 }
 

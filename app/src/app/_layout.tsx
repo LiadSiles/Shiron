@@ -2,7 +2,7 @@ import { Rubik_400Regular, Rubik_500Medium, Rubik_700Bold, useFonts } from '@exp
 import { router, Stack } from 'expo-router';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getGroqKey } from '../api/groq';

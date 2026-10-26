@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { getGroqKey, onGroqKeyChange, removeGroqKey } from '../api/groq';
 import { describeSummary, importFromPicker } from '../ingest/ingest';

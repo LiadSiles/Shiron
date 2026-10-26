@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { getCategory } from '../core/categories';
 import type { SongWithCategories } from '../core/types';
@@ -27,19 +27,6 @@ function ReviewCard({ song }: { song: SongWithCategories }) {
     toast(`נכנס לספרייה: ${song.title}`);
   };
 
-  if (song.status === 'failed') {
-    return (
-      <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]}>
-        <T weight="bold" size={18}>{song.title}</T>
-        <T soft size={14}>העיבוד נכשל: {song.error ?? 'שגיאה לא ידועה'}</T>
-        <View style={styles.actions}>
-          <Button label="לנסות שוב" onPress={() => retrySong(song.id)} style={{ flex: 1 }} />
-          <Button label="עריכה ידנית" kind="quiet" onPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })} style={{ flex: 1 }} />
-        </View>
-      </View>
-    );
-  }
-
   return (
     <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]}>
       <Pressable onPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })} accessibilityHint="פתיחה לעריכת השם">
@@ -47,6 +34,12 @@ function ReviewCard({ song }: { song: SongWithCategories }) {
         <T weight="bold" size={20}>{song.title}</T>
       </Pressable>
       {song.lyrics ? <T soft size={14} numberOfLines={2}>{song.lyrics}</T> : null}
+      {song.error ? (
+        <View style={styles.errorRow}>
+          <T size={14} style={{ flex: 1, color: c.warn }}>{song.error}</T>
+          <Button label="לנסות שוב" kind="quiet" onPress={() => retrySong(song.id)} />
+        </View>
+      ) : null}
 
       <T soft size={13} style={{ marginTop: space.s }}>קטגוריה</T>
       <View style={styles.chips}>
@@ -83,7 +76,7 @@ function ReviewCard({ song }: { song: SongWithCategories }) {
 }
 
 export function ReviewScreen({ lib }: { lib: LibraryState }) {
-  const items = lib.songs.filter((s) => s.status === 'review' || s.status === 'failed');
+  const items = lib.songs.filter((s) => s.status === 'review');
   return (
     <FlatList
       data={items}
@@ -106,4 +99,5 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   chip: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingVertical: 6, paddingHorizontal: space.m, borderRadius: radius.l, borderWidth: 1.5, minHeight: 44 },
   actions: { flexDirection: 'row', gap: space.s, marginTop: space.m },
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: space.s },
 });

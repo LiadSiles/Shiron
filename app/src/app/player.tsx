@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { getCategory } from '../core/categories';
 import { next, previous, seek, setRepeat, togglePlay, usePlayer } from '../player/player';

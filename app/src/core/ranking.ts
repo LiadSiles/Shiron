@@ -16,7 +16,7 @@ export const RANKING = {
   seasonalBoost: 3,
 } as const;
 
-export function countsAsPlay(e: PlayEvent, durationSec: number | null): boolean {
+function countsAsPlay(e: PlayEvent, durationSec: number | null): boolean {
   if (e.listenedSec >= RANKING.minListenSec) return true;
   return !!durationSec && durationSec > 0 && e.listenedSec / durationSec >= RANKING.minListenFraction;
 }
@@ -32,7 +32,7 @@ export function frecency(events: PlayEvent[], durationSec: number | null, now: n
   return s;
 }
 
-export function newSongBoost(createdAt: number, now: number): number {
+function newSongBoost(createdAt: number, now: number): number {
   const ageDays = (now - createdAt) / DAY_MS;
   if (ageDays < 0 || ageDays >= RANKING.newSongDays) return 0;
   return RANKING.newSongBoost * (1 - ageDays / RANKING.newSongDays);

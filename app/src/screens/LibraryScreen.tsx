@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import React from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { getCategory } from '../core/categories';
 import { textOn } from '../core/color';

@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Linking, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import type { Song } from '../../core/types';

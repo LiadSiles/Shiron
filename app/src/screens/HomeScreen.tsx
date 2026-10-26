@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { importFromPicker, describeSummary } from '../ingest/ingest';
 import { onProcessorState, ProcessorState } from '../ingest/processor';

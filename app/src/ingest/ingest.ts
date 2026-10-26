@@ -30,7 +30,7 @@ function newSong(partial: Partial<Song> & Pick<Song, 'id' | 'kind' | 'title'>): 
 }
 
 /** Copy one audio or video file into the app's own storage and add it to the library. */
-export async function importMediaFile(
+async function importMediaFile(
   source: File,
   fileName: string,
   context: string | null,
@@ -67,7 +67,7 @@ export async function importMediaFile(
   summary.added.push(id);
 }
 
-export async function importYoutube(url: string, context: string | null, title: string | null, summary: ImportSummary) {
+async function importYoutube(url: string, context: string | null, title: string | null, summary: ImportSummary) {
   const youtubeId = youtubeIdFrom(url);
   if (!youtubeId) return;
   const existing = await findByYoutube(youtubeId);

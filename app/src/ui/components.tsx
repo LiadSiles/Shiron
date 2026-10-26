@@ -1,6 +1,5 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import React from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
 import { getCategory } from '../core/categories';
 import { highlight } from '../core/search';
@@ -65,7 +64,6 @@ export function statusLabel(song: SongWithCategories): string | null {
   if (song.audioState === 'unsupported' && !song.playableUri) return song.error ?? 'הפורמט לא נתמך במכשיר הזה';
   if (song.audioState === 'raw' && !song.playableUri) return 'מכינה לניגון…';
   if (song.status === 'pending') return 'ממתין לשם וקטגוריה';
-  if (song.status === 'failed') return 'העיבוד נכשל';
   if (song.status === 'review') return 'ממתין לאישור';
   return null;
 }

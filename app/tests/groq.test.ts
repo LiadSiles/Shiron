@@ -1,20 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CATEGORIES } from '../src/core/categories';
-import {
-  describeGroqError,
-  errorFromResponse,
-  findGroqKey,
-  GroqError,
-  parseRetryAfter,
-} from '../src/core/groqRules';
-import { isMediaFile, isNativelyPlayable, isVideoFile, mimeOf } from '../src/core/ingestRules';
-import {
-  buildUserMessage,
-  fallbackUnderstanding,
-  parseModelJson,
-  sanitize,
-  UNDERSTANDING_SCHEMA,
-} from '../src/core/understand';
+import { describeGroqError, errorFromResponse, findGroqKey, GroqError, parseRetryAfter } from '../src/core/groqRules';
+import { buildUserMessage, fallbackUnderstanding, parseModelJson, sanitize, UNDERSTANDING_SCHEMA } from '../src/core/understand';
 
 describe('understanding', () => {
   it('drops invented categories and clamps confidence', () => {
@@ -100,45 +87,5 @@ describe('groq rules', () => {
     expect(errorFromResponse(400, '', h({})).retryable).toBe(false);
     expect(errorFromResponse(503, '', h({})).retryable).toBe(true);
     expect(describeGroqError(new GroqError('invalid-key', 'x'))).toContain('לחבר מחדש');
-  });
-});
-
-describe('formats', () => {
-  it('accepts audio and video from WhatsApp and the Files app', () => {
-    for (const [name, mime] of [
-      ['PTT-20251012-WA0014.opus', 'audio/ogg'], ['a.mp3', 'audio/mpeg'], ['a.m4a', null], ['a.amr', null],
-      ['clip.mp4', 'video/mp4'], ['clip.mpeg', null], ['clip.3gp', null], ['x.bin', 'application/ogg'],
-    ] as const) {
-      expect(isMediaFile(name, mime), name).toBe(true);
-    }
-    expect(isMediaFile('notes.pdf', 'application/pdf')).toBe(false);
-    expect(isMediaFile('photo.jpg', 'image/jpeg')).toBe(false);
-  });
-
-  it('knows videos', () => {
-    expect(isVideoFile('a.mov')).toBe(true);
-    expect(isVideoFile('a.bin', 'video/quicktime')).toBe(true);
-    expect(isVideoFile('a.mp3', 'audio/mpeg')).toBe(false);
-  });
-
-  it('plays only what the platform reads before conversion', () => {
-    expect(isNativelyPlayable('a.flac', 'ios')).toBe(false);
-    expect(isNativelyPlayable('a.flac', 'android')).toBe(true);
-    expect(isNativelyPlayable('clip.mp4', 'ios')).toBe(false);
-  });
-
-  it('sends the right MIME type with uploads', () => {
-    expect(mimeOf('x.m4a')).toBe('audio/mp4');
-    expect(mimeOf('x.opus')).toBe('audio/ogg');
-    expect(mimeOf('x.zzz')).toBe('application/octet-stream');
-  });
-});
-
-describe('search by meaning', () => {
-  it('keeps clean single Hebrew words, drops repeats, sentences and the typed word', async () => {
-    const { parseExpansion } = await import('../src/core/understand');
-    const out = parseExpansion('```json\n{"words": ["פְּרָחִים", "אביב", "פרחים", "ניצנים", "עץ שקדיה פורח", 7, "x"]}\n```', 'אביב');
-    expect(out).toEqual(['פרחים', 'ניצנים']);
-    expect(parseExpansion('not json', 'אביב')).toEqual([]);
   });
 });

@@ -56,6 +56,10 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE songs ADD COLUMN audio_state TEXT NOT NULL DEFAULT 'raw';
   `,
+  // v3 — no 'failed' status any more: songs the 0.1 server failed on get another try.
+  `
+  UPDATE songs SET status = 'pending', error = NULL WHERE status = 'failed';
+  `,
 ];
 
 async function migrate(db: SQLite.SQLiteDatabase) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T } from './components';
@@ -48,8 +48,8 @@ export function ToastHost() {
 const styles = StyleSheet.create({
   toast: {
     position: 'absolute',
-    left: space.l,
-    right: space.l,
+    start: space.l,
+    end: space.l,
     padding: space.m,
     borderRadius: radius.m,
     zIndex: 100,

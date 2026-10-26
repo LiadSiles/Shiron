@@ -1,6 +1,6 @@
 # Search and ranking
 
-_Last verified: 2026-10-26 (0.3.0, unit-tested in `app/tests/core.test.ts`)_
+_Last verified: 2026-10-26 (0.3.0, unit-tested in `app/tests/search.test.ts`, `hebrew.test.ts`, `ranking.test.ts`)_
 
 ## Hebrew normalization (`core/hebrew.ts`)
 

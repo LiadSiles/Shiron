@@ -1,14 +1,14 @@
 /** Pure helpers for turning shared content into songs. */
 
-export const AUTO_ACCEPT_CONFIDENCE = 0.85;
-export const SUGGEST_CONFIDENCE = 0.5;
+const AUTO_ACCEPT_CONFIDENCE = 0.85;
+const SUGGEST_CONFIDENCE = 0.5;
 
 /** Audio formats a teacher may receive. Decoded on the phone (see docs/wiki/audio-processing.md). */
-export const AUDIO_EXT = [
+const AUDIO_EXT = [
   'mp3', 'mpga', 'm4a', 'aac', 'wav', 'aif', 'aiff', 'caf', 'flac', 'ogg', 'oga', 'opus', 'amr', 'awb', 'wma',
 ];
 /** Videos: the sound track is extracted (a song filmed in another kindergarten, a clip). */
-export const VIDEO_EXT = ['mp4', 'm4v', 'mov', '3gp', '3g2', 'mpeg', 'mpg', 'webm', 'mkv', 'avi'];
+const VIDEO_EXT = ['mp4', 'm4v', 'mov', '3gp', '3g2', 'mpeg', 'mpg', 'webm', 'mkv', 'avi'];
 
 const MEDIA_MIME = /^(audio|video)\//;
 const MEDIA_MIME_EXTRA = new Set(['application/ogg', 'application/x-ogg']);
@@ -23,10 +23,6 @@ export function isMediaFile(fileName: string, mimeType?: string | null): boolean
   if (mimeType && (MEDIA_MIME.test(mimeType) || MEDIA_MIME_EXTRA.has(mimeType))) return true;
   const ext = extensionOf(fileName);
   return AUDIO_EXT.includes(ext) || VIDEO_EXT.includes(ext);
-}
-
-export function isVideoFile(fileName: string, mimeType?: string | null): boolean {
-  return !!mimeType?.startsWith("video/") || VIDEO_EXT.includes(extensionOf(fileName));
 }
 
 /**

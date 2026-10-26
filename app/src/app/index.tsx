@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLibrary } from '../db/useLibrary';
@@ -28,7 +28,7 @@ export default function Shell() {
   const c = useTheme();
   const lib = useLibrary();
   const [tab, setTab] = useState<Tab>('home');
-  const reviewCount = lib.songs.filter((s) => s.status === 'review' || s.status === 'failed').length;
+  const reviewCount = lib.songs.filter((s) => s.status === 'review').length;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>

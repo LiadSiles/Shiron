@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { checkGroqKey, saveGroqKey } from '../api/groq';
 import { findGroqKey, GROQ_KEYS_PAGE, GroqError } from '../core/groqRules';

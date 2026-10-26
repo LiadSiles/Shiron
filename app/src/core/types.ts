@@ -13,9 +13,10 @@ export type AudioState = 'raw' | 'done' | 'unsupported';
  * pending  – saved, waiting for Groq (or for the teacher to connect it)
  * review   – processed, but the AI was not confident; shown in the review inbox
  * ready    – in the library, confirmed or confidently auto-classified
- * failed   – processing failed; still playable when the original format allows it
+ * When Groq can't handle a song, it goes to review with a fallback name and `error` set
+ * (0.1's server-side 'failed' status was migrated away in DB v3).
  */
-export type SongStatus = 'pending' | 'review' | 'ready' | 'failed';
+export type SongStatus = 'pending' | 'review' | 'ready';
 
 export type TitleSource = 'file' | 'ai' | 'user';
 

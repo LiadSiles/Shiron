@@ -1,7 +1,8 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { CATEGORIES } from '../../core/categories';
+import { formatTime } from '../../core/time';
 import type { SongWithCategories } from '../../core/types';
 import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
 import { retrySong } from '../../ingest/processor';
@@ -10,13 +11,6 @@ import { clearIfCurrent, refreshCurrent } from '../../player/player';
 import { Button, CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
 import { toast } from '../../ui/toast';
 import { font, radius, space, useTheme } from '../../ui/theme';
-
-function formatDuration(sec: number | null) {
-  if (!sec) return null;
-  const m = Math.floor(sec / 60);
-  const s = Math.round(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 export default function SongScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -100,7 +94,7 @@ export default function SongScreen() {
         <Button label="ניגון" icon="▶︎" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
         <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon="📌" kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
       </View>
-      {song.status === 'failed' || song.status === 'pending' ? (
+      {song.status === 'pending' || song.error ? (
         <Button label="לעבד שוב" kind="quiet" icon="↻" onPress={() => retrySong(song.id)} style={{ marginTop: space.s }} />
       ) : null}
 
@@ -144,7 +138,7 @@ export default function SongScreen() {
 
       <T weight="bold" size={18} style={styles.h}>מקור</T>
       {song.sourceName ? <T soft size={14}>קובץ: {song.sourceName}</T> : null}
-      {formatDuration(song.durationSec) ? <T soft size={14}>אורך: {formatDuration(song.durationSec)}</T> : null}
+      {song.durationSec ? <T soft size={14}>אורך: {formatTime(song.durationSec)}</T> : null}
       {song.contextText ? <T soft size={14}>נשלח עם ההודעה: “{song.contextText}”</T> : null}
       {song.summary ? <T soft size={14}>תקציר: {song.summary}</T> : null}
 

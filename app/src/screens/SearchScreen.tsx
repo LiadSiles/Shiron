@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { expandQuery, getGroqKey } from '../api/groq';
 import { getCategory } from '../core/categories';

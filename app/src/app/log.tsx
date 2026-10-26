@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, ScrollView, View } from 'react-native';
 import { clearDiag, onDiag, readDiag } from '../diag/log';
 import { Button, T } from '../ui/components';
