@@ -55,7 +55,7 @@ export function HomeScreen({ lib, goToReview }: { lib: LibraryState; goToReview:
           <T weight="medium">
             {pendingCount === 1 ? 'שיר אחד מחכה לשם ולקטגוריה' : `${pendingCount} שירים מחכים לשם ולקטגוריה`}
           </T>
-          <T soft size={14}>חיבור חד-פעמי ל-Groq, שירות חינמי, כשתי דקות ›</T>
+          <T soft size={14}>חיבור חד-פעמי לשירות AI חינמי, כשתי דקות ›</T>
         </Pressable>
       ) : null}
 

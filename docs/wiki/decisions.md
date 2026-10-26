@@ -105,3 +105,11 @@ Owner: a new song must be playable at once, with its details filling in later. S
 approval step the zero-maintenance rule says she may never do. Now they appear (with "ממתין
 לאישור") everywhere except inside category tiles, where their unconfirmed AI category could
 put them in the wrong place. Home has a "נוספו עכשיו" section (last 2 days, any status).
+
+### 2026-10-26 — Gemini as a second AI service, with the recording, behind a warning
+Owner asked to be able to switch language model and connect Gemini "like Groq". Asked first,
+because Gemini's free tier (unlike Groq) may use submitted content to improve Google's models
+and lets human reviewers read it, and recordings may contain children. Options offered: text
+only (transcription stays on Groq), full Gemini with a warning, or no Gemini. **Owner chose
+full Gemini with a warning**, and automatic fallback between connected services when one runs
+out of quota. Groq stays the recommended default. Earlier decision "Groq only" is superseded.

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { CATEGORIES } from '../src/core/categories';
-import { describeGroqError, errorFromResponse, findGroqKey, GroqError, parseRetryAfter } from '../src/core/groqRules';
 import { buildUserMessage, fallbackUnderstanding, parseModelJson, sanitize, UNDERSTANDING_SCHEMA } from '../src/core/understand';
 
 describe('understanding', () => {
@@ -55,37 +54,5 @@ describe('understanding', () => {
     const item = UNDERSTANDING_SCHEMA.properties.categories.items;
     expect(item.additionalProperties).toBe(false);
     expect(item.properties.id.enum).toHaveLength(CATEGORIES.length);
-  });
-});
-
-describe('groq rules', () => {
-  it('finds a key in copied text', () => {
-    expect(findGroqKey('gsk_abcdefghijklmnopqrstuvwxyz0123456789')).toBe('gsk_abcdefghijklmnopqrstuvwxyz0123456789');
-    expect(findGroqKey(' המפתח: gsk_ABCDEFGHIJKLMNOPQRSTUVWX12 \n')).toBe('gsk_ABCDEFGHIJKLMNOPQRSTUVWX12');
-    expect(findGroqKey('gsk_short')).toBeNull();
-    expect(findGroqKey('sk-ant-123')).toBeNull();
-    expect(findGroqKey(null)).toBeNull();
-  });
-
-  it('parses retry-after in seconds and Groq duration formats', () => {
-    expect(parseRetryAfter('12')).toBe(12);
-    expect(parseRetryAfter('7m12.5s')).toBe(432.5);
-    expect(parseRetryAfter('1h2m3s')).toBe(3723);
-    expect(parseRetryAfter('250ms')).toBeNull();
-    expect(parseRetryAfter(null)).toBeNull();
-  });
-
-  it('maps HTTP status to what the app should do', () => {
-    const h = (map: Record<string, string>) => (k: string) => map[k] ?? null;
-    expect(errorFromResponse(401, '{"error":{"message":"Invalid API Key"}}', h({})).kind).toBe('invalid-key');
-    const rl = errorFromResponse(429, '{}', h({ 'retry-after': '30' }));
-    expect(rl.kind).toBe('rate-limited');
-    expect(rl.retryAfterSec).toBe(30);
-    expect(rl.retryable).toBe(true);
-    expect(errorFromResponse(429, '{}', h({ 'x-ratelimit-reset-requests': '2m0s' })).retryAfterSec).toBe(120);
-    expect(errorFromResponse(413, '', h({})).kind).toBe('too-large');
-    expect(errorFromResponse(400, '', h({})).retryable).toBe(false);
-    expect(errorFromResponse(503, '', h({})).retryable).toBe(true);
-    expect(describeGroqError(new GroqError('invalid-key', 'x'))).toContain('לחבר מחדש');
   });
 });

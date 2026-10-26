@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
 import { AppState, I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { getGroqKey } from '../api/groq';
+import { connectedProviders } from '../api/keys';
 import { getSetting, setSetting } from '../db/repo';
 import { describeSummary, importShareIntent } from '../ingest/ingest';
 import { processQueue } from '../ingest/processor';
@@ -47,9 +47,9 @@ function ShareHandler() {
   return null;
 }
 
-/** After the first song arrives, show how to connect Groq — once; later the home banner reminds. */
+/** After the first song arrives, show how to connect an AI service — once; later the home banner reminds. */
 async function offerConnectOnce() {
-  if (await getGroqKey()) return;
+  if ((await connectedProviders()).length) return;
   if (await getSetting('connectOffered')) return;
   await setSetting('connectOffered', '1');
   router.push('/connect');
@@ -90,7 +90,7 @@ export default function RootLayout() {
           <Stack.Screen name="player" options={{ presentation: 'modal', title: 'מתנגן עכשיו' }} />
           <Stack.Screen name="youtube/[id]" options={{ title: 'יוטיוב' }} />
           <Stack.Screen name="settings" options={{ title: 'הגדרות' }} />
-          <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור Groq' }} />
+          <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור שירות AI' }} />
           <Stack.Screen name="log" options={{ title: 'יומן טכני' }} />
         </Stack>
         <ToastHost />

@@ -7,7 +7,7 @@ import { Button, T } from '../ui/components';
 import { toast } from '../ui/toast';
 import { space } from '../ui/theme';
 
-/** Settings → יומן טכני: recent import / conversion / Groq / playback events, to copy and send. */
+/** Settings → יומן טכני: recent import / conversion / AI / playback events, to copy and send. */
 export default function LogScreen() {
   const [lines, setLines] = useState<string[]>([]);
 

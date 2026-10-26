@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { expandQuery, getGroqKey } from '../api/groq';
+import { relatedWords } from '../api/ai';
+import { connectedProviders } from '../api/keys';
 import { getCategory } from '../core/categories';
 import { normalize } from '../core/hebrew';
 import { matchCategories, pushRecent, searchSongs, SearchHit } from '../core/search';
@@ -49,7 +50,7 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
   const direct = useMemo(() => searchSongs(lib.songs, deferred, lib.usage), [lib.songs, deferred, lib.usage]);
   const cats = useMemo(() => matchCategories(deferred), [deferred]);
 
-  // Few direct results: after she pauses typing, ask Groq for words related in meaning.
+  // Few direct results: after she pauses typing, ask the AI service for words related in meaning.
   const directCount = direct.length;
   useEffect(() => {
     const q = deferred.trim();
@@ -57,11 +58,10 @@ export function SearchScreen({ lib }: { lib: LibraryState }) {
     if (q.length < 2 || directCount >= FEW_HITS || !lib.songs.length) return;
     const abort = new AbortController();
     const timer = setTimeout(async () => {
-      const key = await getGroqKey();
-      if (!key || abort.signal.aborted) return;
+      if (!(await connectedProviders()).length || abort.signal.aborted) return;
       setThinking(true);
       try {
-        const words = await expandQuery(key, q, abort.signal);
+        const words = await relatedWords(q, abort.signal);
         if (!abort.signal.aborted) setRelated({ query: q, words });
       } catch (e) {
         if (!abort.signal.aborted) diag('search.expand.failed', String(e));

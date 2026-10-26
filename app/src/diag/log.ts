@@ -1,7 +1,7 @@
 import { getSetting, setSetting } from '../db/repo';
 
 /**
- * A short technical log of what happened to recent songs (import, conversion, Groq, playback),
+ * A short technical log of what happened to recent songs (import, conversion, AI, playback),
  * shown in Settings → יומן טכני with a copy button. It is how device-only problems get
  * diagnosed: the owner copies it into a message. Kept on the phone only; last 150 lines.
  */

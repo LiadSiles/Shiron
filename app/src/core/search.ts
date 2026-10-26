@@ -106,7 +106,7 @@ function snippetFor(idx: Indexed, qTokens: string[], field: SearchField): string
 /**
  * Full-text search: every typed word must match some field (AND), tolerating Hebrew prefixes,
  * full/defective spelling, sound-alike letters and typos. `related` words (from the AI, see
- * src/api/groq.ts → expandQuery) add songs where ANY of them matches, scored lower and marked.
+ * src/api/ai.ts → relatedWords) add songs where ANY of them matches, scored lower and marked.
  * Usage breaks ties, so familiar songs come first.
  */
 export function searchSongs(

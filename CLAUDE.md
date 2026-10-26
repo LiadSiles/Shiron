@@ -7,7 +7,7 @@ Hebrew-first UI, forced RTL. Owner: Liad. **iPhone is the top-priority platform*
 exists so the owner can test on his own phone.
 
 Read `docs/wiki/README.md` before changing anything non-trivial. The wiki holds the facts
-that are expensive to rediscover (iOS audio limits, the native audio module, Groq, decisions
+that are expensive to rediscover (iOS audio limits, the native audio module, the AI services, decisions
 already taken and why).
 
 ## Hard constraints — do not "fix" these away
@@ -15,12 +15,14 @@ already taken and why).
 - **iOS first.** Every feature must work on iPhone. Test assumptions against iOS limits in
   `docs/wiki/ios-constraints.md` (e.g. iOS cannot play WhatsApp's Ogg/Opus voice notes).
 - **No server of our own.** Audio is converted on the phone (native module); the only network
-  calls are to Groq with the user's own key and to YouTube oEmbed. The library lives on the
-  phone. Don't add a backend, analytics or any other service without the owner's decision —
-  recordings may contain children.
-- **AI = cloud models, free tier, Groq only, each user's own key.** No local models, no paid
-  services, no key in the build or the repo. Connecting must stay a guided in-app flow
-  (`src/app/connect.tsx`). Without a key, songs are still saved and playable.
+  calls are to the AI services (Groq, Gemini) with the user's own keys and to YouTube oEmbed.
+  The library lives on the phone. Don't add a backend, analytics or any other service without
+  the owner's decision — recordings may contain children.
+- **AI = cloud models, free tier, Groq or Gemini, each user's own key.** No local models, no
+  paid services, no key in the build or the repo. Groq is the recommended default; Gemini's
+  free tier may train on what it receives, so it is offered with a plain warning (owner's
+  decision, see `decisions.md`). Another service = the owner's decision. Connecting must stay a
+  guided in-app flow (`src/app/connect.tsx`). Without a key, songs are still saved and playable.
 - **The AI suggests, the teacher decides.** A title or category the teacher set
   (`titleSource = 'user'`, `confirmed = true`) is never overwritten by processing.
 - **YouTube: visible embedded player only.** No downloading, no background playback of
@@ -66,12 +68,14 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     ranking.ts               frecency ranking (τ = 30 days), pins, seasonal boost
     ingestRules.ts           formats, YouTube ids, fallback titles, playability, review thresholds
     understand.ts            prompt, strict JSON schema, sanitising the model's answer, search expansion
-    groqRules.ts             models, key detection, error mapping, retry-after
+    ai.ts                    the AI services (keys, order, errors); groqRules.ts / geminiRules.ts
+                             models, error mapping, Gemini audio and answers
     time.ts, color.ts        player time format, readable text on coloured tiles
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
-  src/api/groq.ts            Groq calls (Whisper, chat, search expansion; timeouts), key in
-                             expo-secure-store, YouTube oEmbed
+  src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts
+                             the calls; keys.ts keys in expo-secure-store; http.ts timeouts;
+                             youtube.ts oEmbed
   src/diag/log.ts            on-phone technical log (Settings → יומן טכני)
   src/player/player.ts       expo-audio playlist: background, lock screen + notification
                              next/previous, fade-out pause, seek, queue

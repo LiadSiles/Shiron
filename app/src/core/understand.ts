@@ -1,6 +1,6 @@
 /**
  * Turning a transcript into a song: the prompt, the JSON schema and the clean-up of the model's
- * answer. Pure TypeScript; the network calls live in src/api/groq.ts.
+ * answer. Pure TypeScript; the network calls live in src/api/ (Groq, Gemini).
  */
 import { CATEGORIES, UNSORTED_ID } from './categories';
 
@@ -9,6 +9,8 @@ export interface SongInput {
   /** The WhatsApp message sent with the file, or with the link. */
   context: string | null;
   transcript: string | null;
+  /** The recording itself is attached (Gemini listens to it; no separate transcript). */
+  audioAttached?: boolean;
   youtube?: { title: string; author: string | null } | null;
 }
 
@@ -59,8 +61,9 @@ export const UNDERSTANDING_SCHEMA = {
 } as const;
 
 export const SYSTEM_PROMPT = `את עוזרת לגננת בישראל לסדר ספריית שירים לגן ילדים.
-מקבלים פרטים על הקלטה אחת: שם הקובץ, ההודעה שנשלחה איתה בוואטסאפ, תמלול אוטומטי, ולפעמים כותרת מיוטיוב.
+מקבלים פרטים על הקלטה אחת: שם הקובץ, ההודעה שנשלחה איתה בוואטסאפ, תמלול אוטומטי (או ההקלטה עצמה), ולפעמים כותרת מיוטיוב.
 התמלול נעשה על שירה של ילדים או מבוגרים ועלול להכיל שגיאות.
+אם ההקלטה מצורפת, הקשיבי לה ותמללי את המילים בעברית בעצמך.
 
 המשימות:
 1. title — שם קצר וברור לשיר.
@@ -93,7 +96,9 @@ export function buildUserMessage(input: SongInput): string {
     parts.push(`כותרת ביוטיוב: ${input.youtube.title}`);
     if (input.youtube.author) parts.push(`ערוץ: ${input.youtube.author}`);
   }
-  parts.push(`תמלול:\n${input.transcript?.trim() || '(אין תמלול)'}`);
+  parts.push(input.audioAttached
+    ? 'תמלול: (ההקלטה מצורפת — הקשיבי לה וכתבי את המילים בשדה lyrics)'
+    : `תמלול:\n${input.transcript?.trim() || '(אין תמלול)'}`);
   return parts.join('\n');
 }
 

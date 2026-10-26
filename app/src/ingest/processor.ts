@@ -1,7 +1,9 @@
 import { File } from 'expo-file-system';
 import { audioErrorCode, processAudio } from '../../modules/shiron-audio';
-import { getGroqKey, transcribe, understand, youtubeMeta } from '../api/groq';
-import { describeGroqError, GroqError } from '../core/groqRules';
+import { nameSong, resumeAllProviders } from '../api/ai';
+import { connectedProviders } from '../api/keys';
+import { youtubeMeta } from '../api/youtube';
+import { AiError, describeAiError } from '../core/ai';
 import { decideStatus, keepCategories, mimeOf } from '../core/ingestRules';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
@@ -13,19 +15,20 @@ import { deleteStored, resolveStored, songsDir, toStoredPath } from './storage';
 /**
  * Two lanes, each one song at a time, oldest first:
  *  1. audio (on the phone, no network): decode → trim silence → loudness → AAC .m4a
- *  2. AI (Groq, needs the teacher's key): Whisper transcription → title, categories, lyrics
- * The lanes run independently: a song shared while Groq works on others is converted (and
+ *  2. AI (Groq or Gemini, needs one of the teacher's keys; see src/api/ai.ts): the recording
+ *     and its context → title, categories, lyrics
+ * The lanes run independently: a song shared while the AI works on others is converted (and
  * playable) within seconds, and its name and category arrive later. The UI picks up every
  * change through the repo's library events.
  */
 
 export interface ProcessorState {
   running: boolean;
-  /** Songs waiting for the AI step because Groq isn't connected. */
+  /** Songs waiting for the AI step because no AI service is connected. */
   needsKey: boolean;
-  /** Last Groq problem worth showing (quota, invalid key, offline), in Hebrew. */
+  /** Last AI-service problem worth showing (quota, invalid key, offline), in Hebrew. */
   notice: string | null;
-  /** Don't call Groq again before this time (ms), after a rate limit. */
+  /** Don't call the AI services again before this time (ms), after a rate limit. */
   pausedUntil: number;
 }
 
@@ -104,8 +107,7 @@ async function nameSongs() {
     setState({ needsKey: false });
     return;
   }
-  const key = await getGroqKey();
-  if (!key) {
+  if (!(await connectedProviders()).length) {
     setState({ needsKey: true });
     return;
   }
@@ -117,24 +119,25 @@ async function nameSongs() {
     if (!song || song.status !== 'pending') continue; // deleted or approved meanwhile
     if (song.kind === 'audio' && song.audioState === 'raw') continue; // the audio lane comes back for it
     try {
-      await understandSong(song, key);
+      await understandSong(song);
       setState({ notice: null });
     } catch (e) {
-      diag('groq failed', song.title, e instanceof GroqError ? `${e.kind}: ${e.message}` : e);
-      const err = e instanceof GroqError ? e : new GroqError('bad-request', String((e as Error)?.message ?? e));
-      if (err.retryable || err.kind === 'invalid-key') {
-        // Leave this and the rest pending; resume on next foreground or import.
+      diag('naming failed', song.title, e instanceof AiError ? `${e.provider ?? ''} ${e.kind}: ${e.message}` : e);
+      const err = e instanceof AiError ? e : new AiError('bad-request', String((e as Error)?.message ?? e));
+      if (err.transient) {
+        // No service can do it now: leave this and the rest pending; resume on the next
+        // foreground, import or connect.
         setState({
-          notice: describeGroqError(err),
+          notice: describeAiError(err),
           needsKey: err.kind === 'invalid-key',
           pausedUntil: err.kind === 'rate-limited' ? Date.now() + (err.retryAfterSec ?? 600) * 1000 : 0,
         });
-        await updateSong(song.id, { error: describeGroqError(err) });
+        await updateSong(song.id, { error: describeAiError(err) });
         return;
       }
-      // Not a Groq answer we can use (understandSong handles Groq's own refusals): name the song
-      // from what we know and send it to review, so the queue moves on.
-      await applyUnderstanding(song, fallbackUnderstanding(await inputFor(song, null)), describeGroqError(err));
+      // Not an answer we can use (services' own refusals are handled in nameSong): name the
+      // song from what we know and send it to review, so the queue moves on.
+      await applyUnderstanding(song, fallbackUnderstanding(await inputFor(song)), describeAiError(err));
     }
   }
 }
@@ -192,48 +195,24 @@ async function convert(song: Song) {
 
 // ---------------------------------------------------------------- step 2: AI
 
-async function inputFor(song: Song, transcript: string | null): Promise<SongInput> {
+async function inputFor(song: Song): Promise<SongInput> {
   return {
     fileName: song.kind === 'audio' ? song.sourceName : null,
     context: song.contextText,
-    transcript,
+    transcript: null,
     youtube: song.kind === 'youtube' && song.youtubeId ? await youtubeMeta(song.youtubeId) : null,
   };
 }
 
-/** Retryable problems (quota, offline, Groq down, bad key) are thrown: the queue stops and resumes later. */
-function isTransient(e: unknown): boolean {
-  return e instanceof GroqError && (e.retryable || e.kind === 'invalid-key');
-}
-
-async function understandSong(song: Song, key: string) {
-  let transcript: string | null = null;
-  if (song.kind === 'audio') {
-    // Prefer the converted m4a (small, mono); fall back to the original Groq may still read.
-    const stored = song.playableUri ?? song.originalUri;
-    const file = stored ? resolveStored(stored) : null;
-    if (file?.exists) {
-      try {
-        transcript = await transcribe(key, file, mimeOf(file.name));
-      } catch (e) {
-        if (isTransient(e)) throw e;
-        // e.g. a format Whisper rejects: the name can still come from the file name and message.
-        diag('transcription refused', song.sourceName ?? song.title, e);
-      }
-    }
-  }
-  diag('transcribed', song.sourceName ?? song.title, transcript ? `${transcript.length} chars` : 'no text');
-  const input = await inputFor(song, transcript);
-  try {
-    const result = await understand(key, input);
-    diag('named', result.title, result.categories.map((c) => `${c.id} ${c.confidence}`).join(', '));
-    await applyUnderstanding(song, result, null);
-  } catch (e) {
-    if (isTransient(e)) throw e;
-    // The chat model refused this song: keep the transcript as lyrics, name it, send to review.
-    diag('naming refused', song.sourceName ?? song.title, e);
-    await applyUnderstanding(song, fallbackUnderstanding(input), e instanceof GroqError ? describeGroqError(e) : String(e));
-  }
+async function understandSong(song: Song) {
+  // Prefer the converted m4a (small, mono); fall back to the original a service may still read.
+  const stored = song.kind === 'audio' ? song.playableUri ?? song.originalUri : null;
+  const audio = stored ? resolveStored(stored) : null;
+  const { result, provider, refused } = await nameSong(await inputFor(song), audio, audio ? mimeOf(audio.name) : '');
+  diag(refused ? 'naming refused' : 'named', provider, result.title,
+    result.lyrics ? `${result.lyrics.length} chars of lyrics` : 'no lyrics',
+    result.categories.map((c) => `${c.id} ${c.confidence}`).join(', '), refused?.message ?? '');
+  await applyUnderstanding(song, result, refused ? describeAiError(refused) : null);
 }
 
 async function applyUnderstanding(song: Song, u: Understanding, error: string | null) {
@@ -269,5 +248,6 @@ export async function retrySong(id: string) {
     audioState: song.audioState === 'unsupported' && song.originalUri ? 'raw' : song.audioState,
   });
   setState({ pausedUntil: 0 });
+  resumeAllProviders();
   await processQueue();
 }

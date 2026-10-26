@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { getGroqKey, onGroqKeyChange, removeGroqKey } from '../api/groq';
+import { connectedProviders, getPreferred, onKeysChange, removeKey, setPreferred } from '../api/keys';
+import { PROVIDER_IDS, PROVIDERS, ProviderId } from '../core/ai';
 import { importFromPicker } from '../ingest/ingest';
 import { onProcessorState, ProcessorState } from '../ingest/processor';
 import { Button, T } from '../ui/components';
@@ -10,12 +11,17 @@ import { radius, space, useTheme } from '../ui/theme';
 
 export default function SettingsScreen() {
   const c = useTheme();
-  const [connected, setConnected] = useState<boolean | null>(null);
+  const [connected, setConnected] = useState<ProviderId[] | null>(null);
+  const [preferred, setPreferredState] = useState<ProviderId>('groq');
   const [proc, setProc] = useState<ProcessorState | null>(null);
 
   useEffect(() => {
-    getGroqKey().then((k) => setConnected(!!k));
-    const off = onGroqKeyChange(setConnected);
+    const load = () => {
+      connectedProviders().then(setConnected);
+      getPreferred().then(setPreferredState);
+    };
+    load();
+    const off = onKeysChange(load);
     const offProc = onProcessorState(setProc);
     return () => {
       off();
@@ -23,31 +29,49 @@ export default function SettingsScreen() {
     };
   }, []);
 
-  const disconnect = () =>
-    Alert.alert('לנתק את Groq?', 'שירים חדשים יישמרו ויתנגנו, אבל לא יקבלו שם וקטגוריה עד החיבור הבא.', [
+  const disconnect = (p: ProviderId) =>
+    Alert.alert(`לנתק את ${PROVIDERS[p].name}?`, 'שירים חדשים יישמרו ויתנגנו. אם אין שירות מחובר אחר, הם לא יקבלו שם וקטגוריה עד החיבור הבא.', [
       { text: 'ביטול', style: 'cancel' },
-      { text: 'ניתוק', style: 'destructive', onPress: () => removeGroqKey() },
+      { text: 'ניתוק', style: 'destructive', onPress: () => removeKey(p) },
     ]);
+
+  const both = (connected?.length ?? 0) > 1;
 
   return (
     <ScrollView contentContainerStyle={{ padding: space.l, gap: space.m, paddingBottom: 60 }}>
       <T weight="bold" size={18}>שם וקטגוריה אוטומטיים</T>
-      <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]}>
-        <T weight="medium">
-          {connected === null ? '…' : connected ? 'Groq מחובר ✓' : 'Groq לא מחובר'}
-        </T>
-        <T soft size={14} style={{ lineHeight: 20 }}>
-          Groq הוא שירות AI חינמי שמתמלל את ההקלטות ומציע לכל שיר שם, מילים וקטגוריה. לחשבון החינמי יש מכסה
-          יומית; אם היא נגמרת, השירים ממתינים וממשיכים אוטומטית אחר כך.
-        </T>
-        {proc?.notice ? <T size={14} style={{ color: c.warn }}>{proc.notice}</T> : null}
-        <Button
-          label={connected ? 'חיבור מפתח אחר' : 'חיבור Groq'}
-          kind={connected ? 'quiet' : 'primary'}
-          onPress={() => router.push('/connect')}
-        />
-        {connected ? <Button label="ניתוק" kind="quiet" onPress={disconnect} /> : null}
-      </View>
+      <T soft size={14} style={{ lineHeight: 20 }}>
+        שירות AI חינמי מתמלל את ההקלטות ומציע לכל שיר שם, מילים וקטגוריה. לכל שירות יש מכסה יומית; כששני שירותים
+        מחוברים, כשהמכסה של אחד נגמרת השני ממשיך.
+      </T>
+      {proc?.notice ? <T size={14} style={{ color: c.warn }}>{proc.notice}</T> : null}
+
+      {PROVIDER_IDS.map((p) => {
+        const on = connected?.includes(p) ?? false;
+        return (
+          <View key={p} style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]}>
+            <T weight="medium">
+              {connected === null ? '…' : on ? `${PROVIDERS[p].name} מחובר ✓` : `${PROVIDERS[p].name} לא מחובר`}
+              {both && preferred === p ? ' · בשימוש ראשון' : ''}
+            </T>
+            {PROVIDERS[p].trainsOnData ? (
+              <T soft size={13}>בחשבון החינמי Google רשאית להשתמש בהקלטות לשיפור המודלים שלה.</T>
+            ) : null}
+            <View style={styles.actions}>
+              <Button
+                label={on ? 'חיבור מפתח אחר' : `חיבור ${PROVIDERS[p].name}`}
+                kind={on || p !== 'groq' ? 'quiet' : 'primary'}
+                onPress={() => router.push({ pathname: '/connect', params: { provider: p } })}
+                style={{ flex: 1 }}
+              />
+              {on ? <Button label="ניתוק" kind="quiet" onPress={() => disconnect(p)} style={{ flex: 1 }} /> : null}
+            </View>
+            {both && preferred !== p ? (
+              <Button label="להשתמש בו ראשון" kind="quiet" onPress={() => setPreferred(p)} />
+            ) : null}
+          </View>
+        );
+      })}
 
       <T weight="bold" size={18} style={{ marginTop: space.l }}>ייבוא שירים</T>
       <T soft style={{ lineHeight: 22 }}>
@@ -71,4 +95,5 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   card: { padding: space.l, borderRadius: radius.l, borderWidth: StyleSheet.hairlineWidth, gap: space.m },
+  actions: { flexDirection: 'row', gap: space.s },
 });
