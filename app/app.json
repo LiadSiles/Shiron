@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "שירון",
+    "slug": "shiron",
+    "scheme": "shiron",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.shiron.gan",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "he",
+        "CFBundleAllowMixedLocalizations": true,
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "buildNumber": "1"
+    },
+    "android": {
+      "package": "app.shiron.gan",
+      "adaptiveIcon": {
+        "backgroundColor": "#FBF7F1",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "versionCode": 1
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": true
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-localization",
+        {
+          "supportsRTL": true,
+          "forcesRTL": true
+        }
+      ],
+      "expo-font",
+      [
+        "expo-share-intent",
+        {
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsFileWithMaxCount": 20,
+            "NSExtensionActivationSupportsWebURLWithMaxCount": 1,
+            "NSExtensionActivationSupportsWebPageWithMaxCount": 1,
+            "NSExtensionActivationSupportsText": true
+          },
+          "iosShareExtensionName": "Shiron",
+          "androidIntentFilters": [
+            "text/*",
+            "audio/*",
+            "application/ogg",
+            "application/octet-stream"
+          ],
+          "androidMultiIntentFilters": [
+            "audio/*",
+            "application/ogg"
+          ]
+        }
+      ],
+      "./plugins/withSigningKey"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "serverUrl": "",
+      "serverToken": ""
+    }
+  }
+}

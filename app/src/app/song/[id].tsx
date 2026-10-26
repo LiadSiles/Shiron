@@ -1,0 +1,170 @@
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { CATEGORIES, CategoryGroup, GROUP_NAMES } from '../../core/categories';
+import type { SongWithCategories } from '../../core/types';
+import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
+import { retrySong } from '../../ingest/processor';
+import { deleteStored } from '../../ingest/storage';
+import { clearIfCurrent, refreshCurrent } from '../../player/player';
+import { Button, CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
+import { toast } from '../../ui/toast';
+import { font, radius, space, useTheme } from '../../ui/theme';
+
+function formatDuration(sec: number | null) {
+  if (!sec) return null;
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+export default function SongScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const c = useTheme();
+  const [song, setSong] = useState<SongWithCategories | null>(null);
+  const [title, setTitle] = useState('');
+  const [editingLyrics, setEditingLyrics] = useState(false);
+  const [lyrics, setLyrics] = useState('');
+
+  useEffect(() => {
+    const load = () =>
+      getSong(id).then((s) => {
+        setSong(s);
+        if (s) {
+          setTitle((t) => (t ? t : s.title));
+          setLyrics((l) => (l ? l : s.lyrics ?? ''));
+        }
+      });
+    load();
+    return onLibraryChange(load);
+  }, [id]);
+
+  if (!song) return null;
+
+  const selected = song.categories.map((x) => x.categoryId);
+
+  const saveTitle = async () => {
+    const t = title.trim();
+    if (!t || t === song.title) return;
+    await updateSong(song.id, { title: t, titleSource: 'user' });
+    refreshCurrent({ ...song, title: t });
+    toast('השם נשמר');
+  };
+
+  const toggleCategory = async (catId: string) => {
+    const next = selected.includes(catId) ? selected.filter((x) => x !== catId) : [...selected, catId];
+    await setCategories(song.id, next.map((cid) => ({ id: cid, confidence: 1, confirmed: true })));
+    // Choosing categories by hand is an approval.
+    if (song.status === 'review') await updateSong(song.id, { status: 'ready' });
+  };
+
+  const togglePin = () => updateSong(song.id, { pinnedAt: song.pinnedAt ? null : Date.now() });
+
+  const saveLyrics = async () => {
+    await updateSong(song.id, { lyrics: lyrics.trim() || null });
+    setEditingLyrics(false);
+  };
+
+  const remove = () =>
+    Alert.alert('למחוק את השיר?', song.title, [
+      { text: 'ביטול', style: 'cancel' },
+      {
+        text: 'מחיקה',
+        style: 'destructive',
+        onPress: async () => {
+          await clearIfCurrent(song.id);
+          deleteStored(song.originalUri, song.playableUri);
+          await deleteSong(song.id);
+          router.back();
+        },
+      },
+    ]);
+
+  const groups = Object.keys(GROUP_NAMES) as CategoryGroup[];
+  const status = statusLabel(song);
+
+  return (
+    <ScrollView contentContainerStyle={{ padding: space.l, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
+      <T soft size={13}>שם השיר</T>
+      <TextInput
+        value={title}
+        onChangeText={setTitle}
+        onBlur={saveTitle}
+        onSubmitEditing={saveTitle}
+        returnKeyType="done"
+        accessibilityLabel="שם השיר"
+        style={[styles.titleInput, { color: c.ink, borderColor: c.line, backgroundColor: c.surface, fontFamily: font.bold }]}
+      />
+      {status ? <T soft size={14} style={{ marginTop: space.xs }}>{status}</T> : null}
+
+      <View style={styles.actions}>
+        <Button label="ניגון" icon="▶︎" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
+        <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon="📌" kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
+      </View>
+      {song.status === 'failed' || song.status === 'pending' ? (
+        <Button label="לעבד שוב" kind="quiet" icon="↻" onPress={() => retrySong(song.id)} style={{ marginTop: space.s }} />
+      ) : null}
+
+      <T weight="bold" size={18} style={styles.h}>קטגוריות</T>
+      {groups.map((g) => (
+        <View key={g} style={{ marginBottom: space.s }}>
+          <T soft size={13} style={{ marginBottom: space.xs }}>{GROUP_NAMES[g]}</T>
+          <View style={styles.chips}>
+            {CATEGORIES.filter((cat) => cat.group === g).map((cat) => {
+              const on = selected.includes(cat.id);
+              return (
+                <Pressable
+                  key={cat.id}
+                  onPress={() => toggleCategory(cat.id)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: on }}
+                  style={[styles.chip, { backgroundColor: on ? cat.color + '33' : c.surfaceAlt, borderColor: on ? cat.color : 'transparent' }]}
+                >
+                  <CategoryBadge id={cat.id} size={24} />
+                  <T size={14} weight={on ? 'medium' : 'regular'}>{cat.name}</T>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ))}
+
+      <View style={[styles.lyricsHeader]}>
+        <T weight="bold" size={18} style={{ flex: 1 }}>מילות השיר</T>
+        <Pressable onPress={() => (editingLyrics ? saveLyrics() : setEditingLyrics(true))} hitSlop={10}>
+          <T weight="medium" style={{ color: c.primary }}>{editingLyrics ? 'שמירה' : 'עריכה'}</T>
+        </Pressable>
+      </View>
+      {editingLyrics ? (
+        <TextInput
+          value={lyrics}
+          onChangeText={setLyrics}
+          multiline
+          style={[styles.lyricsInput, { color: c.ink, borderColor: c.line, backgroundColor: c.surface, fontFamily: font.regular }]}
+        />
+      ) : (
+        <T style={{ lineHeight: 26 }} soft={!song.lyrics}>
+          {song.lyrics ?? (song.status === 'pending' ? 'המילים יופיעו אחרי העיבוד.' : 'אין מילים. אפשר להוסיף ידנית.')}
+        </T>
+      )}
+
+      <T weight="bold" size={18} style={styles.h}>מקור</T>
+      {song.sourceName ? <T soft size={14}>קובץ: {song.sourceName}</T> : null}
+      {formatDuration(song.durationSec) ? <T soft size={14}>אורך: {formatDuration(song.durationSec)}</T> : null}
+      {song.contextText ? <T soft size={14}>נשלח עם ההודעה: “{song.contextText}”</T> : null}
+      {song.summary ? <T soft size={14}>תקציר: {song.summary}</T> : null}
+
+      <Button label="מחיקת השיר" kind="quiet" onPress={remove} style={{ marginTop: space.xxl }} />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  titleInput: { fontSize: 22, borderWidth: 1, borderRadius: radius.m, padding: space.m, marginTop: space.xs },
+  actions: { flexDirection: 'row', gap: space.s, marginTop: space.l },
+  h: { marginTop: space.xl, marginBottom: space.s },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: space.m, borderRadius: radius.l, borderWidth: 1.5, minHeight: 40 },
+  lyricsHeader: { flexDirection: 'row', alignItems: 'center', marginTop: space.xl, marginBottom: space.s },
+  lyricsInput: { minHeight: 200, borderWidth: 1, borderRadius: radius.m, padding: space.m, fontSize: 16, textAlignVertical: 'top' },
+});
