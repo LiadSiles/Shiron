@@ -237,7 +237,11 @@ jobs:
           ls -la dist
           FLAGS="--prerelease"
           [ "$FULL" = "true" ] && FLAGS="--latest"
-          gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "$TAG" --notes-file notes.md $FLAGS
+          if ! gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "$TAG" --notes-file notes.md $FLAGS 2> publish.err; then
+            while IFS= read -r line; do echo "::error::${line}"; done < publish.err
+            exit 1
+          fi
 
   testflight:
     needs: [plan, publish]
