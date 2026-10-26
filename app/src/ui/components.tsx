@@ -68,12 +68,8 @@ export function statusLabel(song: SongWithCategories): string | null {
   return null;
 }
 
-/** Tap = play now (or pause, if it is the song playing). YouTube songs open their screen. */
+/** Tap = play now (or pause, if it is the song playing). A YouTube song opens the full player. */
 export function playOrOpen(song: SongWithCategories, queue: SongWithCategories[]) {
-  if (song.kind === 'youtube') {
-    router.push({ pathname: '/youtube/[id]', params: { id: song.id } });
-    return Promise.resolve();
-  }
   Haptics.selectionAsync().catch(() => undefined);
   return explainPlayErrors(song, () => playOrToggle(song, queue));
 }

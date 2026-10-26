@@ -125,3 +125,9 @@ Owner asked to remove the review screen and the approval step entirely, and to s
 added songs instead (home section and a library tile). Every processed song is `ready`; she
 corrects a name or category on the song screen if she wants. Supersedes "songs waiting for
 review are visible everywhere but category tiles". DB v5 moves `review` → `ready`.
+
+### 2026-10-26 — YouTube songs in the queue, still only in a visible player
+Owner: a YouTube song reached with "next" should play in the big player as part of the list.
+It does — in YouTube's IFrame player on the full player screen, which opens by itself. This
+keeps the ToS rule (visible embedded player, no background play): when the screen is closed
+or the app is in the background, YouTube doesn't play.

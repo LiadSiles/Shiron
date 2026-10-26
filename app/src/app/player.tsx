@@ -1,16 +1,32 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect } from 'react';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { getCategory } from '../core/categories';
-import { next, previous, seek, setRepeat, togglePlay, usePlayer } from '../player/player';
-import { CategoryBadge, T } from '../ui/components';
+import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer } from '../player/player';
+import { Button, CategoryBadge, T } from '../ui/components';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from '../ui/icons';
 import { Scrubber } from '../ui/Scrubber';
+import { YouTubeView } from '../ui/YouTubeView';
 import { radius, space, useTheme } from '../ui/theme';
 
-/** Full player: one huge play/pause button, a bar to drag through the song, repeat, lyrics. */
+const REPEAT_LABEL = {
+  off: '🔁 חזרה: כבויה',
+  all: '🔁 חוזר על כל הרשימה',
+  one: '🔂 חוזר על השיר הזה',
+} as const;
+
+/**
+ * Full player: one huge play/pause button, a bar to drag through the song, repeat, lyrics.
+ * A YouTube song shows YouTube's own player here (it may only play visibly).
+ */
 export default function PlayerScreen() {
   const c = useTheme();
   const p = usePlayer();
+
+  useEffect(() => {
+    setPlayerScreenOpen(true);
+    return () => setPlayerScreenOpen(false);
+  }, []);
 
   if (!p.song) {
     return (
@@ -21,13 +37,20 @@ export default function PlayerScreen() {
   }
 
   const catId = p.song.categories[0]?.categoryId ?? 'unsorted';
+  const atEnd = p.index >= p.queue.length - 1 && p.repeat !== 'all';
   const cat = getCategory(catId);
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <View style={[styles.art, { backgroundColor: cat.color + '26' }]}>
-        <CategoryBadge id={catId} size={120} />
-      </View>
+      {p.song.kind === 'youtube' && p.song.youtubeId ? (
+        <View style={{ marginBottom: space.l }}>
+          <YouTubeView videoId={p.song.youtubeId} />
+        </View>
+      ) : (
+        <View style={[styles.art, { backgroundColor: cat.color + '26' }]}>
+          <CategoryBadge id={catId} size={120} />
+        </View>
+      )}
       <T weight="bold" size={26} style={{ textAlign: 'center' }}>{p.song.title}</T>
       <T soft style={{ textAlign: 'center' }}>{cat.name}</T>
 
@@ -53,22 +76,31 @@ export default function PlayerScreen() {
         </Pressable>
         <Pressable
           onPress={() => next()}
-          disabled={p.index >= p.queue.length - 1}
+          disabled={atEnd}
           accessibilityLabel="השיר הבא"
-          style={[styles.side, { backgroundColor: c.surfaceAlt, opacity: p.index >= p.queue.length - 1 ? 0.35 : 1 }]}
+          style={[styles.side, { backgroundColor: c.surfaceAlt, opacity: atEnd ? 0.35 : 1 }]}
         >
           <NextIcon size={20} color={c.ink} />
         </Pressable>
       </View>
 
       <Pressable
-        onPress={() => setRepeat(!p.repeat)}
-        accessibilityRole="switch"
-        accessibilityState={{ checked: p.repeat }}
-        style={[styles.repeat, { backgroundColor: p.repeat ? c.primarySoft : c.surfaceAlt, borderColor: p.repeat ? c.primary : 'transparent' }]}
+        onPress={cycleRepeat}
+        accessibilityRole="button"
+        accessibilityHint="מחליף בין: בלי חזרה, חזרה על כל הרשימה, חזרה על השיר"
+        style={[styles.repeat, { backgroundColor: p.repeat !== 'off' ? c.primarySoft : c.surfaceAlt, borderColor: p.repeat !== 'off' ? c.primary : 'transparent' }]}
       >
-        <T weight="medium">🔁 {p.repeat ? 'חוזר על השיר' : 'עוד פעם! (חזרה על השיר)'}</T>
+        <T weight="medium">{REPEAT_LABEL[p.repeat]}</T>
       </Pressable>
+
+      {p.song.kind === 'youtube' && p.song.youtubeId ? (
+        <Button
+          label="פתיחה באפליקציית יוטיוב"
+          kind="quiet"
+          onPress={() => Linking.openURL(`https://youtu.be/${p.song!.youtubeId}`)}
+          style={{ marginTop: space.s }}
+        />
+      ) : null}
 
       {p.song.lyrics ? (
         <View style={{ marginTop: space.xl, gap: space.s }}>

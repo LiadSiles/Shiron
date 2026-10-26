@@ -40,7 +40,7 @@ chips, related songs by meaning when few match); "ביטול", clearing or Andro
 There is no review tab (removed in 0.5.0) and no search tab (the bar replaced it in 0.5.0).
 
 Stack screens: `song/[id]` (rename, categories, pin, lyrics edit, delete), `player` (modal,
-full controls, scrubber, lyrics), `youtube/[id]` (embedded player), `settings` (Groq status,
+full controls, scrubber, repeat, lyrics; a YouTube song shows YouTube's player here), `settings` (AI services,
 file import, technical log), `connect` (modal: connect Groq), `log` (technical log: copy/clear). `+native-intent.tsx` redirects the share
 extension's deep link to `/`.
 
@@ -55,7 +55,7 @@ Tap on a song row = play; long press = song screen (`ui/components.tsx` → `pla
 - Fire-and-forget calls must not reject: `processQueue()` and `diag()` never throw; UI actions
   that can fail go through a helper that explains the error (`playOrOpen`, `playAll`,
   `importFromPicker`).
-- Network calls to Groq/YouTube go through `fetchWithTimeout` (src/api/groq.ts).
+- Network calls to the AI services and YouTube go through `fetchWithTimeout` (src/api/http.ts).
 - Anything written to disk on a path that can fail cleans up after itself (import copies,
   native `.m4a` output).
 - SQL that changes more than one row set or table runs in `withTransactionAsync`.

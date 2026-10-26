@@ -88,7 +88,6 @@ export default function RootLayout() {
           <Stack.Screen name="category/[id]" options={{ title: '' }} />
           <Stack.Screen name="song/[id]" options={{ title: 'פרטי שיר' }} />
           <Stack.Screen name="player" options={{ presentation: 'modal', title: 'מתנגן עכשיו' }} />
-          <Stack.Screen name="youtube/[id]" options={{ title: 'יוטיוב' }} />
           <Stack.Screen name="settings" options={{ title: 'הגדרות' }} />
           <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור שירות AI' }} />
           <Stack.Screen name="log" options={{ title: 'יומן טכני' }} />

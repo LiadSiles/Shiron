@@ -40,7 +40,8 @@ her lap. Measured as time from opening the app to playback (target < 5 s median)
 - Home suggests by time of day (`hours`) and Hebrew-calendar season (`season`).
 - Within a category: pinned first, then frecency (recent plays weigh more), see
   [search-and-ranking.md](search-and-ranking.md).
-- YouTube links play only in the visible embedded player (labelled "יוטיוב").
+- YouTube links play only in the visible embedded player, on the full player screen; they sit
+  in the queue like other songs (the list continues through them), foreground only.
 
 ## Success metrics (MVP)
 

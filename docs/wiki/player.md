@@ -50,16 +50,36 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   800 ms (`seekingUntil`) so the bar doesn't jump back to the old time before the player
   reports the new one. `previous()` = back to 0:00.
 - Status `error` is stored in `PlayerState.error` and logged with `diag`; the players show it.
-- Repeat sets `player.loop`. On `didJustFinish` without repeat → next in queue.
+- Repeat (`cycleRepeat`): off → **all** (the whole list, around) → **one** → off
+  (`core/queue.ts`, tested). Repeat-one = native `loop: 'single'` (YouTube: seek 0 on end);
+  repeat-all wraps natively only when the run is the whole queue, otherwise the app wraps.
 - Lock screen metadata: title, first category as artist, album "שירון".
-- YouTube songs never go through this player (`playOrOpen` routes them to `youtube/[id]`),
-  and opening that screen stops the audio player.
+
+## YouTube in the queue (0.5.0)
+
+- The queue holds audio **and** YouTube songs in the order she picked from. The native
+  playlist holds only the **run** of consecutive audio songs around the current one
+  (`audioRun`); the notification's next/previous work inside that run.
+- At the end of a run (`didJustFinish` on its last song), or on next/previous across its edge,
+  the app calls `startAt(index)`: a YouTube song pauses the native player, clears the
+  lock-screen controls (they would show the previous song) and opens the full player
+  (`router.push('/player')` unless it is showing — `setPlayerScreenOpen`).
+- The full player shows `ui/YouTubeView`: YouTube's IFrame API in a WebView (visible, as the
+  terms require; `youtube-nocookie.com`). It posts state (1 playing / 2 paused / 0 ended), time
+  and errors; the app's play/pause/seek/scrubber drive it through `attachYoutube` +
+  `injectJavaScript`. Ended → next song (audio or YouTube). An embed error (101/150: owner
+  forbids embedding; 100: removed) shows the reason and moves on after 3 s.
+- Closing the full player removes the WebView, which stops YouTube: the state becomes paused;
+  play in the mini player reopens the full player, which autoplays.
+- If the run ends while the app is in the background, the YouTube song starts when she
+  returns (iOS/Android don't run an embedded player in the background — by design here).
+- The old `youtube/[id]` screen is gone; "פתיחה באפליקציית יוטיוב" is on the full player.
 
 ## Play counting
 
 A session tracks listened seconds from `playbackStatusUpdate` deltas (ignores jumps > 2 s,
 i.e. seeks). `recordPlay` on song change, end, or next; ranking decides what counts as a play.
-YouTube: time the screen was open (≥ 5 s).
+YouTube: the same session accounting, from the IFrame API's time reports.
 
 ## Controls (`ui/icons.tsx`, `ui/Scrubber.tsx`)
 

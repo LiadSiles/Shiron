@@ -15,7 +15,8 @@ export default function CategoryScreen() {
   const isList = isAll || isRecent;
   const cat = getCategory(id);
   const songs = songsFor(lib, id);
-  const playable = songs.filter((s) => s.kind === 'audio' && s.playableUri);
+  // Audio songs ready to play, and YouTube songs (they play in the full player, in order).
+  const playable = songs.filter((s) => s.kind === 'youtube' || !!s.playableUri);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>

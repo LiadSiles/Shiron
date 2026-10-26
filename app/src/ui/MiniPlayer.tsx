@@ -41,7 +41,7 @@ export function MiniPlayer() {
         >
           {p.playing ? <PauseIcon size={16} color={c.primaryInk} /> : <PlayIcon size={16} color={c.primaryInk} />}
         </Pressable>
-        {p.index < p.queue.length - 1 ? (
+        {p.index < p.queue.length - 1 || (p.repeat === 'all' && p.queue.length > 1) ? (
           <Pressable onPress={() => next()} accessibilityLabel="השיר הבא" hitSlop={8} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
             <NextIcon size={14} color={c.ink} />
           </Pressable>
