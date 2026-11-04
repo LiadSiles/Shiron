@@ -1,6 +1,6 @@
 {
   "name": "shiron",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo-google-fonts/rubik": "^0.4.2",

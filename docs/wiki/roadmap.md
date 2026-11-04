@@ -1,6 +1,6 @@
 # Roadmap and status
 
-_Last updated: 2026-10-26_
+_Last updated: 2026-11-04_
 
 | Version | Scope | Status |
 |---|---|---|
@@ -17,7 +17,8 @@ _Last updated: 2026-10-26_
 | 0.5.1 | "תמלול מחדש" on every song screen | not published separately — shipped in v0.5.2 |
 | 0.5.2 | Transcription accuracy (phantom phrases, loops), share queue + 100 files per iOS share, notification returns after being swiped away | ✅ released as v0.5.2 (APK + IPA; includes 0.5.0 and 0.5.1, which were never published) |
 | 0.5.x | Why a shared song didn't play on the owner's Xiaomi (read his technical log); app icon and splash; tune confidence thresholds on ~200 real songs; swipe-to-approve | next |
-| 0.6 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
+| 0.6.0 | Owner feedback: YouTube offline (loading/offline overlay, retry, previous works, only permanent errors skip, in the direction travelled), big status banner on every screen + larger toasts, work continues in the background (Android dataSync foreground service, iOS background time + expo-background-task), vector icons | released as v0.6.0 — untested on a device |
+| 0.7 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.7 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
 | 0.8 | Playlists ("מעגל בוקר"), sleep timer with fade, big-tile class mode | planned |
 | 0.9 | Library shared with the assistant (needs accounts + sync: a server or a sync service — owner decision, conflicts with "no server") | planned |
