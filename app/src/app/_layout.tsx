@@ -10,7 +10,7 @@ import { getSetting, setSetting } from '../db/repo';
 import { describeSummary, enqueueShare } from '../ingest/ingest';
 import { processQueue } from '../ingest/processor';
 import { font, useTheme } from '../ui/theme';
-import { toast, ToastHost } from '../ui/toast';
+import { StatusHost, toast } from '../ui/toast';
 
 // Hebrew UI: right-to-left everywhere. The config plugin forces it natively;
 // this covers the very first launch on Android.
@@ -31,18 +31,17 @@ function ShareHandler() {
     if (!hasShareIntent) return;
     const intent = shareIntent;
     resetShareIntent(); // free the slot for the next share; the files stay where they are
-    const { ahead, done } = enqueueShare(intent, (n, total) => toast(`שומרת ${n + 1} מתוך ${total}…`));
-    toast(ahead ? 'נוסף לתור, נשמר מיד אחרי הקודמים…' : 'שומרת…');
-    done
+    // Progress shows in the status banner (ui/ActivityBanner); the result as a toast.
+    enqueueShare(intent)
       .then(async (s) => {
-        toast(describeSummary(s));
+        toast(describeSummary(s), s.added.length ? 'success' : 'info');
         if (s.added.length) await offerConnectOnce();
       })
-      .catch((e) => toast(`השמירה נכשלה: ${String(e)}`));
+      .catch((e) => toast(`השמירה נכשלה: ${String(e)}`, 'error'));
   }, [hasShareIntent, shareIntent, resetShareIntent]);
 
   useEffect(() => {
-    if (error) toast(`שגיאה בקבלת השיתוף: ${error}`);
+    if (error) toast(`שגיאה בקבלת השיתוף: ${error}`, 'error');
   }, [error]);
 
   return null;
@@ -93,7 +92,7 @@ export default function RootLayout() {
           <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור שירות AI' }} />
           <Stack.Screen name="log" options={{ title: 'יומן טכני' }} />
         </Stack>
-        <ToastHost />
+        <StatusHost />
       </SafeAreaProvider>
     </ShareIntentProvider>
   );

@@ -62,3 +62,16 @@ technical details first.
 
 App icon and splash are Expo defaults. (Swipe-to-approve went with the review inbox in 0.5.0.) The rest is a
 button for now. No screenshot tests yet.
+
+## Status banner and toasts (0.6.0, `ui/toast.tsx → StatusHost`, `ui/ActivityBanner.tsx`)
+
+Owner: the "שומרת…" toast was too small and easy to miss. `StatusHost` sits in the root layout
+(above the navigator, so on every screen; below native iOS modals such as the full player) and
+stacks, at the top:
+
+- **ActivityBanner** — from `onImportState` (ingest) and `ProcessorState.step`:
+  saving a share = large primary-colour card, "שומרת שירים חדשים…", "3 מתוך 10", progress
+  bar, "ועוד n שיתופים בתור"; preparing to play = large card with the song's title;
+  naming (can take long, needs nothing from her) = a slim line.
+- **Toast** — `toast(text, kind)`; kind `success` / `info` / `error` sets the icon and border
+  colour; 17 pt bold, 3.5 s, `accessibilityLiveRegion` for screen readers.

@@ -62,7 +62,6 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
         <T soft size={13} style={{ marginTop: space.s }}>{proc.notice}</T>
       ) : null}
 
-      {proc?.running ? <T soft size={13} style={{ marginTop: space.s }}>מעבדת שירים חדשים…</T> : null}
 
       {sections.map((sec) => (
         <View key={sec.key}>

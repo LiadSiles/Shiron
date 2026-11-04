@@ -50,3 +50,12 @@ export const space = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 };
 export const radius = { s: 10, m: 16, l: 24 };
 /** Minimum touch target, from the design principles. */
 export const TOUCH = 48;
+
+/** Raised cards that float over the screen (status banner, toasts). */
+export const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.18,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 8,
+} as const;

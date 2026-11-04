@@ -54,7 +54,7 @@ export default function ConnectScreen() {
       if (await CHECK[p](key)) {
         await saveKey(p, key);
         await Clipboard.setStringAsync('').catch(() => undefined); // don't leave the key lying around
-        toast(`${PROVIDERS[p].name} מחובר ✓ השירים יקבלו שם וקטגוריה`);
+        toast(`${PROVIDERS[p].name} מחובר. השירים יקבלו שם וקטגוריה`, 'success');
         processQueue();
         router.back();
       } else {

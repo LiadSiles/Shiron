@@ -30,11 +30,13 @@ export interface ProcessorState {
   notice: string | null;
   /** Don't call the AI services again before this time (ms), after a rate limit. */
   pausedUntil: number;
+  /** What is being done right now, for the status banner. */
+  step: { kind: 'convert' | 'name'; title: string; left: number } | null;
 }
 
 type Listener = (state: ProcessorState) => void;
 const listeners = new Set<Listener>();
-let state: ProcessorState = { running: false, needsKey: false, notice: null, pausedUntil: 0 };
+let state: ProcessorState = { running: false, needsKey: false, notice: null, pausedUntil: 0, step: null };
 
 function setState(patch: Partial<ProcessorState>) {
   state = { ...state, ...patch };
@@ -85,7 +87,7 @@ function track<T>(work: () => Promise<T>): () => Promise<T> {
       return await work();
     } finally {
       busy -= 1;
-      if (!busy) setState({ running: false });
+      if (!busy) setState({ running: false, step: null });
     }
   };
 }
@@ -114,10 +116,11 @@ async function nameSongs() {
   setState({ needsKey: false });
   if (Date.now() < state.pausedUntil) return;
 
-  for (const queued of pending) {
+  for (const [i, queued] of pending.entries()) {
     const song = await getSong(queued.id);
     if (!song || song.status !== 'pending') continue; // deleted or approved meanwhile
     if (song.kind === 'audio' && song.audioState === 'raw') continue; // the audio lane comes back for it
+    if (state.step?.kind !== 'convert') setState({ step: { kind: 'name', title: song.title, left: pending.length - i } });
     try {
       await understandSong(song);
       setState({ notice: null });
@@ -147,9 +150,12 @@ async function nameSongs() {
 /** Converts every song still `raw`, oldest first, and tidies originals no longer playing. */
 async function convertNew() {
   const songs = await listSongs();
-  for (const song of songs.filter((s) => s.kind === 'audio' && s.audioState === 'raw').reverse()) {
+  const raw = songs.filter((s) => s.kind === 'audio' && s.audioState === 'raw').reverse();
+  for (const [i, song] of raw.entries()) {
+    setState({ step: { kind: 'convert', title: song.title, left: raw.length - i } });
     await convert(song);
   }
+  if (raw.length) setState({ step: null });
   // Originals kept because they were playing when their conversion finished (see convert).
   for (const song of songs) {
     if (song.audioState === 'done' && song.originalUri && song.originalUri !== song.playableUri && !isQueued(song.id)) {

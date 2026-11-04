@@ -1,27 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityBanner } from './ActivityBanner';
 import { T } from './components';
-import { radius, space, useTheme } from './theme';
+import { Icon, IconName } from './Icon';
+import { cardShadow, radius, space, useTheme } from './theme';
 
-type Listener = (msg: string) => void;
+export type ToastKind = 'success' | 'info' | 'error';
+type Listener = (msg: string, kind: ToastKind) => void;
 const listeners = new Set<Listener>();
 
-/** Show a short confirmation, e.g. "נשמר ✓", without a blocking dialog. */
-export function toast(msg: string) {
-  listeners.forEach((l) => l(msg));
+/** Show a short message, e.g. "3 שירים נשמרו", without a blocking dialog. */
+export function toast(msg: string, kind: ToastKind = 'info') {
+  listeners.forEach((l) => l(msg, kind));
 }
 
-export function ToastHost() {
+const ICON: Record<ToastKind, IconName> = { success: 'checkmark-circle', info: 'information-circle', error: 'alert-circle' };
+
+/**
+ * Top of every screen (it sits in the root layout, above the navigator): the status banner
+ * while songs are being saved or processed, and below it the latest toast. Large and high
+ * contrast on purpose — the owner found the old one-line toast too easy to miss.
+ */
+export function StatusHost() {
   const c = useTheme();
   const insets = useSafeAreaInsets();
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ text: string; kind: ToastKind } | null>(null);
   const opacity = useRef(new Animated.Value(0)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const l: Listener = (m) => {
-      setMsg(m);
+    const l: Listener = (text, kind) => {
+      setMsg({ text, kind });
       Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }).start();
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => {
@@ -29,7 +39,7 @@ export function ToastHost() {
         Animated.timing(opacity, { toValue: 0, duration: 250, useNativeDriver: true }).start(({ finished }) => {
           if (finished) setMsg(null);
         });
-      }, 2800);
+      }, 3500);
     };
     listeners.add(l);
     return () => {
@@ -37,25 +47,34 @@ export function ToastHost() {
     };
   }, [opacity]);
 
-  if (!msg) return null;
+  const tint = msg?.kind === 'success' ? c.good : msg?.kind === 'error' ? c.bad : c.primary;
+
   return (
-    <Animated.View
-      pointerEvents="none"
-      style={[styles.toast, { top: insets.top + space.s, backgroundColor: c.ink, opacity }]}
-    >
-      <T weight="medium" style={{ color: c.bg, textAlign: 'center' }}>{msg}</T>
-    </Animated.View>
+    <View pointerEvents="box-none" style={[styles.host, { top: insets.top + space.s }]}>
+      <ActivityBanner />
+      {msg ? (
+        <Animated.View
+          pointerEvents="none"
+          accessibilityLiveRegion="polite"
+          style={[styles.toast, { backgroundColor: c.surface, borderColor: tint, opacity }]}
+        >
+          <Icon name={ICON[msg.kind]} size={28} color={tint} />
+          <T weight="bold" size={17} style={{ flex: 1 }}>{msg.text}</T>
+        </Animated.View>
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  host: { position: 'absolute', start: space.m, end: space.m, gap: space.s, zIndex: 100, elevation: 8 },
   toast: {
-    position: 'absolute',
-    start: space.l,
-    end: space.l,
-    padding: space.m,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.m,
+    padding: space.l,
     borderRadius: radius.m,
-    zIndex: 100,
-    elevation: 6,
+    borderWidth: 2,
+    ...cardShadow,
   },
 });

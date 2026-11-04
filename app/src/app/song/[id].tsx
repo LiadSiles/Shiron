@@ -43,7 +43,7 @@ export default function SongScreen() {
     const t = title.trim();
     if (!t || t === song.title) return;
     await updateSong(song.id, { title: t, titleSource: 'user' });
-    toast('השם נשמר');
+    toast('השם נשמר', 'success');
   };
 
   const toggleCategory = async (catId: string) => {

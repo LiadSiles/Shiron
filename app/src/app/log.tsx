@@ -27,7 +27,7 @@ export default function LogScreen() {
           style={{ flex: 1 }}
           onPress={async () => {
             await Clipboard.setStringAsync([header, ...lines].join('\n'));
-            toast('היומן הועתק');
+            toast('היומן הועתק', 'success');
           }}
         />
         <Button label="ניקוי" kind="quiet" style={{ flex: 1 }} onPress={() => clearDiag()} />

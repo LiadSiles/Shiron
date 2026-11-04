@@ -96,17 +96,38 @@ async function importYoutube(url: string, context: string | null, title: string 
   summary.added.push(id);
 }
 
-export type ImportProgress = (done: number, total: number) => void;
+/** What is being saved right now, for the status banner (src/ui/ActivityBanner). */
+export interface ImportState {
+  saving: boolean;
+  /** Files of the current share or pick: saved so far, and in total. */
+  done: number;
+  total: number;
+  /** Shares waiting behind the current one. */
+  queued: number;
+}
+
+let importState: ImportState = { saving: false, done: 0, total: 0, queued: 0 };
+const importListeners = new Set<(s: ImportState) => void>();
+function setImportState(patch: Partial<ImportState>) {
+  importState = { ...importState, ...patch };
+  importListeners.forEach((l) => l(importState));
+}
+
+export function onImportState(l: (s: ImportState) => void): () => void {
+  importListeners.add(l);
+  l(importState);
+  return () => importListeners.delete(l);
+}
 
 /** One file failing (unreadable, full disk) never stops the others. */
 async function importFiles(
   files: { file: File; name: string; mime: string | null | undefined }[],
   context: string | null,
   summary: ImportSummary,
-  onProgress?: ImportProgress,
 ) {
+  setImportState({ saving: true, done: 0, total: files.length });
   for (const [i, f] of files.entries()) {
-    if (files.length > 3) onProgress?.(i, files.length);
+    setImportState({ done: i });
     if (!isMediaFile(f.name, f.mime)) {
       summary.unsupported.push(f.name);
       continue;
@@ -118,6 +139,7 @@ async function importFiles(
       summary.unsupported.push(f.name);
     }
   }
+  setImportState({ done: files.length });
 }
 
 /**
@@ -128,18 +150,19 @@ async function importFiles(
 let shareQueue: Promise<unknown> = Promise.resolve();
 let waiting = 0;
 
-export function enqueueShare(intent: ShareIntent, onProgress?: ImportProgress): { ahead: number; done: Promise<ImportSummary> } {
-  const ahead = waiting;
+export function enqueueShare(intent: ShareIntent): Promise<ImportSummary> {
   waiting += 1;
-  const done = shareQueue.then(() => importShareIntent(intent, onProgress)).finally(() => {
+  setImportState({ saving: true, queued: waiting - 1 });
+  const done = shareQueue.then(() => importShareIntent(intent)).finally(() => {
     waiting -= 1;
+    setImportState(waiting ? { queued: waiting - 1 } : { saving: false, queued: 0, done: 0, total: 0 });
   });
   shareQueue = done.catch(() => undefined);
-  return { ahead, done };
+  return done;
 }
 
 /** Handles everything that arrives through the system share sheet. */
-async function importShareIntent(intent: ShareIntent, onProgress?: ImportProgress): Promise<ImportSummary> {
+async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
   const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
   const text = intent.text?.trim() || null;
 
@@ -149,7 +172,6 @@ async function importShareIntent(intent: ShareIntent, onProgress?: ImportProgres
     (intent.files ?? []).map((f) => ({ file: new File(toFileUri(f.path)), name: f.fileName, mime: f.mimeType })),
     text,
     summary,
-    onProgress,
   );
 
   const url = intent.webUrl ?? (text && youtubeIdFrom(text) ? text : null);
@@ -179,6 +201,8 @@ export async function importFromPicker(): Promise<string | null> {
   } catch (e) {
     diag('file picker failed', e);
     return 'לא הצלחנו לפתוח את הקבצים';
+  } finally {
+    if (!waiting) setImportState({ saving: false, done: 0, total: 0 });
   }
 }
 
