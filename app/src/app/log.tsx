@@ -23,7 +23,7 @@ export default function LogScreen() {
       <View style={{ flexDirection: 'row', gap: space.s, padding: space.l }}>
         <Button
           label="העתקה"
-          icon="📋"
+          icon="copy-outline"
           style={{ flex: 1 }}
           onPress={async () => {
             await Clipboard.setStringAsync([header, ...lines].join('\n'));

@@ -79,7 +79,7 @@ export default function SettingsScreen() {
       </T>
       <Button
         label="בחירת קבצי שמע או וידאו"
-        icon="📁"
+        icon="folder-open-outline"
         kind="quiet"
         onPress={async () => {
           const message = await importFromPicker();
@@ -88,7 +88,7 @@ export default function SettingsScreen() {
       />
 
       <T weight="bold" size={18} style={{ marginTop: space.l }}>תמיכה</T>
-      <Button label="יומן טכני" icon="🧾" kind="quiet" onPress={() => router.push('/log')} />
+      <Button label="יומן טכני" icon="document-text-outline" kind="quiet" onPress={() => router.push('/log')} />
     </ScrollView>
   );
 }

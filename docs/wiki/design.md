@@ -26,7 +26,13 @@ _Last verified: 2026-10-26 (0.1.0)_
 `T` (text with weight/size/soft), `Button` (primary/quiet), `CategoryBadge`, `SongRow`
 (tap plays, long press opens; shows status line), `EmptyState`, `SectionTitle`,
 `playOrOpen`, `statusLabel`, `Highlighted` (search hits in bold). Plus `MiniPlayer`,
-`Scrubber`, the drawn media icons (`icons.tsx`) and `ToastHost` / `toast()`.
+`Scrubber`, the drawn media icons (`icons.tsx`) and `StatusHost` / `toast()`.
+
+**Icons (0.6.0):** UI symbols are Ionicons through `ui/Icon.tsx` (`@expo/vector-icons`, bundled
+font, no network): tab bar (outline when inactive, filled when active), search field, buttons
+(`Button icon=`), empty states (`EmptyState icon=` in a soft circle), repeat, YouTube offline.
+Emoji stay only where they are content: category icons and the big art on library tiles.
+The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exactly at every size.
 
 ## Library (`src/screens/LibraryScreen.tsx`, 0.3.1)
 

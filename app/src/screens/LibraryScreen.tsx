@@ -28,7 +28,7 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
       <T soft>{total} שירים</T>
 
       {total === 0 && !lib.loading ? (
-        <EmptyState icon="📚" title="עוד אין שירים" body="שירים שתשתפי מוואטסאפ יסודרו כאן לפי נושאים." />
+        <EmptyState icon="library-outline" title="עוד אין שירים" body="שירים שתשתפי מוואטסאפ יסודרו כאן לפי נושאים." />
       ) : (
         <View style={[styles.grid, { marginTop: space.l }]}>
           <Tile

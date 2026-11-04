@@ -6,6 +6,7 @@ import { isPreparing } from '../core/ingestRules';
 import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
 import { MissingFileError, NotPlayableError, playOrToggle, playSong, usePlayer } from '../player/player';
+import { Icon, IconName } from './Icon';
 import { PauseIcon, PlayIcon } from './icons';
 import { font, radius, space, TOUCH, useTheme } from './theme';
 
@@ -27,7 +28,7 @@ export function Button({ label, onPress, kind = 'primary', icon, style, disabled
   label: string;
   onPress: () => void;
   kind?: 'primary' | 'quiet';
-  icon?: string;
+  icon?: IconName;
   style?: ViewStyle;
   disabled?: boolean;
 }) {
@@ -44,7 +45,7 @@ export function Button({ label, onPress, kind = 'primary', icon, style, disabled
         style,
       ]}
     >
-      {icon ? <Text style={styles.buttonIcon}>{icon}</Text> : null}
+      {icon ? <Icon name={icon} size={20} color={primary ? c.primaryInk : c.ink} /> : null}
       <T weight="medium" style={{ color: primary ? c.primaryInk : c.ink }}>{label}</T>
     </Pressable>
   );
@@ -157,15 +158,21 @@ export function SongRow({ song, queue, showCategory = true, query }: {
   );
 }
 
-export function EmptyState({ icon, title, body, children }: {
-  icon: string;
+/** An empty list: a large friendly icon in a soft circle, a title, and what to do. */
+export function EmptyState({ icon, emoji, title, body, children }: {
+  icon?: IconName;
+  /** A category's own emoji instead of an icon. */
+  emoji?: string;
   title: string;
   body: string;
   children?: React.ReactNode;
 }) {
+  const c = useTheme();
   return (
     <View style={styles.empty}>
-      <Text style={{ fontSize: 56 }}>{icon}</Text>
+      <View style={[styles.emptyIcon, { backgroundColor: c.primarySoft }]}>
+        {emoji ? <Text style={{ fontSize: 44 }}>{emoji}</Text> : <Icon name={icon ?? 'musical-notes'} size={44} color={c.primary} />}
+      </View>
       <T weight="bold" size={20} style={{ textAlign: 'center' }}>{title}</T>
       <T soft style={{ textAlign: 'center', lineHeight: 22 }}>{body}</T>
       {children}
@@ -191,7 +198,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: space.s,
   },
-  buttonIcon: { fontSize: 18 },
   badge: { alignItems: 'center', justifyContent: 'center' },
   row: {
     flexDirection: 'row',
@@ -204,5 +210,6 @@ const styles = StyleSheet.create({
     marginBottom: space.s,
   },
   playDot: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center' },
+  emptyIcon: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
   empty: { alignItems: 'center', gap: space.m, paddingVertical: space.xxl, paddingHorizontal: space.xl },
 });

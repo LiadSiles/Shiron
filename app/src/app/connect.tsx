@@ -166,7 +166,7 @@ export default function ConnectScreen() {
         {STEPS[provider].map((text, i) => (
           <Step key={i} n={i + 1} text={text} />
         ))}
-        <Button label={`פתיחת ${info.name}`} icon="🔑" onPress={openKeysPage} style={{ marginTop: space.m }} />
+        <Button label={`פתיחת ${info.name}`} icon="key-outline" onPress={openKeysPage} style={{ marginTop: space.m }} />
       </View>
 
       {phase === 'checking' ? (

@@ -32,12 +32,12 @@ export default function CategoryScreen() {
               <T soft>{songs.length} שירים · {isRecent ? 'החדשים למעלה' : 'השירים הנפוצים למעלה'}</T>
             </View>
             {playable.length > 1 ? (
-              <Button label="נגני הכול" icon="▶︎" onPress={() => playAll(playable)} />
+              <Button label="נגני הכול" icon="play" onPress={() => playAll(playable)} />
             ) : null}
           </View>
         }
         renderItem={({ item }) => <SongRow song={item} queue={songs} showCategory={isList} />}
-        ListEmptyComponent={<EmptyState icon={cat.icon} title="אין כאן שירים עדיין" body="שירים שיסווגו לקטגוריה הזו יופיעו כאן." />}
+        ListEmptyComponent={<EmptyState emoji={cat.icon} title="אין כאן שירים עדיין" body="שירים שיסווגו לקטגוריה הזו יופיעו כאן." />}
       />
       <MiniPlayer />
     </SafeAreaView>

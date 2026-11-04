@@ -5,6 +5,7 @@ import { importFromPicker } from '../ingest/ingest';
 import { onProcessorState, ProcessorState } from '../ingest/processor';
 import { homeSections, LibraryState } from '../db/useLibrary';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
+import { Icon } from '../ui/Icon';
 import { toast } from '../ui/toast';
 import { radius, space, useTheme } from '../ui/theme';
 
@@ -41,7 +42,7 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
           hitSlop={12}
           style={[styles.gear, { backgroundColor: c.surfaceAlt }]}
         >
-          <T size={20}>⚙︎</T>
+          <Icon name="settings-outline" size={22} color={c.ink} />
         </Pressable>
       </View>
 
@@ -85,11 +86,11 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
 
       {!lib.loading && lib.songs.length === 0 ? (
         <EmptyState
-          icon="🎶"
+          icon="musical-notes"
           title="הספרייה עוד ריקה"
           body={'בוואטסאפ: לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← Shiron.\nאפשר לבחור כמה יחד.\nהשירים יקבלו שם וקטגוריה לבד.'}
         >
-          <Button label="ייבוא מתיקיית קבצים" kind="quiet" icon="📁" onPress={importFiles} />
+          <Button label="ייבוא מתיקיית קבצים" kind="quiet" icon="folder-open-outline" onPress={importFiles} />
         </EmptyState>
       ) : null}
 

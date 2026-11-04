@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { BackHandler, Keyboard, Pressable, StyleSheet, Text, TextInput, TextInputInstance, View } from 'react-native';
+import { BackHandler, Keyboard, Pressable, StyleSheet, TextInput, TextInputInstance, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLibrary } from '../db/useLibrary';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { SearchResults } from '../screens/SearchResults';
 import { T } from '../ui/components';
+import { Icon, IconName } from '../ui/Icon';
 import { MiniPlayer } from '../ui/MiniPlayer';
 import { font, radius, space, TOUCH, useTheme } from '../ui/theme';
 
 type Tab = 'home' | 'library';
 
-const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'home', label: 'בית', icon: '🏠' },
-  { key: 'library', label: 'ספרייה', icon: '📚' },
+const TABS: { key: Tab; label: string; icon: IconName; active: IconName }[] = [
+  { key: 'home', label: 'בית', icon: 'home-outline', active: 'home' },
+  { key: 'library', label: 'ספרייה', icon: 'library-outline', active: 'library' },
 ];
 
 /**
@@ -53,7 +54,7 @@ export default function Shell() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
       <View style={styles.searchRow}>
         <View style={[styles.field, { backgroundColor: c.surface, borderColor: focused ? c.primary : c.line }]}>
-          <T soft size={16}>🔍</T>
+          <Icon name="search" size={20} color={focused ? c.primary : c.inkSoft} />
           <TextInput
             ref={input}
             value={query}
@@ -70,7 +71,7 @@ export default function Shell() {
           />
           {query ? (
             <Pressable onPress={() => setQuery('')} hitSlop={12} accessibilityLabel="ניקוי החיפוש">
-              <T soft size={18}>✕</T>
+              <Icon name="close-circle" size={22} color={c.inkSoft} />
             </Pressable>
           ) : null}
         </View>
@@ -106,7 +107,7 @@ export default function Shell() {
               accessibilityLabel={t.label}
               style={styles.tab}
             >
-              <Text style={{ fontSize: 22, opacity: active ? 1 : 0.55 }}>{t.icon}</Text>
+              <Icon name={active ? t.active : t.icon} size={26} color={active ? c.primary : c.inkSoft} />
               <T size={12} weight={active ? 'bold' : 'regular'} style={{ color: active ? c.primary : c.inkSoft }}>
                 {t.label}
               </T>

@@ -190,9 +190,9 @@ export function SearchResults({ lib, query, setQuery, submitted }: {
         }
         ListEmptyComponent={
           thinking ? undefined : typing ? (
-            <EmptyState icon="🔍" title="לא נמצא שיר" body="נסי מילה אחרת מהשיר, או נושא כמו ״גשם״ או ״מנוחה״." />
+            <EmptyState icon="search-outline" title="לא נמצא שיר" body="נסי מילה אחרת מהשיר, או נושא כמו ״גשם״ או ״מנוחה״." />
           ) : recent.length ? undefined : (
-            <EmptyState icon="🔎" title="מה מחפשים?" body="אפשר לחפש לפי מילה מתוך השיר, לפי נושא או לפי חג. גם שגיאות כתיב בסדר." />
+            <EmptyState icon="search" title="מה מחפשים?" body="אפשר לחפש לפי מילה מתוך השיר, לפי נושא או לפי חג. גם שגיאות כתיב בסדר." />
           )
         }
       />

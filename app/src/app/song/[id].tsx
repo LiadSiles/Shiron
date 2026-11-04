@@ -11,6 +11,7 @@ import { retrySong } from '../../ingest/processor';
 import { deleteStored, resolveStored } from '../../ingest/storage';
 import { clearIfCurrent } from '../../player/player';
 import { Button, CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
+import { Icon } from '../../ui/Icon';
 import { toast } from '../../ui/toast';
 import { font, radius, space, useTheme } from '../../ui/theme';
 
@@ -116,8 +117,8 @@ export default function SongScreen() {
       {status ? <T soft size={14} style={{ marginTop: space.xs }}>{status}</T> : null}
 
       <View style={styles.actions}>
-        <Button label="ניגון" icon="▶︎" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
-        <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon="📌" kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
+        <Button label="ניגון" icon="play" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
+        <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon={song.pinnedAt ? 'pin' : 'pin-outline'} kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
       </View>
       {song.error ? <T size={14} style={{ marginTop: space.xs, color: c.warn }}>{song.error}</T> : null}
 
@@ -149,7 +150,7 @@ export default function SongScreen() {
       {canTranscribe(song) && !editingLyrics ? (
         <Button
           label={song.status === 'pending' ? 'מתמללת…' : 'תמלול מחדש'}
-          icon="↻"
+          icon="refresh"
           kind="quiet"
           disabled={song.status === 'pending'}
           onPress={transcribeAgain}
@@ -218,7 +219,10 @@ function TechDetails({ song }: { song: SongWithCategories }) {
   return (
     <View style={{ marginTop: space.xl }}>
       <Pressable onPress={() => setOpen(!open)} hitSlop={8}>
-        <T weight="medium" style={{ color: c.inkSoft }}>{open ? '▾' : '◂'} פרטים טכניים</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
+          <Icon name={open ? 'chevron-down' : 'chevron-back'} size={18} color={c.inkSoft} />
+          <T weight="medium" style={{ color: c.inkSoft }}>פרטים טכניים</T>
+        </View>
       </Pressable>
       {open ? (
         <View style={{ marginTop: space.s, gap: 2 }}>
