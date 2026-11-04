@@ -25,6 +25,17 @@ class ShironAudioModule : Module() {
         throw CodedException("ERR_AUDIO_FAILED", e.message ?: e.toString(), e)
       }
     }
+
+    // Keep saving/processing alive in the background (WorkService); the JS side calls these when
+    // the processing queue starts and when it is empty again.
+    Function("startBackgroundWork") { text: String ->
+      appContext.reactContext?.let { WorkService.start(it, text) }
+      Unit
+    }
+    Function("stopBackgroundWork") {
+      appContext.reactContext?.let { WorkService.stop(it) }
+      Unit
+    }
   }
 
   private fun fileOf(uri: String): File {

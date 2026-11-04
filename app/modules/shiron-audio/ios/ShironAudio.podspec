@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
 
   # Core/ is plain AVFoundation and is also built by the Swift package in swift-tests/.
   s.source_files = 'ShironAudioModule.swift', 'Core/**/*.swift'
-  s.frameworks = 'AVFoundation', 'AudioToolbox', 'CoreMedia'
+  s.frameworks = 'AVFoundation', 'AudioToolbox', 'CoreMedia', 'UIKit'
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
     'SWIFT_COMPILATION_MODE' => 'wholemodule'

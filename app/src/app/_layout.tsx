@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { connectedProviders } from '../api/keys';
 import { getSetting, setSetting } from '../db/repo';
 import { describeSummary, enqueueShare } from '../ingest/ingest';
+import { keepWorkingInBackground, registerBackgroundProcessing } from '../ingest/background';
 import { processQueue } from '../ingest/processor';
 import { font, useTheme } from '../ui/theme';
 import { StatusHost, toast } from '../ui/toast';
@@ -60,7 +61,9 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Rubik_400Regular, Rubik_500Medium, Rubik_700Bold });
 
   useEffect(() => {
+    keepWorkingInBackground();
     processQueue();
+    void registerBackgroundProcessing();
     const sub = AppState.addEventListener('change', (s) => {
       if (s === 'active') processQueue();
     });

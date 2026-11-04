@@ -1,6 +1,12 @@
 import ExpoModulesCore
+import UIKit
 
 public class ShironAudioModule: Module {
+  /// Extra time iOS grants after she leaves the app (about 30 s), so a song being saved or
+  /// converted finishes instead of stopping halfway. Longer work resumes later through
+  /// expo-background-task, or when she opens the app.
+  private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+
   public func definition() -> ModuleDefinition {
     Name("ShironAudio")
 
@@ -21,5 +27,26 @@ public class ShironAudioModule: Module {
           code: "ERR_AUDIO_\(code)")
       }
     }
+
+    Function("startBackgroundWork") { (_: String) in
+      DispatchQueue.main.async { self.beginBackgroundTime() }
+    }
+
+    Function("stopBackgroundWork") {
+      DispatchQueue.main.async { self.endBackgroundTime() }
+    }
+  }
+
+  private func beginBackgroundTime() {
+    guard backgroundTask == .invalid else { return }
+    backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "shiron-new-songs") { [weak self] in
+      self?.endBackgroundTime() // time is up: iOS suspends the app; the work resumes later
+    }
+  }
+
+  private func endBackgroundTime() {
+    guard backgroundTask != .invalid else { return }
+    UIApplication.shared.endBackgroundTask(backgroundTask)
+    backgroundTask = .invalid
   }
 }

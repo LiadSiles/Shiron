@@ -15,6 +15,8 @@ export type AudioErrorCode = 'UNSUPPORTED' | 'NO_AUDIO' | 'TOO_LONG' | 'CORRUPT'
 
 interface NativeModule {
   processAsync(inputUri: string, outputUri: string): Promise<ProcessedAudio>;
+  startBackgroundWork(text: string): void;
+  stopBackgroundWork(): void;
 }
 
 const native = requireNativeModule<NativeModule>('ShironAudio');
@@ -26,6 +28,18 @@ const native = requireNativeModule<NativeModule>('ShironAudio');
  */
 export function processAudio(inputUri: string, outputUri: string): Promise<ProcessedAudio> {
   return native.processAsync(inputUri, outputUri);
+}
+
+/**
+ * Keep the app working after she leaves it: an Android foreground service with a quiet
+ * notification, or iOS's ~30 s of extra background time. Call stop when the work is done.
+ */
+export function startBackgroundWork(text: string): void {
+  native.startBackgroundWork(text);
+}
+
+export function stopBackgroundWork(): void {
+  native.stopBackgroundWork();
 }
 
 export function audioErrorCode(e: unknown): AudioErrorCode | null {

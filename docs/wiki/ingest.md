@@ -80,3 +80,26 @@ orphan files in `songs/`). `importFromPicker()` returns the toast text itself.
 - Saving is serial (copy + SHA-256, quick); conversion and naming then run in their own lanes,
   one song at a time each — conversion is seconds per song, and the AI services' per-minute
   quotas make parallel naming pointless.
+
+## Working in the background (0.6.0, `src/ingest/background.ts`)
+
+Owner: saving and processing a new song should go on after he leaves the app. Mobile systems
+stop a backgrounded app within seconds, so:
+
+- `keepWorkingInBackground()` watches `onImportState` and `onProcessorState`; while either is
+  busy it calls the native `startBackgroundWork` (shiron-audio module), and `stop…` when idle.
+  - **Android**: `WorkService`, a `dataSync` foreground service with a quiet notification
+    ("שירון מכינה שירים חדשים…", channel "הכנת שירים", low importance). It must be started while
+    the app is in the foreground (Android 12+ forbids starting it from the background — the
+    call is caught and the work then only runs while the app is open). Android 15 caps
+    dataSync at ~6 h/day (`onTimeout` stops it).
+  - **iPhone**: `UIApplication.beginBackgroundTask` — about 30 s after leaving the app, enough
+    to finish the song in hand. iOS gives no more to a non-audio app.
+- **expo-background-task** (`shiron-process-songs`, minimumInterval 15 min) runs
+  `processQueue()` when the system decides (Android WorkManager; iOS BGTaskScheduler, often
+  hours later or overnight, needs network and battery). It does nothing when all songs are
+  processed. Not testable in release builds; `triggerTaskWorkerForTestingAsync` works only in
+  debug builds and needs a device on iOS.
+- And always: everything resumes when she opens the app.
+
+Untested on devices so far.
