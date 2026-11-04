@@ -224,8 +224,10 @@ export async function playSong(song: SongWithCategories, queue: SongWithCategori
 async function startAt(index: number) {
   const song = state.queue[index];
   if (!song) return;
+  if (skipTimer) clearTimeout(skipTimer);
   startSession(song);
-  set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null, playing: true });
+  // YouTube reports "playing" itself once it really plays (it may still be loading, or offline).
+  set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null, playing: !isYoutube(song) });
 
   if (isYoutube(song)) {
     run = null;
@@ -287,8 +289,23 @@ export function attachYoutube(controller: YoutubeController): () => void {
   };
 }
 
-/** Events from YouTube's player (IFrame API). */
-export function youtubeEvent(e: { playing?: boolean; position?: number; duration?: number; ended?: boolean; error?: string }) {
+/**
+ * Which way she was going (next/end of song = forward, previous = back): a video that can never
+ * play is skipped in that direction, so "previous" over it isn't bounced forward again.
+ */
+let direction: 1 | -1 = 1;
+let skipTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Events from YouTube's player (IFrame API, or the view's own load watchdog). */
+export function youtubeEvent(e: {
+  playing?: boolean;
+  position?: number;
+  duration?: number;
+  ended?: boolean;
+  error?: string;
+  /** The video can never play here (removed, embedding forbidden) — not just offline. */
+  permanent?: boolean;
+}) {
   if (!isYoutube(state.song)) return;
   if (typeof e.position === 'number') track(e.position);
   const patch: Partial<PlayerState> = {};
@@ -301,17 +318,24 @@ export function youtubeEvent(e: { playing?: boolean; position?: number; duration
   }
   set(patch);
   if (e.error) {
-    // A video that can't be embedded shouldn't stop the list: show why, then move on.
+    // Offline or still loading: stay, so she can retry or go either way herself. A video that
+    // can never play here shouldn't stop the list: show why, then move on the way she was going.
+    if (!e.permanent) return;
     const stuck = state.song?.id;
-    const n = nextIndex(state.index, state.queue.length, state.repeat === 'one' ? 'off' : state.repeat);
+    const mode = state.repeat === 'one' ? 'off' : state.repeat;
+    const n = direction === 1
+      ? nextIndex(state.index, state.queue.length, mode)
+      : previousIndex(state.index, state.queue.length, mode);
     if (n !== null && n !== state.index) {
-      setTimeout(() => {
+      if (skipTimer) clearTimeout(skipTimer);
+      skipTimer = setTimeout(() => {
         if (state.song?.id === stuck) void startAt(n).catch((err) => diag('continue failed', err));
       }, 3000);
     }
     return;
   }
   if (e.ended) {
+    direction = 1;
     if (state.repeat === 'one') {
       youtube?.seek(0);
       youtube?.play();
@@ -403,12 +427,14 @@ async function go(target: number) {
 }
 
 export async function next() {
+  direction = 1;
   const n = nextIndex(state.index, state.queue.length, state.repeat === 'one' ? 'all' : state.repeat);
   if (n !== null && n !== state.index) await go(n);
 }
 
 export async function previous() {
-  if (state.position > 3) {
+  direction = -1;
+  if (state.position > 3 && !(isYoutube(state.song) && state.error)) {
     await seek(0);
     return;
   }

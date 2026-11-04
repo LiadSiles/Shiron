@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { attachYoutube, youtubeEvent } from '../player/player';
+import { T } from './components';
+import { Icon } from './Icon';
+import { radius, space, useTheme } from './theme';
+
+/** No word from YouTube's player after this long: most likely no internet. */
+const LOAD_TIMEOUT_MS = 15_000;
 
 /**
  * YouTube's own player, visible on the full player screen — YouTube's terms allow playing only
@@ -10,6 +16,28 @@ import { attachYoutube, youtubeEvent } from '../player/player';
  * moves on when it ends, and play/pause/seek work from the app's controls.
  */
 export function YouTubeView({ videoId }: { videoId: string }) {
+  const c = useTheme();
+  // loading → ready, or offline (no network / never loaded) with a retry; `attempt` reloads it.
+  const [phase, setPhase] = useState<'loading' | 'ready' | 'offline'>('loading');
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    setPhase('loading');
+    const timer = setTimeout(() => {
+      setPhase((p) => {
+        if (p !== 'loading') return p;
+        youtubeEvent({ playing: false, error: 'אין חיבור לאינטרנט — שירי יוטיוב צריכים רשת' });
+        return 'offline';
+      });
+    }, LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [videoId, attempt]);
+
+  const offline = () => {
+    setPhase('offline');
+    youtubeEvent({ playing: false, error: 'אין חיבור לאינטרנט — שירי יוטיוב צריכים רשת' });
+  };
+
   // react-native-webview types WebView as a function component without a ref; it has one.
   const web = useRef<{ injectJavaScript(script: string): void } | null>(null);
 
@@ -32,15 +60,26 @@ export function YouTubeView({ videoId }: { videoId: string }) {
     } catch {
       return;
     }
-    if (m.t === 'time') youtubeEvent({ position: m.p, duration: m.d });
+    if (m.t === 'ready') setPhase('ready');
+    else if (m.t === 'offline') offline();
+    else if (m.t === 'time') youtubeEvent({ position: m.p, duration: m.d });
     else if (m.t === 'state') {
       // YT.PlayerState: 1 playing, 2 paused, 0 ended, 3 buffering.
       if (m.s === 1) youtubeEvent({ playing: true });
       else if (m.s === 2) youtubeEvent({ playing: false });
       else if (m.s === 0) youtubeEvent({ playing: false, ended: true });
     } else if (m.t === 'error') {
-      // 101/150: the owner doesn't allow embedding; 100: removed or private.
-      youtubeEvent({ playing: false, error: m.c === 100 ? 'הסרטון הוסר או פרטי' : 'יוטיוב לא מאפשר לנגן את הסרטון הזה מחוץ לאפליקציה שלו' });
+      // 101/150: the owner doesn't allow embedding; 100: removed or private — never playable here.
+      // 2/5 (bad request, HTML5 player error) are usually the connection: not skipped.
+      const permanent = m.c === 100 || m.c === 101 || m.c === 150;
+      setPhase('ready');
+      youtubeEvent({
+        playing: false,
+        permanent,
+        error: m.c === 100 ? 'הסרטון הוסר או פרטי'
+          : permanent ? 'יוטיוב לא מאפשר לנגן את הסרטון הזה מחוץ לאפליקציה שלו'
+          : 'יוטיוב לא הצליח לנגן את הסרטון. בדקי את החיבור לאינטרנט',
+      });
     }
   };
 
@@ -48,7 +87,8 @@ export function YouTubeView({ videoId }: { videoId: string }) {
     <View style={{ aspectRatio: 16 / 9, backgroundColor: '#000', borderRadius: 12, overflow: 'hidden' }}>
       <WebView
         ref={web as never}
-        key={videoId}
+        key={`${videoId}-${attempt}`}
+        onError={offline}
         source={{ html, baseUrl: 'https://shiron.app' }}
         onMessage={onMessage}
         allowsInlineMediaPlayback
@@ -56,6 +96,29 @@ export function YouTubeView({ videoId }: { videoId: string }) {
         allowsFullscreenVideo
         javaScriptEnabled
       />
+      {phase !== 'ready' ? (
+        <View style={[StyleSheet.absoluteFill, styles.overlay]}>
+          {phase === 'loading' ? (
+            <>
+              <ActivityIndicator color="#fff" size="large" />
+              <T weight="medium" style={styles.overlayText}>טוען מיוטיוב…</T>
+            </>
+          ) : (
+            <>
+              <Icon name="cloud-offline-outline" size={40} color="#fff" />
+              <T weight="medium" style={styles.overlayText}>אין חיבור לאינטרנט. שירי יוטיוב צריכים רשת.</T>
+              <Pressable
+                onPress={() => setAttempt((a) => a + 1)}
+                accessibilityRole="button"
+                style={[styles.retry, { backgroundColor: c.primary }]}
+              >
+                <Icon name="refresh" size={18} color={c.primaryInk} />
+                <T weight="medium" style={{ color: c.primaryInk }}>נסי שוב</T>
+              </Pressable>
+            </>
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -67,12 +130,12 @@ function page(videoId: string): string {
 <body><div id="p"></div>
 <script>
 function post(m){window.ReactNativeWebView.postMessage(JSON.stringify(m));}
-var tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);
+var tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';tag.onerror=function(){post({t:'offline'});};document.head.appendChild(tag);
 function onYouTubeIframeAPIReady(){
   window.player=new YT.Player('p',{videoId:${id},host:'https://www.youtube-nocookie.com',
     playerVars:{autoplay:1,playsinline:1,rel:0,origin:'https://shiron.app'},
     events:{
-      onReady:function(e){e.target.playVideo();},
+      onReady:function(e){post({t:'ready'});e.target.playVideo();},
       onStateChange:function(e){post({t:'state',s:e.data});},
       onError:function(e){post({t:'error',c:e.data});}
     }});
@@ -82,3 +145,9 @@ function onYouTubeIframeAPIReady(){
 }
 </script></body></html>`;
 }
+
+const styles = StyleSheet.create({
+  overlay: { backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', gap: space.m, padding: space.l },
+  overlayText: { color: '#fff', textAlign: 'center' },
+  retry: { flexDirection: 'row', alignItems: 'center', gap: space.s, minHeight: 48, paddingHorizontal: space.l, borderRadius: radius.m },
+});

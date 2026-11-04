@@ -74,7 +74,8 @@
       ],
       "./plugins/withSigningKey",
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true

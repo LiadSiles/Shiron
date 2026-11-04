@@ -67,8 +67,15 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
 - The full player shows `ui/YouTubeView`: YouTube's IFrame API in a WebView (visible, as the
   terms require; `youtube-nocookie.com`). It posts state (1 playing / 2 paused / 0 ended), time
   and errors; the app's play/pause/seek/scrubber drive it through `attachYoutube` +
-  `injectJavaScript`. Ended → next song (audio or YouTube). An embed error (101/150: owner
-  forbids embedding; 100: removed) shows the reason and moves on after 3 s.
+  `injectJavaScript`. Ended → next song (audio or YouTube).
+- Loading and offline (0.6.0): the view shows "טוען מיוטיוב…" until the IFrame API's `onReady`;
+  the API script failing to load, WebView `onError`, or 15 s without `ready` → "אין חיבור
+  לאינטרנט" with "נסי שוב" (reloads the WebView). Offline and errors 2/5 are **not** skipped:
+  0.5.2 skipped forward after any error, so "previous" onto an offline YouTube song bounced
+  forward again (owner report: "only next works"). Only permanent errors (100 removed, 101/150
+  embedding forbidden) skip after 3 s, **in the direction she was going** (`direction`, set by
+  next/previous/end). "Previous" on a failed YouTube song goes to the previous song at once.
+  `playing` stays false for a YouTube song until YouTube reports it really plays.
 - Closing the full player removes the WebView, which stops YouTube: the state becomes paused;
   play in the mini player reopens the full player, which autoplays.
 - If the run ends while the app is in the background, the YouTube song starts when she
