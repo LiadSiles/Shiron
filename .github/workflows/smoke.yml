@@ -75,16 +75,32 @@ jobs:
           target: google_apis
           emulator-boot-timeout: 1200
           script: bash scripts/ci-android-smoke.sh app.apk
+      # The emulator sometimes fails to boot on GitHub runners: one more try.
+      - name: Open the app on an emulator (retry)
+        id: emulator2
+        if: steps.emulator.outcome == 'failure' && hashFiles('smoke.log') == ''
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-boot-timeout: 1200
+          script: bash scripts/ci-android-smoke.sh app.apk
       - name: Report
         if: always()
         run: |
-          [ -f smoke.log ] || { echo "::warning::emulator did not run (${{ steps.emulator.outcome }})"; exit 0; }
+          [ -f smoke.log ] || { echo "::error::the emulator never booted — no answer, run again"; exit 1; }
           head -3 smoke.log | while IFS= read -r l; do echo "::notice::$l"; done
           # One annotation per chunk: GitHub keeps 10 per step and ~6000 characters each.
           sed -n '/== crash buffer/,/== errors/p' smoke.log | grep -v '^\s*at com.facebook\|^\s*at android.os' | head -80 | tr '\n' '|' | cut -c1-6000 | sed 's/^/::error::crash: /'
           sed -n '/== errors/,$p' smoke.log | tail -40 | tr '\n' '|' | cut -c1-6000 | sed 's/^/::warning::errors: /'
           echo
-          [ "${{ steps.emulator.outcome }}" = success ] && echo "::notice::the app started and was still running after 30 s"
+          if grep -q '^== alive' smoke.log && ! grep -q 'FATAL EXCEPTION' smoke.log; then
+            echo "::notice::the app started and was still running after 30 s"
+          else
+            exit 1
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
