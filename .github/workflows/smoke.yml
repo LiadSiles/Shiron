@@ -93,7 +93,9 @@ jobs:
           [ -f smoke.log ] || { echo "::error::the emulator never booted — no answer, run again"; exit 1; }
           head -3 smoke.log | while IFS= read -r l; do echo "::notice::$l"; done
           # One annotation per chunk: GitHub keeps 10 per step and ~6000 characters each.
-          sed -n '/== crash buffer/,/== errors/p' smoke.log | grep -v '^\s*at com.facebook\|^\s*at android.os' | head -80 | tr '\n' '|' | cut -c1-6000 | sed 's/^/::error::crash: /'
+          if grep -q 'FATAL EXCEPTION' smoke.log; then
+            sed -n '/== crash buffer/,/== errors/p' smoke.log | grep -v '^\s*at com.facebook\|^\s*at android.os' | head -80 | tr '\n' '|' | cut -c1-6000 | sed 's/^/::error::crash: /'
+          fi
           sed -n '/== errors/,$p' smoke.log | tail -40 | tr '\n' '|' | cut -c1-6000 | sed 's/^/::warning::errors: /'
           echo
           if grep -q '^== alive' smoke.log && ! grep -q 'FATAL EXCEPTION' smoke.log; then
