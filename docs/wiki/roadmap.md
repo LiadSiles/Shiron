@@ -19,6 +19,7 @@ _Last updated: 2026-11-05_
 | 0.5.x | Why a shared song didn't play on the owner's Xiaomi (read his technical log); app icon and splash; tune confidence thresholds on ~200 real songs; swipe-to-approve | next |
 | 0.6.0 | Owner feedback: YouTube offline (loading/offline overlay, retry, previous works, only permanent errors skip, in the direction travelled), big status banner on every screen + larger toasts, work continues in the background (Android dataSync foreground service, iOS background time + expo-background-task), vector icons | not published separately (GitHub had no macOS runners for the IPA) — shipped in v0.7.0 |
 | 0.7.0 | Playlists she builds herself: create, name, pick songs (with search), reorder, remove, delete; on home (one-tap play), in the library and from a song screen (DB v6) | released as v0.7.0 (includes 0.6.0) — untested on a device |
+| 0.7.1 | Fix: Android release closed at launch (R8 stripped WorkManager's `WorkDatabase_Impl` constructor; keep rules via `plugins/withKeepRules.js`); safe stop for WorkService; emulator launch check on every dev push | released as v0.7.1 — passed the emulator launch check (API 34) |
 | 0.8 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.8 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
 | 0.9 | Sleep timer with fade, big-tile class mode | planned |
