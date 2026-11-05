@@ -17,8 +17,8 @@ _Last updated: 2026-11-05_
 | 0.5.1 | "תמלול מחדש" on every song screen | not published separately — shipped in v0.5.2 |
 | 0.5.2 | Transcription accuracy (phantom phrases, loops), share queue + 100 files per iOS share, notification returns after being swiped away | ✅ released as v0.5.2 (APK + IPA; includes 0.5.0 and 0.5.1, which were never published) |
 | 0.5.x | Why a shared song didn't play on the owner's Xiaomi (read his technical log); app icon and splash; tune confidence thresholds on ~200 real songs; swipe-to-approve | next |
-| 0.6.0 | Owner feedback: YouTube offline (loading/offline overlay, retry, previous works, only permanent errors skip, in the direction travelled), big status banner on every screen + larger toasts, work continues in the background (Android dataSync foreground service, iOS background time + expo-background-task), vector icons | released as v0.6.0 — untested on a device |
-| 0.7.0 | Playlists she builds herself: create, name, pick songs (with search), reorder, remove, delete; on home (one-tap play), in the library and from a song screen (DB v6) | built — untested on a device |
+| 0.6.0 | Owner feedback: YouTube offline (loading/offline overlay, retry, previous works, only permanent errors skip, in the direction travelled), big status banner on every screen + larger toasts, work continues in the background (Android dataSync foreground service, iOS background time + expo-background-task), vector icons | not published separately (GitHub had no macOS runners for the IPA) — shipped in v0.7.0 |
+| 0.7.0 | Playlists she builds herself: create, name, pick songs (with search), reorder, remove, delete; on home (one-tap play), in the library and from a song screen (DB v6) | released as v0.7.0 (includes 0.6.0) — untested on a device |
 | 0.8 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.8 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
 | 0.9 | Sleep timer with fade, big-tile class mode | planned |
