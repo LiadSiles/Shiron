@@ -1,0 +1,59 @@
+name: Android launch check
+
+# Opens a published APK on an emulator and reports whether the app starts or crashes (with the
+# crash from logcat as annotations, and a screenshot as an artifact). Run it on a release that
+# a device reported as broken: push a change to this file, or dispatch it with the tag.
+on:
+  push:
+    branches: ["dev/**"]
+    paths:
+      - ".github/workflows/smoke.yml"
+      - "scripts/ci-android-smoke.sh"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag whose APK to open (empty = latest release)
+        required: false
+
+jobs:
+  launch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || 'v0.7.0' }}
+        run: gh release download "$TAG" --pattern '*.apk' --output app.apk --repo "${{ github.repository }}"
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Open the app on an emulator
+        id: emulator
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-boot-timeout: 1200
+          script: bash scripts/ci-android-smoke.sh app.apk
+      - name: Report
+        if: always()
+        run: |
+          [ -f smoke.log ] || { echo "::warning::emulator did not run (${{ steps.emulator.outcome }})"; exit 0; }
+          head -3 smoke.log | while IFS= read -r l; do echo "::notice::$l"; done
+          # One annotation per chunk: GitHub keeps 10 per step and ~6000 characters each.
+          sed -n '/== crash buffer/,/== errors/p' smoke.log | grep -v '^\s*at com.facebook\|^\s*at android.os' | head -80 | tr '\n' '|' | cut -c1-6000 | sed 's/^/::error::crash: /'
+          sed -n '/== errors/,$p' smoke.log | tail -40 | tr '\n' '|' | cut -c1-6000 | sed 's/^/::warning::errors: /'
+          echo
+          [ "${{ steps.emulator.outcome }}" = success ] && echo "::notice::the app started and was still running after 30 s"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke
+          path: |
+            smoke.log
+            smoke.png
