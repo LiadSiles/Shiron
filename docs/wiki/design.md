@@ -34,12 +34,28 @@ font, no network): tab bar (outline when inactive, filled when active), search f
 Emoji stay only where they are content: category icons and the big art on library tiles.
 The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exactly at every size.
 
-## Library (`src/screens/LibraryScreen.tsx`, 0.3.1)
+## Library (`src/screens/LibraryScreen.tsx`, 0.3.1; playlists 0.7.0)
+
+"הרשימות שלי" comes first: one tile per playlist (colour from its id, `ui/playlists.tsx →
+playlistColor`, a palette separate from the categories) and a dashed "רשימה חדשה" tile. Then
+"קטגוריות". Tiles take an Ionicon (`icon`) or a category emoji (`emoji`) as the corner art.
 
 Two columns of square tiles, Spotify "browse" style: the category colour fills the tile, the
 name in bold at the top start, the song count under it, and the category emoji large, tilted
 and cut off at the bottom end. Text colour is chosen per tile for contrast (`core/color.ts →
 textOn`). "כל השירים" is the first tile. One level only — no group headings (decisions.md).
+
+## Playlists (0.7.0, `app/playlist/`, `ui/playlists.tsx`, `core/playlists.ts`)
+
+- `playlist/[id]` — coloured header card (tap the name to rename inline), "נגני הכול",
+  "הוספת שירים", the songs as normal `SongRow`s (tap plays from there, the list is the queue).
+  Header "סידור" → rows with ▲ ▼ ✕ (48 pt each); "מחיקת הרשימה" at the bottom with a confirm.
+- `playlist/pick` (modal) — new list (name field + songs) or adding to one (`id` param): the
+  library most-used first, a search field (`searchSongs`), tap toggles; the check circle shows
+  the song's position in the list. Saved with one button.
+- `playlist/add?song=` (modal, from the song screen) — her lists with a check each, toggled
+  immediately; or a new list starting with this song.
+- Home: `PlaylistStrip` — a row of 150 pt cards; the round button plays/pauses the whole list.
 
 ## RTL and language
 

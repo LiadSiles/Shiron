@@ -1,5 +1,6 @@
+import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
-import type { PlayEvent, Song, SongCategory, SongStatus, SongWithCategories } from '../core/types';
+import type { PlayEvent, Playlist, Song, SongCategory, SongStatus, SongWithCategories } from '../core/types';
 
 interface SongRow {
   id: string;
@@ -204,6 +205,70 @@ export async function recentlyPlayedIds(limit = 10): Promise<string[]> {
     [limit],
   );
   return rows.map((r) => r.song_id);
+}
+
+// ---------- playlists ----------
+
+/** Every playlist with its songs in order, most recently changed first. */
+export async function listPlaylists(): Promise<Playlist[]> {
+  const db = await getDb();
+  const lists = await db.getAllAsync<{ id: string; name: string; created_at: number; updated_at: number }>(
+    'SELECT * FROM playlists ORDER BY updated_at DESC',
+  );
+  const items = await db.getAllAsync<{ playlist_id: string; song_id: string }>(
+    'SELECT playlist_id, song_id FROM playlist_songs ORDER BY position',
+  );
+  const byList = new Map<string, string[]>();
+  for (const i of items) {
+    const ids = byList.get(i.playlist_id) ?? [];
+    ids.push(i.song_id);
+    byList.set(i.playlist_id, ids);
+  }
+  return lists.map((l) => ({
+    id: l.id, name: l.name, songIds: byList.get(l.id) ?? [], createdAt: l.created_at, updatedAt: l.updated_at,
+  }));
+}
+
+export async function createPlaylist(name: string, songIds: string[] = []): Promise<string> {
+  const db = await getDb();
+  const id = Crypto.randomUUID();
+  const now = Date.now();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('INSERT INTO playlists (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)', [id, name, now, now]);
+    await writeItems(db, id, songIds);
+  });
+  emit();
+  return id;
+}
+
+export async function renamePlaylist(id: string, name: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE playlists SET name = ?, updated_at = ? WHERE id = ?', [name, Date.now(), id]);
+  emit();
+}
+
+/** Replaces the list's songs with these, in this order. */
+export async function setPlaylistSongs(id: string, songIds: string[]): Promise<void> {
+  const db = await getDb();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM playlist_songs WHERE playlist_id = ?', [id]);
+    await writeItems(db, id, songIds);
+    await db.runAsync('UPDATE playlists SET updated_at = ? WHERE id = ?', [Date.now(), id]);
+  });
+  emit();
+}
+
+export async function deletePlaylist(id: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM playlists WHERE id = ?', [id]);
+  emit();
+}
+
+async function writeItems(db: Awaited<ReturnType<typeof getDb>>, playlistId: string, songIds: string[]) {
+  const unique = [...new Set(songIds)];
+  for (let i = 0; i < unique.length; i++) {
+    await db.runAsync('INSERT INTO playlist_songs (playlist_id, song_id, position) VALUES (?, ?, ?)', [playlistId, unique[i], i]);
+  }
 }
 
 // ---------- settings ----------

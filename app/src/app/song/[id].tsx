@@ -120,6 +120,13 @@ export default function SongScreen() {
         <Button label="ניגון" icon="play" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
         <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon={song.pinnedAt ? 'pin' : 'pin-outline'} kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
       </View>
+      <Button
+        label="הוספה לרשימה"
+        icon="list"
+        kind="quiet"
+        onPress={() => router.push({ pathname: '/playlist/add', params: { song: song.id } })}
+        style={{ marginTop: space.m }}
+      />
       {song.error ? <T size={14} style={{ marginTop: space.xs, color: c.warn }}>{song.error}</T> : null}
 
       <T weight="bold" size={18} style={styles.h}>קטגוריות</T>

@@ -32,6 +32,8 @@ without a key. Details: [audio-processing.md](audio-processing.md), [ai-pipeline
 | `songs` | `id` (uuid), `kind` (audio/youtube), `title`, `title_source` (file/ai/user), `lyrics`, `summary`, `keywords` (JSON array), `original_uri`, `playable_uri`, `youtube_id`, `source_name`, `context_text`, `sha256`, `duration_sec`, `audio_state` (raw/done/unsupported), `status`, `error`, `pinned_at`, `created_at`, `updated_at` | unique `sha256`, unique `youtube_id` |
 | `song_categories` | `song_id`, `category_id`, `confidence`, `confirmed` | many per song; `confirmed` = set or approved by the teacher |
 | `play_events` | `song_id`, `started_at`, `listened_sec` | one row per listening session, for ranking |
+| `playlists` | `id` (uuid), `name`, `created_at`, `updated_at` | her own lists (0.7.0, DB v6) |
+| `playlist_songs` | `playlist_id`, `song_id`, `position` | PK (playlist, song): a song is in a list once; both FKs cascade, so deleting a song or a list cleans up |
 | `settings` | `key`, `value` | `connectOffered`, `recentSearches` (JSON), `diagLog` (JSON, last 150 lines) |
 
 The Groq key is **not** in SQLite: `expo-secure-store`.
@@ -40,7 +42,8 @@ Migrations: append a SQL string to `MIGRATIONS`; `PRAGMA user_version` tracks th
 count. Never edit an existing migration. v2 (0.2.0) added `audio_state`; v3 (0.3.3) moved the
 old server's `failed` status back to `pending` (the status no longer exists). v4 (0.3.4) set
 `audio_state = 'done'` on YouTube songs (they were saved as `raw`, and a raw song without a
-playable file shows a spinner — `isPreparing()` now also checks `kind`).
+playable file shows a spinner — `isPreparing()` now also checks `kind`). v5 (0.5.0) moved `review` → `ready`; v6 (0.7.0) added
+`playlists` and `playlist_songs`.
 
 **Paths are stored relative** to the document directory (`songs/<file>`), resolved with
 `ingest/storage.ts → resolveStored()`. iOS changes the absolute container path on app

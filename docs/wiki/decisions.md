@@ -132,6 +132,17 @@ It does — in YouTube's IFrame player on the full player screen, which opens by
 keeps the ToS rule (visible embedded player, no background play): when the screen is closed
 or the app is in the background, YouTube doesn't play.
 
+### 2026-11-05 — Playlists the teacher builds herself (0.7.0)
+Owner asked for user-defined playlists assembled from the library (moved up from 0.8).
+- A song appears in a list at most once (PK `playlist_id, song_id`) — a duplicate is almost
+  always a mis-tap; repeat handles "play it again".
+- Reordering is ▲/▼ buttons in a "סידור" mode, not drag-and-drop: 48 pt targets, no precise
+  long-press gesture, identical on iOS and Android, no extra native library.
+- Deleting a list never deletes songs; deleting a song takes it out of every list (cascade).
+- One-tap play: home shows the lists as a row of cards with a round play button; the library
+  tab has "הרשימות שלי" above the categories with a "רשימה חדשה" tile; a song screen has
+  "הוספה לרשימה". Lists are purely local, like the rest of the library.
+
 ### 2026-10-27 — Repository made public
 Owner's choice, to get free GitHub Actions while his billing is blocked. The code holds no
 user data or AI keys; the Android signing key is now public (see build-and-release.md) and must

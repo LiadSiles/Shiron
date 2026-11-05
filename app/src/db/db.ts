@@ -68,6 +68,23 @@ const MIGRATIONS: string[] = [
   `
   UPDATE songs SET status = 'ready' WHERE status = 'review';
   `,
+  // v6 — playlists she builds herself (0.7.0). A song is in a list at most once; deleting a
+  // song takes it out of every list.
+  `
+  CREATE TABLE IF NOT EXISTS playlists (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS playlist_songs (
+    playlist_id TEXT NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
+    song_id TEXT NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,
+    PRIMARY KEY (playlist_id, song_id)
+  );
+  CREATE INDEX IF NOT EXISTS playlist_songs_song ON playlist_songs(song_id);
+  `,
 ];
 
 async function migrate(db: SQLite.SQLiteDatabase) {

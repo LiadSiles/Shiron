@@ -1,0 +1,230 @@
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Alert, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getCategory } from '../../core/categories';
+import { textOn } from '../../core/color';
+import { cleanName, moveSong, playlistSongs, songCount } from '../../core/playlists';
+import type { SongWithCategories } from '../../core/types';
+import { deletePlaylist, renamePlaylist, setPlaylistSongs } from '../../db/repo';
+import { useLibrary } from '../../db/useLibrary';
+import { Button, CategoryBadge, EmptyState, playAll, SongRow, T } from '../../ui/components';
+import { Icon, IconName } from '../../ui/Icon';
+import { MiniPlayer } from '../../ui/MiniPlayer';
+import { playableOf, playlistColor } from '../../ui/playlists';
+import { font, radius, space, TOUCH, useTheme } from '../../ui/theme';
+
+/**
+ * One of her lists. Normally: tap a song to play from there, "נגני הכול" to play it all in her
+ * order. "סידור" switches to arranging: arrows move a song, ✕ takes it out (the song stays in
+ * the library). Arrows rather than drag-and-drop: big targets, no precise gestures, works the
+ * same on both platforms without another library.
+ */
+export default function PlaylistScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const c = useTheme();
+  const lib = useLibrary();
+  const list = lib.playlists.find((p) => p.id === id);
+  const [arranging, setArranging] = useState(false);
+  const [name, setName] = useState(list?.name ?? '');
+  const [editingName, setEditingName] = useState(false);
+
+  useEffect(() => {
+    if (list && !editingName) setName(list.name);
+  }, [list?.name, editingName]);
+
+  if (!list) {
+    return (
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <Stack.Screen options={{ title: '' }} />
+        {lib.loading ? null : <EmptyState icon="list" title="הרשימה לא נמצאה" body="אולי היא נמחקה." />}
+      </SafeAreaView>
+    );
+  }
+
+  const songs = playlistSongs(list.songIds, lib.byId);
+  const playable = playableOf(songs);
+  const color = playlistColor(list.id);
+  const ink = textOn(color);
+
+  const saveName = () => {
+    setEditingName(false);
+    const clean = cleanName(name);
+    if (clean && clean !== list.name) void renamePlaylist(list.id, clean);
+    else setName(list.name);
+  };
+
+  const move = (from: number, to: number) => setPlaylistSongs(list.id, moveSong(songs.map((s) => s.id), from, to));
+  const remove = (songId: string) => setPlaylistSongs(list.id, songs.map((s) => s.id).filter((x) => x !== songId));
+
+  const confirmDelete = () =>
+    Alert.alert('למחוק את הרשימה?', `"${list.name}" תימחק. השירים עצמם נשארים בספרייה.`, [
+      { text: 'ביטול', style: 'cancel' },
+      {
+        text: 'מחיקה',
+        style: 'destructive',
+        onPress: async () => {
+          await deletePlaylist(list.id);
+          router.back();
+        },
+      },
+    ]);
+
+  const addSongs = () => router.push({ pathname: '/playlist/pick', params: { id: list.id } });
+
+  return (
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+      <Stack.Screen
+        options={{
+          title: '',
+          headerRight: () =>
+            songs.length > 1 ? (
+              <Pressable onPress={() => setArranging((a) => !a)} hitSlop={12} accessibilityRole="button" style={styles.headerBtn}>
+                <Icon name={arranging ? 'checkmark' : 'swap-vertical'} size={20} color={c.primary} />
+                <T weight="medium" style={{ color: c.primary }}>{arranging ? 'סיום' : 'סידור'}</T>
+              </Pressable>
+            ) : null,
+        }}
+      />
+      <FlatList
+        data={songs}
+        keyExtractor={(s) => s.id}
+        contentContainerStyle={{ padding: space.l, paddingBottom: 24 }}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          <View style={{ marginBottom: space.l }}>
+            <View style={[styles.hero, { backgroundColor: color }]}>
+              <Icon name="list" size={28} color={ink} />
+              {editingName ? (
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  onBlur={saveName}
+                  onSubmitEditing={saveName}
+                  autoFocus
+                  returnKeyType="done"
+                  maxLength={40}
+                  accessibilityLabel="שם הרשימה"
+                  style={[styles.nameInput, { color: ink, borderColor: ink, fontFamily: font.bold }]}
+                />
+              ) : (
+                <Pressable
+                  onPress={() => setEditingName(true)}
+                  accessibilityRole="button"
+                  accessibilityHint="שינוי שם הרשימה"
+                  style={styles.nameRow}
+                >
+                  <T weight="bold" size={26} numberOfLines={2} style={{ color: ink, flexShrink: 1 }}>{list.name}</T>
+                  <Icon name="pencil" size={18} color={ink} />
+                </Pressable>
+              )}
+              <T style={{ color: ink, opacity: 0.85 }}>{songCount(songs.length)}</T>
+            </View>
+            <View style={styles.actions}>
+              {playable.length ? (
+                <Button label="נגני הכול" icon="play" onPress={() => playAll(playable)} style={{ flex: 1 }} />
+              ) : null}
+              <Button label="הוספת שירים" icon="add" kind="quiet" onPress={addSongs} style={{ flex: 1 }} />
+            </View>
+            {arranging ? <T soft size={14} style={{ marginTop: space.m }}>החצים מזיזים שיר למעלה או למטה. ✕ מוציא אותו מהרשימה (הוא נשאר בספרייה).</T> : null}
+          </View>
+        }
+        renderItem={({ item, index }) =>
+          arranging ? (
+            <ArrangeRow
+              song={item}
+              first={index === 0}
+              last={index === songs.length - 1}
+              onUp={() => move(index, index - 1)}
+              onDown={() => move(index, index + 1)}
+              onRemove={() => remove(item.id)}
+            />
+          ) : (
+            <SongRow song={item} queue={songs} />
+          )
+        }
+        ListEmptyComponent={
+          <EmptyState icon="list" title="הרשימה עוד ריקה" body="בחרי שירים מהספרייה, והם יתנגנו כאן לפי הסדר שלך.">
+            <Button label="הוספת שירים" icon="add" onPress={addSongs} />
+          </EmptyState>
+        }
+        ListFooterComponent={
+          <Pressable onPress={confirmDelete} accessibilityRole="button" style={styles.delete}>
+            <Icon name="trash-outline" size={18} color={c.bad} />
+            <T weight="medium" style={{ color: c.bad }}>מחיקת הרשימה</T>
+          </Pressable>
+        }
+      />
+      <MiniPlayer />
+    </SafeAreaView>
+  );
+}
+
+function ArrangeRow({ song, first, last, onUp, onDown, onRemove }: {
+  song: SongWithCategories;
+  first: boolean;
+  last: boolean;
+  onUp: () => void;
+  onDown: () => void;
+  onRemove: () => void;
+}) {
+  const c = useTheme();
+  const catId = song.categories[0]?.categoryId ?? 'unsorted';
+  return (
+    <View style={[styles.row, { backgroundColor: c.surface, borderColor: c.line }]}>
+      <CategoryBadge id={catId} size={36} />
+      <View style={{ flex: 1 }}>
+        <T weight="medium" numberOfLines={1}>{song.title}</T>
+        <T soft size={13} numberOfLines={1}>{getCategory(catId).name}</T>
+      </View>
+      <RoundButton icon="arrow-up" label={`להזיז את ${song.title} למעלה`} disabled={first} onPress={onUp} />
+      <RoundButton icon="arrow-down" label={`להזיז את ${song.title} למטה`} disabled={last} onPress={onDown} />
+      <RoundButton icon="close" label={`להוציא את ${song.title} מהרשימה`} onPress={onRemove} danger />
+    </View>
+  );
+}
+
+function RoundButton({ icon, label, onPress, disabled, danger }: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+}) {
+  const c = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [
+        styles.round,
+        { backgroundColor: danger ? c.bad + '1F' : c.surfaceAlt, opacity: disabled ? 0.3 : pressed ? 0.7 : 1 },
+      ]}
+    >
+      <Icon name={icon} size={22} color={danger ? c.bad : c.ink} />
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  headerBtn: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: TOUCH, paddingHorizontal: space.s },
+  hero: { borderRadius: radius.l, padding: space.l, gap: space.xs },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, minHeight: TOUCH },
+  nameInput: { fontSize: 24, borderBottomWidth: 2, paddingVertical: space.xs, minHeight: TOUCH },
+  actions: { flexDirection: 'row', gap: space.m, marginTop: space.l },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s,
+    padding: space.s,
+    paddingStart: space.m,
+    minHeight: 64,
+    borderRadius: radius.m,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: space.s,
+  },
+  round: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center' },
+  delete: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s, minHeight: TOUCH, marginTop: space.xxl },
+});

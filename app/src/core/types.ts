@@ -59,3 +59,12 @@ export interface PlayEvent {
 export interface SongWithCategories extends Song {
   categories: SongCategory[];
 }
+
+/** A list she put together herself ("מעגל בוקר"): songs in her order, each at most once. */
+export interface Playlist {
+  id: string;
+  name: string;
+  songIds: string[];
+  createdAt: number;
+  updatedAt: number;
+}

@@ -6,6 +6,7 @@ import { onProcessorState, ProcessorState } from '../ingest/processor';
 import { homeSections, LibraryState } from '../db/useLibrary';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
 import { Icon } from '../ui/Icon';
+import { PlaylistStrip } from '../ui/playlists';
 import { toast } from '../ui/toast';
 import { radius, space, useTheme } from '../ui/theme';
 
@@ -63,6 +64,12 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
         <T soft size={13} style={{ marginTop: space.s }}>{proc.notice}</T>
       ) : null}
 
+      {lib.playlists.length ? (
+        <View>
+          <SectionTitle>הרשימות שלי</SectionTitle>
+          <PlaylistStrip playlists={lib.playlists} byId={lib.byId} />
+        </View>
+      ) : null}
 
       {sections.map((sec) => (
         <View key={sec.key}>

@@ -90,6 +90,9 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerShown: false, title: 'שירון' }} />
           <Stack.Screen name="category/[id]" options={{ title: '' }} />
           <Stack.Screen name="song/[id]" options={{ title: 'פרטי שיר' }} />
+          <Stack.Screen name="playlist/[id]" options={{ title: '' }} />
+          <Stack.Screen name="playlist/pick" options={{ presentation: 'modal', title: 'בחירת שירים' }} />
+          <Stack.Screen name="playlist/add" options={{ presentation: 'modal', title: 'הוספה לרשימה' }} />
           <Stack.Screen name="player" options={{ presentation: 'modal', title: 'מתנגן עכשיו' }} />
           <Stack.Screen name="settings" options={{ title: 'הגדרות' }} />
           <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור שירות AI' }} />

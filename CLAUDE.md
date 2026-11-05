@@ -71,6 +71,7 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     ai.ts                    the AI services (keys, order, errors); groqRules.ts / geminiRules.ts
                              models, error mapping, Gemini audio and answers
     time.ts, color.ts        player time format, readable text on coloured tiles
+    playlists.ts             her own lists: names, add/remove/move, order
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
   src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts
@@ -80,8 +81,8 @@ app/                         Expo app (React Native, TypeScript, expo-router)
   src/player/player.ts       expo-audio playlist: background, lock screen + notification
                              next/previous, fade-out pause, seek, queue
   src/screens/, src/ui/      tabs (home, library), search results, components, theme
-  src/app/                   expo-router routes (layout, shell, category, song, player, settings,
-                             connect, log)
+  src/app/                   expo-router routes (layout, shell, category, song, playlist/,
+                             player, settings, connect, log)
   modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a
     ios/Core/                plain AVFoundation (Ogg Opus demux, asset reader, encoder)
     android/                 MediaExtractor/MediaCodec/MediaMuxer; unit + instrumented tests

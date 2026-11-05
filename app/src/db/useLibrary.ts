@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { activeCategoryIds, CATEGORIES, getCategory, UNSORTED_ID } from '../core/categories';
 import { CategoryTile, frecency, orderCategoryTiles, rankSongs } from '../core/ranking';
-import type { PlayEvent, SongWithCategories } from '../core/types';
+import type { PlayEvent, Playlist, SongWithCategories } from '../core/types';
 import { diag } from '../diag/log';
-import { listSongs, onLibraryChange, playsBySong, recentlyPlayedIds } from './repo';
+import { listPlaylists, listSongs, onLibraryChange, playsBySong, recentlyPlayedIds } from './repo';
 
 export interface LibraryState {
   loading: boolean;
@@ -11,6 +11,8 @@ export interface LibraryState {
   byId: Map<string, SongWithCategories>;
   plays: Map<string, PlayEvent[]>;
   recentIds: string[];
+  /** Her own lists, most recently changed first. */
+  playlists: Playlist[];
   /** usage score per song, used to break ties in search */
   usage: Record<string, number>;
   reload: () => void;
@@ -19,7 +21,7 @@ export interface LibraryState {
 /** Loads the whole library into memory and refreshes it whenever it changes. */
 export function useLibrary(): LibraryState {
   const [state, setState] = useState<Omit<LibraryState, 'reload' | 'byId' | 'usage'>>({
-    loading: true, songs: [], plays: new Map(), recentIds: [],
+    loading: true, songs: [], plays: new Map(), recentIds: [], playlists: [],
   });
 
   // Writes come in bursts (processing a song is several updates); each triggers a reload, and
@@ -28,8 +30,10 @@ export function useLibrary(): LibraryState {
   const load = useCallback(async () => {
     const id = ++latest.current;
     try {
-      const [songs, plays, recentIds] = await Promise.all([listSongs(), playsBySong(), recentlyPlayedIds(10)]);
-      if (id === latest.current) setState({ loading: false, songs, plays, recentIds });
+      const [songs, plays, recentIds, playlists] = await Promise.all([
+        listSongs(), playsBySong(), recentlyPlayedIds(10), listPlaylists(),
+      ]);
+      if (id === latest.current) setState({ loading: false, songs, plays, recentIds, playlists });
     } catch (e) {
       diag('library load failed', e);
     }
