@@ -53,5 +53,6 @@ jobs:
           grep -q 'audio/\*' android/app/src/main/AndroidManifest.xml || fail "audio share intent missing"
           grep -q 'video/\*' android/app/src/main/AndroidManifest.xml || fail "video share intent missing"
           grep -q 'signingConfigs.shiron' android/app/build.gradle || fail "project signing not applied"
+          grep -q 'WorkDatabase_Impl' android/app/proguard-rules.pro || fail "R8 keep rules missing (release crashes at launch)"
           npx expo-modules-autolinking resolve --platform android --json | grep -q '"app.shiron.audio.ShironAudioModule"' || fail "audio module not autolinked (android)"
           npx expo-modules-autolinking resolve --platform apple --json | grep -q '"ShironAudioModule"' || fail "audio module not autolinked (iOS)"

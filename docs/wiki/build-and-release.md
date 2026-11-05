@@ -139,9 +139,20 @@ Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+.
   Sessions here can't re-run workflows (403); a push touching `app/`, `scripts/` or
   `release.yml` triggers the release.
 
+## R8 keep rules (`app/plugins/withKeepRules.js`)
+
+Expo SDK 58's template turns R8 on for release builds (`android.enableMinifyInReleaseBuilds`).
+0.7.0 crashed at launch on every Android phone, before any screen:
+`NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init>` in `WorkManagerInitializer`
+— R8 removed the constructor WorkManager (via expo-background-task) creates by reflection. The
+plugin appends keep rules to `android/app/proguard-rules.pro`; CI asserts they are there. A new
+native library that uses reflection may need its own rule: the launch check below catches it.
+
 ## Android launch check (`.github/workflows/smoke.yml`)
 
-Opens a published APK on an API 34 emulator, waits 30 s, and reports whether the app is still
-running, with the logcat crash buffer as annotations and a screenshot artifact. Triggered by a
-push to `dev/**` that touches the workflow or `scripts/ci-android-smoke.sh` (the tag defaults to
-the one in the workflow), or by dispatch with a tag. Added after 0.7.0 closed at launch.
+Builds a dev branch's **release** APK (R8 as in a real release, x86_64 for the emulator), opens
+it on an API 34 emulator, waits 30 s and reports whether the app is still running, with the
+logcat crash buffer as annotations and a screenshot artifact. Runs on every push to `dev/**`
+touching `app/`; a branch should pass it before merging to `main`. Dispatch with a tag to open a
+published APK instead. (The released APK has only ARM code, so it can't fully start on the x86_64
+emulator — a crash before native code loads, like 0.7.0's, still shows.)

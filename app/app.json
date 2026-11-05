@@ -73,6 +73,7 @@
         }
       ],
       "./plugins/withSigningKey",
+      "./plugins/withKeepRules",
       "expo-secure-store",
       "expo-web-browser",
       "expo-background-task"
