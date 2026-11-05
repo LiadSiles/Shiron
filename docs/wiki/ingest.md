@@ -93,6 +93,12 @@ stop a backgrounded app within seconds, so:
     the app is in the foreground (Android 12+ forbids starting it from the background — the
     call is caught and the work then only runs while the app is open). Android 15 caps
     dataSync at ~6 h/day (`onTimeout` stops it).
+  - **Gotcha (0.7.0 closed at launch on Android):** a service started with
+    `startForegroundService()` must reach `startForeground()` even if the work is already over;
+    `stopService()` before that kills the whole app. Every launch did exactly that (the queue
+    starts and finds nothing within milliseconds). Now JS waits 2 s of steady state before
+    starting or stopping, and `WorkService.stop()` only flags the request; the service always
+    goes foreground first and then stops itself.
   - **iPhone**: `UIApplication.beginBackgroundTask` — about 30 s after leaving the app, enough
     to finish the song in hand. iOS gives no more to a non-audio app.
 - **expo-background-task** (`shiron-process-songs`, minimumInterval 15 min) runs

@@ -23,24 +23,48 @@ class WorkService : Service() {
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     val text = intent?.getStringExtra(EXTRA_TEXT) ?: "שירון מכינה שירים חדשים…"
-    val notification = buildNotification(text)
+    // A service started with startForegroundService() MUST call startForeground() — even if the
+    // work already ended — or Android kills the whole app ("did not then call startForeground").
+    // So it always goes foreground first, and only then honours a stop that came in meanwhile.
     try {
+      val notification = buildNotification(text)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
       } else {
         startForeground(NOTIFICATION_ID, notification)
       }
     } catch (e: Exception) {
-      // Not allowed right now (e.g. started from the background on Android 12+): no harm,
-      // the work simply runs only while the app is open.
-      stopSelf()
+      // Not allowed right now: the work simply runs only while the app is open.
+    }
+    synchronized(lock) {
+      foreground = true
+      if (stopRequested) finish()
     }
     return START_NOT_STICKY
   }
 
+  private fun finish() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) stopForeground(STOP_FOREGROUND_REMOVE)
+    else @Suppress("DEPRECATION") stopForeground(true)
+    stopSelf()
+  }
+
+  override fun onDestroy() {
+    synchronized(lock) {
+      instance = null
+      foreground = false
+    }
+    super.onDestroy()
+  }
+
+  override fun onCreate() {
+    super.onCreate()
+    synchronized(lock) { instance = this }
+  }
+
   /** Android 15: the daily dataSync budget ran out. Stop; the work resumes when she opens the app. */
   override fun onTimeout(startId: Int, fgsType: Int) {
-    stopSelf()
+    finish()
   }
 
   private fun buildNotification(text: String): Notification {
@@ -75,7 +99,15 @@ class WorkService : Service() {
     private const val NOTIFICATION_ID = 4711
     const val EXTRA_TEXT = "text"
 
+    private val lock = Any()
+    private var instance: WorkService? = null
+    /** startForeground() was called on the running instance: stopping it now is safe. */
+    private var foreground = false
+    /** Work ended before the service went foreground: it stops itself right after. */
+    private var stopRequested = false
+
     fun start(context: Context, text: String) {
+      synchronized(lock) { stopRequested = false }
       val intent = Intent(context, WorkService::class.java).putExtra(EXTRA_TEXT, text)
       try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
@@ -85,8 +117,21 @@ class WorkService : Service() {
       }
     }
 
-    fun stop(context: Context) {
-      context.stopService(Intent(context, WorkService::class.java))
+    /**
+     * Never stopService() directly: if the service hasn't reached startForeground() yet, that
+     * crashes the app. Ask it to stop, and let it do so once it is safely foreground.
+     */
+    fun stop() {
+      synchronized(lock) {
+        stopRequested = true
+        val service = instance
+        if (service != null && foreground) {
+          android.os.Handler(android.os.Looper.getMainLooper()).post {
+            // A new start() may have come in since: then keep running.
+            synchronized(lock) { if (stopRequested && instance === service) service.finish() }
+          }
+        }
+      }
     }
   }
 }

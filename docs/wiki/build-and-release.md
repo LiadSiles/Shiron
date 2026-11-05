@@ -138,3 +138,10 @@ Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+.
   secret) before the teacher relies on the app** — a new key means one uninstall/reinstall.
   Sessions here can't re-run workflows (403); a push touching `app/`, `scripts/` or
   `release.yml` triggers the release.
+
+## Android launch check (`.github/workflows/smoke.yml`)
+
+Opens a published APK on an API 34 emulator, waits 30 s, and reports whether the app is still
+running, with the logcat crash buffer as annotations and a screenshot artifact. Triggered by a
+push to `dev/**` that touches the workflow or `scripts/ci-android-smoke.sh` (the tag defaults to
+the one in the workflow), or by dispatch with a tag. Added after 0.7.0 closed at launch.

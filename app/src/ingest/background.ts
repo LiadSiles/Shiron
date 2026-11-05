@@ -22,13 +22,18 @@ import { onProcessorState, processQueue } from './processor';
  */
 let keeping = false;
 
+/** Work shorter than this never starts the background service. */
+const START_AFTER_MS = 2000;
+
 export function keepWorkingInBackground(): void {
   if (keeping) return;
   keeping = true;
   let saving = false;
   let processing = false;
   let active = false;
-  const update = () => {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const apply = () => {
+    timer = null;
     const want = saving || processing;
     if (want === active) return;
     active = want;
@@ -38,6 +43,13 @@ export function keepWorkingInBackground(): void {
     } catch (e) {
       diag('background work unavailable', e);
     }
+  };
+  // Settle first: at every launch the queue starts and finds nothing to do within milliseconds.
+  // Starting a foreground service for that only flashes a notification (and on Android a
+  // service stopped before it is foreground crashed the app — 0.7.0).
+  const update = () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(apply, START_AFTER_MS);
   };
   onImportState((s) => {
     saving = s.saving;

@@ -33,7 +33,7 @@ class ShironAudioModule : Module() {
       Unit
     }
     Function("stopBackgroundWork") {
-      appContext.reactContext?.let { WorkService.stop(it) }
+      WorkService.stop()
       Unit
     }
   }
