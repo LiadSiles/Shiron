@@ -22,7 +22,7 @@ made it stale.
 The owner's Hebrew planning document (claude.ai doc "שירון הגן — תוכנית מוצר ועיצוב") is
 the product-level source; this wiki is the engineering one.
 
-## UI map (0.5.0)
+## UI map (0.8)
 
 `src/app/_layout.tsx` (fonts, RTL, share-intent provider, toast, processing on app foreground)
 → `src/app/index.tsx` — the shell: a **search bar at the top**, the tab's content, `MiniPlayer`,
@@ -44,9 +44,10 @@ full controls, scrubber, repeat, lyrics; a YouTube song shows YouTube's player h
 file import, technical log), `connect` (modal: connect Groq), `log` (technical log: copy/clear). `+native-intent.tsx` redirects the share
 extension's deep link to `/`.
 
-Tap on a song row = play; long press = song screen (`ui/components.tsx` → `playOrOpen`).
+Tap on a song row = play; ⋮ or long press = song screen (`ui/components.tsx` → `playOrOpen`).
+Playlists: `playlist/[id]`, `playlist/pick` (modal), `playlist/add` (modal) — see design.md.
 
-## Code conventions (from the 0.3.3 review)
+## Code conventions (from the 0.3.3 review; 0.8.1 review additions at the end)
 
 - `tsc` runs with `noUnusedLocals` / `noUnusedParameters`: dead code fails CI. Export only what
   another module imports.
@@ -59,3 +60,12 @@ Tap on a song row = play; long press = song screen (`ui/components.tsx` → `pla
 - Anything written to disk on a path that can fail cleans up after itself (import copies,
   native `.m4a` output).
 - SQL that changes more than one row set or table runs in `withTransactionAsync`.
+- Shared state is a `createStore` store read with `useStore` (architecture.md → State in the
+  UI) — not a hand-rolled listener set mirrored into `useState`. Lists select the one value
+  they need, so they don't re-render on every player tick.
+- Rules about a song used in more than one place are named in `core/` (`primaryCategoryId`,
+  `canStart`, `isPreparing`, `canTranscribe`, `songCount`), not re-spelled in screens.
+- Shared UI shapes are components: `ui/list.tsx` (grouped lists, action bar),
+  `ui/SearchField.tsx`, `ui/components.tsx` (song row, buttons, badges, empty states).
+- Unused code check: `knip` (not a dependency; run it from a scratch install) — expect false
+  positives for config plugins referenced from app.json.

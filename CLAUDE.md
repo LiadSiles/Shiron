@@ -72,6 +72,9 @@ app/                         Expo app (React Native, TypeScript, expo-router)
                              models, error mapping, Gemini audio and answers
     time.ts, color.ts        player time format, readable text on coloured tiles
     playlists.ts             her own lists: names, add/remove/move, order
+    store.ts                 the shared-state container (read in React with ui/useStore)
+    queue.ts                 play order: audio runs, next/previous, repeat modes
+    transcript.ts            dropping Whisper's invented lines ("תודה רבה", loops)
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
   src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts
@@ -80,7 +83,8 @@ app/                         Expo app (React Native, TypeScript, expo-router)
   src/diag/log.ts            on-phone technical log (Settings → יומן טכני)
   src/player/player.ts       expo-audio playlist: background, lock screen + notification
                              next/previous, fade-out pause, seek, queue
-  src/screens/, src/ui/      tabs (home, library), search results, components, theme
+  src/screens/, src/ui/      tabs (home, library), search results, components (list.tsx grouped
+                             lists, SearchField, playlists), theme, launch (splash)
   src/app/                   expo-router routes (layout, shell, category, song, playlist/,
                              player, settings, connect, log)
   modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a
@@ -89,6 +93,7 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     swift-tests/             runs ios/Core as a Swift package on macOS
     fixtures/                one test signal in every format (see its README)
   plugins/withSigningKey.js  signs Android builds with app/keystore/shiron.keystore
+  plugins/withKeepRules.js   R8 keep rules (WorkManager; release crashed at launch without them)
   patches/                   patch-package diffs (expo-audio notification; must also be in
                              package.json → expo.autolinking.android.buildFromSource)
   tests/                     vitest — one file per core module, fixtures.ts

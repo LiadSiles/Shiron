@@ -60,7 +60,21 @@ updates; absolute paths would break every song after an update.
 
 ## State in the UI
 
-`useLibrary()` loads all songs, categories and plays into memory and re-queries on every
-`repo` write (`onLibraryChange`). Fine for hundreds of songs; revisit (paging, SQL ranking)
-past ~2,000. Player state is a module-level store read with `useSyncExternalStore`
-(`usePlayer()`); processor state (`needsKey`, `notice`, `running`) via `onProcessorState`.
+Shared state lives in **stores** (`core/store.ts`: `get`/`set(patch)`/`subscribe`; `set` is a
+no-op when nothing changed) and components read them with `useStore(store, selector?)`
+(`ui/useStore.ts`, `useSyncExternalStore`). One writer each:
+
+| Store | Module | Read by |
+|---|---|---|
+| library (`{ lib }`) | `db/useLibrary.ts` → `useLibrary()` | every screen with songs |
+| player | `player/player.ts` → `usePlayer()`, `usePlayerSelect(sel)` | player screens; rows select only "am I playing" |
+| `processorStore` | `ingest/processor.ts` | status banner, home banner, settings, background work |
+| `importStore` | `ingest/ingest.ts` | status banner, background work |
+
+`useLibrary()` keeps **one** in-memory copy of all songs, categories, plays and playlists for
+the whole app (since 0.8.1; before, each screen loaded its own). It loads on first use and again
+on every `repo` write (`onLibraryChange`); a write during a load schedules one follow-up load,
+never overlapping queries. Fine for hundreds of songs; revisit (paging, SQL ranking) past ~2,000.
+Song rows use `usePlayerSelect`, so a playing song's position ticks (2/s) re-render only the
+player views. Event streams that are not state (toasts, the technical log, key changes, repo
+writes) keep their small listener sets.
