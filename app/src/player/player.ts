@@ -8,7 +8,7 @@ import {
 } from 'expo-audio';
 import { router } from 'expo-router';
 import { Platform } from 'react-native';
-import { getCategory } from '../core/categories';
+import { getCategory, primaryCategoryId } from '../core/categories';
 import { createStore } from '../core/store';
 import { audioRun, nativeLoop, nextIndex, nextRepeat, previousIndex, RepeatMode } from '../core/queue';
 import type { SongWithCategories } from '../core/types';
@@ -80,7 +80,7 @@ const LOCK_SCREEN: AudioLockScreenOptions = {
 let session: { songId: string; startedAt: number; listened: number; lastTime: number } | null = null;
 
 function lockScreenInfo(song: SongWithCategories) {
-  const category = song.categories[0] ? getCategory(song.categories[0].categoryId).name : 'שירון';
+  const category = song.categories.length ? getCategory(primaryCategoryId(song)).name : 'שירון';
   return { title: song.title, artist: category, albumTitle: 'שירון' };
 }
 

@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { textOn } from '../core/color';
+import { canStart } from '../core/ingestRules';
 import { playlistSongs, songCount } from '../core/playlists';
 import type { Playlist, SongWithCategories } from '../core/types';
 import { togglePlay, usePlayerSelect } from '../player/player';
@@ -16,11 +17,6 @@ export function playlistColor(id: string): string {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
   return COLORS[Math.abs(h) % COLORS.length];
-}
-
-/** What can actually start: audio that's ready, and YouTube songs (they play in the full player). */
-export function playableOf(songs: SongWithCategories[]): SongWithCategories[] {
-  return songs.filter((s) => s.kind === 'youtube' || !!s.playableUri);
 }
 
 export function openPlaylist(id: string) {
@@ -42,7 +38,7 @@ export function PlaylistStrip({ playlists, byId }: { playlists: Playlist[]; byId
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
       {playlists.map((p) => {
-        const songs = playableOf(playlistSongs(p.songIds, byId));
+        const songs = playlistSongs(p.songIds, byId).filter(canStart);
         const color = playlistColor(p.id);
         const ink = textOn(color);
         const playingThis = !!playingId && p.songIds.includes(playingId);

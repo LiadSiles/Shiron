@@ -44,6 +44,11 @@ export function isPreparing(song: { kind: string; audioState: string; playableUr
 }
 
 /** Something an AI service can listen to: the song's audio file, or (Gemini) its YouTube video. */
+/** Can start right now: an audio song with a playable file, or a YouTube song (full player). */
+export function canStart(song: { kind: string; playableUri: string | null }): boolean {
+  return song.kind === 'youtube' || !!song.playableUri;
+}
+
 export function canTranscribe(song: { kind: string; playableUri: string | null; originalUri: string | null; youtubeId: string | null }): boolean {
   return song.kind === 'youtube' ? !!song.youtubeId : !!(song.playableUri ?? song.originalUri);
 }

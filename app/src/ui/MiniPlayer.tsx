@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { getCategory } from '../core/categories';
+import { getCategory, primaryCategoryId } from '../core/categories';
 import { next, togglePlay, usePlayer } from '../player/player';
 import { NextIcon, PauseIcon, PlayIcon } from './icons';
 import { CategoryBadge, T } from './components';
@@ -11,7 +11,7 @@ export function MiniPlayer() {
   const c = useTheme();
   const p = usePlayer();
   if (!p.song) return null;
-  const catId = p.song.categories[0]?.categoryId ?? 'unsorted';
+  const catId = primaryCategoryId(p.song);
   const progress = p.duration > 0 ? Math.min(1, p.position / p.duration) : 0;
 
   return (

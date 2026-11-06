@@ -2,8 +2,9 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getCategory } from '../../core/categories';
+import { getCategory, primaryCategoryId } from '../../core/categories';
 import { textOn } from '../../core/color';
+import { canStart } from '../../core/ingestRules';
 import { cleanName, moveSong, playlistSongs, songCount } from '../../core/playlists';
 import type { SongWithCategories } from '../../core/types';
 import { deletePlaylist, renamePlaylist, setPlaylistSongs } from '../../db/repo';
@@ -11,7 +12,7 @@ import { useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, T } from '../../ui/components';
 import { Icon, IconName } from '../../ui/Icon';
 import { MiniPlayer } from '../../ui/MiniPlayer';
-import { playableOf, playlistColor } from '../../ui/playlists';
+import { playlistColor } from '../../ui/playlists';
 import { font, radius, space, TOUCH, useTheme } from '../../ui/theme';
 
 /**
@@ -43,7 +44,7 @@ export default function PlaylistScreen() {
   }
 
   const songs = playlistSongs(list.songIds, lib.byId);
-  const playable = playableOf(songs);
+  const playable = songs.filter(canStart);
   const color = playlistColor(list.id);
   const ink = textOn(color);
 
@@ -169,7 +170,7 @@ function ArrangeRow({ song, first, last, onUp, onDown, onRemove }: {
   onRemove: () => void;
 }) {
   const c = useTheme();
-  const catId = song.categories[0]?.categoryId ?? 'unsorted';
+  const catId = primaryCategoryId(song);
   return (
     <View style={[styles.row, { backgroundColor: c.surface, borderColor: c.line }]}>
       <CategoryBadge id={catId} size={36} />

@@ -2,7 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getCategory } from '../../core/categories';
+import { getCategory, primaryCategoryId } from '../../core/categories';
 import { cleanName, newPlaylistName, songCount, toggleSong } from '../../core/playlists';
 import { searchSongs } from '../../core/search';
 import { createPlaylist, setPlaylistSongs } from '../../db/repo';
@@ -104,7 +104,7 @@ export default function PickSongs() {
         renderItem={({ item }) => {
           const pos = selected.indexOf(item.id);
           const on = pos >= 0;
-          const catId = item.categories[0]?.categoryId ?? 'unsorted';
+          const catId = primaryCategoryId(item);
           return (
             <Pressable
               onPress={() => setChosen(toggleSong(selected, item.id))}

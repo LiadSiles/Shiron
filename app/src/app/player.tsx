@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { getCategory } from '../core/categories';
+import { getCategory, primaryCategoryId } from '../core/categories';
 import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer } from '../player/player';
 import { Button, CategoryBadge, T } from '../ui/components';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from '../ui/icons';
@@ -38,7 +38,7 @@ export default function PlayerScreen() {
     );
   }
 
-  const catId = p.song.categories[0]?.categoryId ?? 'unsorted';
+  const catId = primaryCategoryId(p.song);
   const atEnd = p.index >= p.queue.length - 1 && p.repeat !== 'all';
   const cat = getCategory(catId);
 

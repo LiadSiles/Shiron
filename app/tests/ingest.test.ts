@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -64,5 +64,11 @@ describe('formats', () => {
     expect(mimeOf('x.m4a')).toBe('audio/mp4');
     expect(mimeOf('x.opus')).toBe('audio/ogg');
     expect(mimeOf('x.zzz')).toBe('application/octet-stream');
+  });
+
+  it('knows which songs can start now', () => {
+    expect(canStart({ kind: 'youtube', playableUri: null })).toBe(true);
+    expect(canStart({ kind: 'audio', playableUri: 'songs/a.m4a' })).toBe(true);
+    expect(canStart({ kind: 'audio', playableUri: null })).toBe(false);
   });
 });

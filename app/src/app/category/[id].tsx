@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCategory } from '../../core/categories';
+import { canStart } from '../../core/ingestRules';
 import { ALL_ID, RECENT_ID, songsFor, useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, T } from '../../ui/components';
 import { MiniPlayer } from '../../ui/MiniPlayer';
@@ -15,8 +16,7 @@ export default function CategoryScreen() {
   const isList = isAll || isRecent;
   const cat = getCategory(id);
   const songs = songsFor(lib, id);
-  // Audio songs ready to play, and YouTube songs (they play in the full player, in order).
-  const playable = songs.filter((s) => s.kind === 'youtube' || !!s.playableUri);
+  const playable = songs.filter(canStart);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>

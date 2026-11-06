@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeCategoryIds, CATEGORY_BY_ID, inSeason, normalizeHebrewMonth, toHebrewDate } from '../src/core/categories';
+import { activeCategoryIds, CATEGORY_BY_ID, inSeason, normalizeHebrewMonth, primaryCategoryId, toHebrewDate, UNSORTED_ID } from '../src/core/categories';
 
 describe('hebrew calendar', () => {
   it('normalizes platform month names', () => {
@@ -24,5 +24,12 @@ describe('hebrew calendar', () => {
     const { timeOfDay } = activeCategoryIds(new Date(2026, 9, 25, 8, 15), null);
     expect(timeOfDay).toContain('morning');
     expect(timeOfDay).not.toContain('rest');
+  });
+});
+
+describe('primary category', () => {
+  it('is the first (most confident) one, or unsorted', () => {
+    expect(primaryCategoryId({ categories: [{ categoryId: 'animals' }, { categoryId: 'shabbat' }] })).toBe('animals');
+    expect(primaryCategoryId({ categories: [] })).toBe(UNSORTED_ID);
   });
 });

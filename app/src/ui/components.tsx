@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
-import { getCategory } from '../core/categories';
+import { getCategory, primaryCategoryId } from '../core/categories';
 import { isPreparing } from '../core/ingestRules';
 import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
@@ -128,7 +128,7 @@ export function SongRow({ song, queue, showCategory = true, query }: {
   const mine = usePlayerSelect((p) => (p.song?.id !== song.id ? 'other' : p.playing ? 'playing' : 'paused'));
   const active = mine !== 'other';
   const playing = mine === 'playing';
-  const catId = song.categories[0]?.categoryId ?? 'unsorted';
+  const catId = primaryCategoryId(song);
   const status = statusLabel(song);
   return (
     <Pressable

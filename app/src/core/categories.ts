@@ -88,6 +88,11 @@ const MONTH_ORDER: HebrewMonth[] = [
  * Normalizes a month name as returned by Intl (`en-u-ca-hebrew`, month: 'long') on
  * Node/ICU, iOS and Android. "Adar II" and plain "Adar" both map to 'adar' (Purim month).
  */
+/** The category a song is shown under: its most confident one, or "לא מסווג". */
+export function primaryCategoryId(song: { categories: { categoryId: string }[] }): string {
+  return song.categories[0]?.categoryId ?? UNSORTED_ID;
+}
+
 export function normalizeHebrewMonth(raw: string): HebrewMonth | null {
   const s = raw.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
   if (/^adar (i|1)$/.test(s)) return 'adar1';
