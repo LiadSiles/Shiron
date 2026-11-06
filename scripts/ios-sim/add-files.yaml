@@ -18,7 +18,12 @@ appId: app.shiron.gan
 - waitForAnimationToEnd
 - tapOn:
     text: ${FILE}.*
-- runFlow: dismiss.yaml
+# The picker allows several files: a tap selects, "Open" (top end) imports.
+- retry:
+    maxRetries: 2
+    commands:
+      - tapOn:
+          text: Open
 - waitForAnimationToEnd:
     timeout: 6000
 - takeScreenshot: ${VARIANT}-result

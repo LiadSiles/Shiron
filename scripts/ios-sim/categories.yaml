@@ -25,9 +25,8 @@ appId: app.shiron.gan
 - waitForAnimationToEnd
 - inputText: שירי גשם
 - takeScreenshot: ${VARIANT}-category-editor
-- tapOn:
-    text: הוספה
-    optional: true
+# The keyboard covers the button; "done" on the keyboard saves too.
+- pressKey: Enter
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-library-with-new
 - tapOn:
