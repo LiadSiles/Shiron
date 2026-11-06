@@ -1,0 +1,12 @@
+# iOS asks "Open in “PlayGan”?" whenever something outside the app opens it by its link (the
+# share extension without an App Group, simctl openurl). Answer it, if it is there.
+appId: app.shiron.gan
+---
+- extendedWaitUntil:
+    visible: Open
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: Open
+    optional: true
+- waitForAnimationToEnd

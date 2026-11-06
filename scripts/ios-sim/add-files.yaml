@@ -2,6 +2,7 @@
 # FILE is the name to pick; the result (toast, or the WMA explanation) is photographed.
 appId: app.shiron.gan
 ---
+- runFlow: dismiss.yaml
 - launchApp
 - waitForAnimationToEnd
 - tapOn:
@@ -17,9 +18,7 @@ appId: app.shiron.gan
 - waitForAnimationToEnd
 - tapOn:
     text: ${FILE}.*
-- tapOn:
-    text: Open
-    optional: true
+- runFlow: dismiss.yaml
 - waitForAnimationToEnd:
     timeout: 6000
 - takeScreenshot: ${VARIANT}-result

@@ -30,7 +30,7 @@ LOGPID=$!
 run() { # flow, screenshot prefix, extra maestro args…
   local flow=$1 tag=$2; shift 2
   echo "== $tag: $flow"
-  cp "$HERE/$flow" "shots/$flow"
+  cp "$HERE/$flow" "$HERE/dismiss.yaml" shots/
   (cd shots && maestro --device "$UDID" test --test-output-dir "maestro-$tag" -e VARIANT="$tag" "$@" "$flow" 2>&1 | tail -30) \
     || { echo "== $tag: $flow FAILED"; maestro --device "$UDID" hierarchy 2>/dev/null | head -c 30000 > "shots/$tag-${flow%.yaml}-hierarchy.json"; }
 }
@@ -40,7 +40,8 @@ run share-link.yaml "$VARIANT"
 sleep 5; shot "$VARIANT-8-app-after-link"
 # The link the extension sends when it has no App Group, straight to the app.
 xcrun simctl openurl "$UDID" "shiron://share?text=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
-sleep 8; shot "$VARIANT-8b-app-after-url-link"
+sleep 3; run dismiss.yaml "$VARIANT-url"
+sleep 5; shot "$VARIANT-8b-app-after-url-link"
 run share-file.yaml "$VARIANT"
 sleep 5; shot "$VARIANT-9-after-file"
 run add-files.yaml "$VARIANT-add-mp3" -e FILE=boker-tov

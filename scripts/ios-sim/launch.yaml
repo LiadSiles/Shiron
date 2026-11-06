@@ -1,6 +1,7 @@
 # Opens PlayGan and photographs the home screen.
 appId: app.shiron.gan
 ---
+- runFlow: dismiss.yaml
 - launchApp:
     clearState: false
 - waitForAnimationToEnd:

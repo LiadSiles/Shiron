@@ -2,6 +2,7 @@
 # player, the library, search, settings (the "שיתוף מוואטסאפ" row says what this install can do).
 appId: app.shiron.gan
 ---
+- runFlow: dismiss.yaml
 - launchApp
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-home

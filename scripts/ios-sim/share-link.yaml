@@ -2,6 +2,7 @@
 # WhatsApp link takes. Uncertain taps are optional; screenshots tell what happened.
 appId: com.apple.mobilesafari
 ---
+- runFlow: dismiss.yaml
 - openLink:
     link: https://www.youtube.com/watch?v=jNQXAC9IVRw
     browser: true
@@ -36,10 +37,7 @@ appId: com.apple.mobilesafari
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-4-after-link
-# iOS may ask before the extension opens the app.
-- tapOn:
-    text: Open
-    optional: true
+- runFlow: dismiss.yaml
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-4b-app

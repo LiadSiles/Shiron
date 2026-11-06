@@ -2,6 +2,7 @@
 # library, and one from a song's screen.
 appId: app.shiron.gan
 ---
+- runFlow: dismiss.yaml
 - launchApp
 - tapOn: ספרייה
 - waitForAnimationToEnd

@@ -1,9 +1,7 @@
 # Shares a WhatsApp voice note (.opus) from the Files app through PlayGan in the share sheet.
 appId: com.apple.DocumentsApp
 ---
-- tapOn:  # a question left open by the previous flow
-    text: Open
-    optional: true
+- runFlow: dismiss.yaml
 - launchApp
 - waitForAnimationToEnd
 - tapOn:
@@ -39,9 +37,7 @@ appId: com.apple.DocumentsApp
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-7-after-file
-- tapOn:
-    text: Open
-    optional: true
+- runFlow: dismiss.yaml
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-7b-app
