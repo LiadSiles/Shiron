@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { getCategory, primaryCategoryId } from '../core/categories';
-import { next, togglePlay, usePlayer } from '../player/player';
-import { NextIcon, PauseIcon, PlayIcon } from './icons';
+import { next, previous, togglePlay, usePlayer } from '../player/player';
+import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from './icons';
 import { CategoryBadge, T } from './components';
 import { radius, space, TOUCH, useTheme } from './theme';
 
@@ -31,18 +31,22 @@ export function MiniPlayer() {
           <T soft size={12} numberOfLines={1}>{getCategory(catId).name}</T>
         )}
       </View>
-      {/* Media controls stay left-to-right (not mirrored in RTL): play, then next to its right. */}
+      {/* Media controls stay left-to-right (not mirrored in RTL): previous, play, next — like
+          every player. Previous restarts the song after its first seconds, as in the full player. */}
       <View style={styles.controls}>
+        <Pressable onPress={() => previous()} accessibilityLabel="השיר הקודם" hitSlop={4} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
+          <PreviousIcon size={14} color={c.ink} />
+        </Pressable>
         <Pressable
           onPress={() => togglePlay()}
           accessibilityLabel={p.playing ? 'השהיה' : 'ניגון'}
-          hitSlop={8}
+          hitSlop={4}
           style={[styles.btn, { backgroundColor: c.primary }]}
         >
           {p.playing ? <PauseIcon size={16} color={c.primaryInk} /> : <PlayIcon size={16} color={c.primaryInk} />}
         </Pressable>
         {p.index < p.queue.length - 1 || (p.repeat === 'all' && p.queue.length > 1) ? (
-          <Pressable onPress={() => next()} accessibilityLabel="השיר הבא" hitSlop={8} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
+          <Pressable onPress={() => next()} accessibilityLabel="השיר הבא" hitSlop={4} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
             <NextIcon size={14} color={c.ink} />
           </Pressable>
         ) : null}
@@ -70,6 +74,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   progress: { position: 'absolute', top: 0, start: 0, height: 3 },
-  controls: { direction: 'ltr', flexDirection: 'row', gap: space.s },
+  controls: { direction: 'ltr', flexDirection: 'row', gap: space.xs },
   btn: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center' },
 });

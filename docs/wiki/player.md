@@ -38,6 +38,9 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   `updatedAt` + category ids). An edit to the lyrics or the AI naming the song shows at once in
   the full player, the mini player and the lock screen (0.3.3 needed a song switch).
 - Playback errors: `status.error` (untyped; `{message, code}` on Android) → `PlayerState.error`.
+- Mini player (0.9.0): previous · play/pause · next, left-to-right as on every player
+  (`direction: 'ltr'`); previous behaves as in the full player (restart after 3 s, else the
+  song before). Next hides on the last song unless repeat-all.
 - One play/pause action everywhere: `togglePlay()` (mini player, full player) and
   `playOrToggle(song)` (a song row: same song → toggle, other song → play it). There is no
   separate "stop" — 0.2 had a square stop in the mini player and a play/pause in the full
