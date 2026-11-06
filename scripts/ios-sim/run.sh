@@ -46,6 +46,7 @@ sleep 5; shot "$VARIANT-9-after-file"
 run add-files.yaml "$VARIANT-add-mp3" -e FILE=boker-tov
 run add-files.yaml "$VARIANT-add-wma" -e FILE=old-song
 run tour.yaml "$VARIANT-tour"
+run categories.yaml "$VARIANT-cats"
 
 sleep 2; kill $LOGPID 2>/dev/null
 find shots -path '*maestro-*' -name '*.png' -exec cp {} shots/ \; 2>/dev/null

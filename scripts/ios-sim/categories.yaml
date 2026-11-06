@@ -1,0 +1,46 @@
+# Her categories and the view controls: rows ↔ tiles, sorting A–Z, a new category from the
+# library, and one from a song's screen.
+appId: app.shiron.gan
+---
+- launchApp
+- tapOn: ספרייה
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-library-tiles
+- tapOn:
+    text: "מיון: א–ת"
+    optional: true
+- tapOn:
+    text: תצוגת שורות
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-library-rows-az
+- scrollUntilVisible:
+    element:
+      text: קטגוריה חדשה
+    optional: true
+- tapOn:
+    text: קטגוריה חדשה
+    optional: true
+- waitForAnimationToEnd
+- inputText: שירי גשם
+- takeScreenshot: ${VARIANT}-category-editor
+- tapOn:
+    text: הוספה
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-library-with-new
+- tapOn:
+    text: תצוגת קוביות
+    optional: true
+- tapOn:
+    text: בית
+    optional: true
+- longPressOn:
+    text: boker-tov
+    optional: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: קטגוריה חדשה
+    optional: true
+- takeScreenshot: ${VARIANT}-song-categories
