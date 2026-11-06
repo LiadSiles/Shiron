@@ -3,7 +3,7 @@ name: Release
 # Every push to main that touches the app publishes a GitHub Release you can open on a phone:
 #
 #   • New version (app/app.json "version" has no tag yet) → full release `v<version>`
-#     with BOTH files: shiron-<version>.apk (Android) and shiron-<version>.ipa (iPhone).
+#     with BOTH files: playgan-<version>.apk (Android) and playgan-<version>.ipa (iPhone).
 #   • Same version, more changes → prerelease `v<version>-build.<n>` with the APK only
 #     (cheap Linux build, for testing on Android). Run this workflow by hand with
 #     "ios: true" to attach an IPA to a build as well.
@@ -54,9 +54,9 @@ jobs:
           # 100 + run number keeps versionCode above any manual local build (which uses 1).
           BUILD=$((100 + ${{ github.run_number }}))
           if gh api "repos/${{ github.repository }}/git/ref/tags/v${VERSION}" > /dev/null 2>&1; then
-            FULL=false; TAG="v${VERSION}-build.${BUILD}"; NAME="shiron-${VERSION}-build.${BUILD}"
+            FULL=false; TAG="v${VERSION}-build.${BUILD}"; NAME="playgan-${VERSION}-build.${BUILD}"
           else
-            FULL=true; TAG="v${VERSION}"; NAME="shiron-${VERSION}"
+            FULL=true; TAG="v${VERSION}"; NAME="playgan-${VERSION}"
           fi
           IOS=$FULL
           [ "$IOS_INPUT" = "true" ] && IOS=true
@@ -190,7 +190,7 @@ jobs:
         run: |
           APP="$RUNNER_TEMP/Shiron.xcarchive/Products/Applications/app.app"
           test -d "$APP" || { echo "::error::app bundle not found in archive"; ls -R "$RUNNER_TEMP/Shiron.xcarchive/Products" | head; exit 1; }
-          test -d "$APP/PlugIns/Shiron.appex" || { echo "::error::share extension missing from app"; exit 1; }
+          test -d "$APP/PlugIns/PlayGan.appex" || { echo "::error::share extension missing from app"; exit 1; }
           test -f "$APP/main.jsbundle" || { echo "::error::JS bundle missing from app"; exit 1; }
           mkdir -p "$RUNNER_TEMP/ipa/Payload"
           cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"

@@ -1,4 +1,6 @@
-# שירון — ספריית השירים של הגן
+# PlayGan — ספריית השירים של הגן
+
+(שם הפרויקט בקוד ובמאגר נשאר Shiron.)
 
 [![CI](https://github.com/LiadSiles/shiron/actions/workflows/ci.yml/badge.svg)](https://github.com/LiadSiles/shiron/actions/workflows/ci.yml)
 [![Native audio](https://github.com/LiadSiles/shiron/actions/workflows/native.yml/badge.svg)](https://github.com/LiadSiles/shiron/actions/workflows/native.yml)

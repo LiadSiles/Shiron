@@ -23,7 +23,7 @@ if (!I18nManager.isRTL) {
 }
 
 /**
- * Receives files and links shared from WhatsApp (or any app) into Shiron. Each share is taken
+ * Receives files and links shared from WhatsApp (or any app) into the app. Each share is taken
  * at once and queued (enqueueShare), so sharing again while a big batch is still saving works,
  * as many times as she likes.
  */
@@ -101,7 +101,7 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: c.bg },
           }}
         >
-          <Stack.Screen name="index" options={{ headerShown: false, title: 'שירון' }} />
+          <Stack.Screen name="index" options={{ headerShown: false, title: 'PlayGan' }} />
           <Stack.Screen name="category/[id]" options={{ title: '' }} />
           <Stack.Screen name="song/[id]" options={{ title: 'פרטי שיר' }} />
           <Stack.Screen name="playlist/[id]" options={{ title: '' }} />

@@ -16,7 +16,7 @@ export default function LogScreen() {
     return onDiag(setLines);
   }, []);
 
-  const header = `Shiron ${Constants.expoConfig?.version ?? '?'} · ${Platform.OS} ${Platform.Version}`;
+  const header = `PlayGan ${Constants.expoConfig?.version ?? '?'} · ${Platform.OS} ${Platform.Version}`;
 
   return (
     <View style={{ flex: 1 }}>

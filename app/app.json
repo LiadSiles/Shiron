@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "שירון",
+    "name": "פלייגן",
     "slug": "shiron",
     "scheme": "shiron",
     "version": "0.8.1",
@@ -12,6 +12,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "app.shiron.gan",
       "infoPlist": {
+        "CFBundleDisplayName": "PlayGan",
         "CFBundleDevelopmentRegion": "he",
         "CFBundleAllowMixedLocalizations": true,
         "ITSAppUsesNonExemptEncryption": false
@@ -58,7 +59,7 @@
             "NSExtensionActivationSupportsWebPageWithMaxCount": 1,
             "NSExtensionActivationSupportsText": true
           },
-          "iosShareExtensionName": "Shiron",
+          "iosShareExtensionName": "PlayGan",
           "androidIntentFilters": [
             "text/*",
             "audio/*",
@@ -75,6 +76,7 @@
       ],
       "./plugins/withSigningKey",
       "./plugins/withKeepRules",
+      "./plugins/withDisplayName",
       "expo-secure-store",
       "expo-web-browser",
       "expo-background-task",

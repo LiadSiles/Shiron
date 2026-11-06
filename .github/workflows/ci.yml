@@ -47,12 +47,15 @@ jobs:
         run: |
           fail() { echo "::error::$1"; exit 1; }
           grep -q '<string>audio</string>' ios/*/Info.plist || fail "UIBackgroundModes audio missing"
-          grep -q 'NSExtensionActivationSupportsFileWithMaxCount' ios/Shiron/ShareExtension-Info.plist || fail "share extension missing"
-          grep -q 'NSExtensionActivationSupportsMovieWithMaxCount' ios/Shiron/ShareExtension-Info.plist || fail "share extension does not accept videos"
+          grep -q 'NSExtensionActivationSupportsFileWithMaxCount' ios/PlayGan/ShareExtension-Info.plist || fail "share extension missing"
+          grep -q 'NSExtensionActivationSupportsMovieWithMaxCount' ios/PlayGan/ShareExtension-Info.plist || fail "share extension does not accept videos"
+          grep -A1 CFBundleDisplayName ios/app/Info.plist | grep -q PlayGan || fail "iOS home-screen name is not PlayGan"
+          grep -A1 CFBundleDisplayName ios/PlayGan/ShareExtension-Info.plist | grep -q PlayGan || fail "share-sheet name is not PlayGan"
           grep -q 'mediaPlayback' android/app/src/main/AndroidManifest.xml || fail "media playback service missing"
           grep -q 'audio/\*' android/app/src/main/AndroidManifest.xml || fail "audio share intent missing"
           grep -q 'video/\*' android/app/src/main/AndroidManifest.xml || fail "video share intent missing"
           grep -q 'signingConfigs.shiron' android/app/build.gradle || fail "project signing not applied"
           grep -q 'WorkDatabase_Impl' android/app/proguard-rules.pro || fail "R8 keep rules missing (release crashes at launch)"
+          grep -q 'name="app_name"[^>]*>PlayGan<' android/app/src/main/res/values/strings.xml || fail "Android launcher name is not PlayGan"
           npx expo-modules-autolinking resolve --platform android --json | grep -q '"app.shiron.audio.ShironAudioModule"' || fail "audio module not autolinked (android)"
           npx expo-modules-autolinking resolve --platform apple --json | grep -q '"ShironAudioModule"' || fail "audio module not autolinked (iOS)"

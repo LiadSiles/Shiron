@@ -34,7 +34,7 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <T soft size={15}>{greeting(new Date().getHours())}</T>
-        <T weight="bold" size={30}>שירון</T>
+        <T weight="bold" size={30}>PlayGan</T>
       </View>
 
       {proc?.needsKey && pendingCount > 0 ? (
@@ -94,7 +94,7 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
         <EmptyState
           icon="musical-notes"
           title="הספרייה עוד ריקה"
-          body={'בוואטסאפ: לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← Shiron.\nאפשר לבחור כמה יחד.\nהשירים יקבלו שם וקטגוריה לבד.'}
+          body={'בוואטסאפ: לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← PlayGan.\nאפשר לבחור כמה יחד.\nהשירים יקבלו שם וקטגוריה לבד.'}
         >
           <Button label="ייבוא מתיקיית קבצים" kind="quiet" icon="folder-open-outline" onPress={importFiles} />
         </EmptyState>

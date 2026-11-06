@@ -38,7 +38,7 @@ export function keepWorkingInBackground(): void {
     if (want === active) return;
     active = want;
     try {
-      if (want) startBackgroundWork('שירון מכינה שירים חדשים…');
+      if (want) startBackgroundWork('PlayGan מכינה שירים חדשים…');
       else stopBackgroundWork();
     } catch (e) {
       diag('background work unavailable', e);

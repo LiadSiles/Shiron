@@ -98,7 +98,7 @@ export default function SettingsScreen() {
 
       <ListGroup
         title="הוספת שירים"
-        footer="הדרך הקלה: בוואטסאפ, לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← Shiron. אפשר לבחור כמה יחד."
+        footer="הדרך הקלה: בוואטסאפ, לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← PlayGan. אפשר לבחור כמה יחד."
       >
         <ListItem
           icon="folder-open-outline"

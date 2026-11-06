@@ -132,6 +132,21 @@ It does — in YouTube's IFrame player on the full player screen, which opens by
 keeps the ToS rule (visible embedded player, no background play): when the screen is closed
 or the app is in the background, YouTube doesn't play.
 
+### 2026-11-06 — The app is called PlayGan (0.9.0)
+Owner renamed the app from "שירון" to **PlayGan** (that spelling) and chose a new logo: a play
+arrow built from rainbow xylophone bars with three small notes above it (approved after
+several rounds; drawn by `app/assets/source/make-icons.py`).
+- Only what she sees changes: the label under the icon (Android `app_name` via
+  `plugins/withDisplayName.js`, iOS `CFBundleDisplayName`), the share-sheet entry
+  (`iosShareExtensionName: "PlayGan"`), in-app text, notifications, the lock screen, release
+  file names (`playgan-<version>.apk/ipa`).
+- Unchanged on purpose: package / bundle id `app.shiron.gan` (a new id = a separate app; she
+  would lose her library), signing key, scheme `shiron://`, the repo, code names (`Shiron*`).
+- app.json `name` is "פלייגן" (not "PlayGan"): Expo derives native project names from it. A
+  non-Latin name keeps the Xcode project "app" (the release workflow builds `app.xcworkspace`),
+  and a Latin "PlayGan" would collide with the share extension's target, which is named from
+  its display name. CI asserts both visible names.
+
 ### 2026-11-05 — Playlists the teacher builds herself (0.7.0)
 Owner asked for user-defined playlists assembled from the library (moved up from 0.8).
 - A song appears in a list at most once (PK `playlist_id, song_id`) — a duplicate is almost

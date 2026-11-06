@@ -171,7 +171,7 @@ export function fallbackUnderstanding(input: SongInput): Understanding {
  * When a search finds little, the AI suggests Hebrew words a matching song would contain
  * ("אביב" → פרחים, פורחת, ניצנים…). Only the query is sent — never the library.
  */
-export const EXPAND_PROMPT = `את עוזרת חיפוש בשירון של גננת. קיבלת מה שהגננת הקלידה בחיפוש.
+export const EXPAND_PROMPT = `את עוזרת חיפוש בספריית השירים של גננת. קיבלת מה שהגננת הקלידה בחיפוש.
 החזירי JSON בלבד בצורה {"words": [...]}: עד 12 מילים בעברית, בלי ניקוד, שסביר שיופיעו במילים של שיר ילדים בגן על הנושא הזה או בשם שלו —
 מילים נרדפות, צורות אחרות של אותה מילה, דברים שקשורים לנושא, חגים ועונות מתאימים. מילה אחת לכל פריט, בלי משפטים, בלי לחזור על מה שהוקלד.`;
 

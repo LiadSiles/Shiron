@@ -14,7 +14,7 @@ import android.os.IBinder
 /**
  * Keeps the app's process alive while new songs are saved, converted and named, so that work
  * continues after she switches back to WhatsApp or locks the phone. Without it Android freezes
- * a backgrounded app within seconds. A quiet notification ("שירון מכינה שירים חדשים…") is
+ * a backgrounded app within seconds. A quiet notification ("PlayGan מכינה שירים חדשים…") is
  * required for a foreground service; the app stops the service as soon as the queue is empty.
  * Type dataSync: Android 15 allows it ~6 h a day, far more than this work needs.
  */
@@ -22,7 +22,7 @@ class WorkService : Service() {
   override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    val text = intent?.getStringExtra(EXTRA_TEXT) ?: "שירון מכינה שירים חדשים…"
+    val text = intent?.getStringExtra(EXTRA_TEXT) ?: "PlayGan מכינה שירים חדשים…"
     // A service started with startForegroundService() MUST call startForeground() — even if the
     // work already ended — or Android kills the whole app ("did not then call startForeground").
     // So it always goes foreground first, and only then honours a stop that came in meanwhile.
@@ -72,7 +72,7 @@ class WorkService : Service() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       manager.createNotificationChannel(
         NotificationChannel(CHANNEL_ID, "הכנת שירים", NotificationManager.IMPORTANCE_LOW).apply {
-          description = "מוצג בזמן ששירון שומרת ומכינה שירים חדשים"
+          description = "מוצג בזמן ש-PlayGan שומרת ומכינה שירים חדשים"
           setShowBadge(false)
         }
       )
@@ -86,7 +86,7 @@ class WorkService : Service() {
       @Suppress("DEPRECATION") Notification.Builder(this)
     }
     return builder
-      .setContentTitle("שירון")
+      .setContentTitle("PlayGan")
       .setContentText(text)
       .setSmallIcon(applicationInfo.icon)
       .setOngoing(true)

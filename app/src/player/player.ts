@@ -80,8 +80,8 @@ const LOCK_SCREEN: AudioLockScreenOptions = {
 let session: { songId: string; startedAt: number; listened: number; lastTime: number } | null = null;
 
 function lockScreenInfo(song: SongWithCategories) {
-  const category = song.categories.length ? getCategory(primaryCategoryId(song)).name : 'שירון';
-  return { title: song.title, artist: category, albumTitle: 'שירון' };
+  const category = song.categories.length ? getCategory(primaryCategoryId(song)).name : 'PlayGan';
+  return { title: song.title, artist: category, albumTitle: 'PlayGan' };
 }
 
 async function ensurePlayer(): Promise<AudioPlaylist> {

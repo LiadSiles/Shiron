@@ -19,13 +19,13 @@ type Phase = 'idle' | 'checking' | 'invalid' | 'offline' | 'no-browser';
 const STEPS: Record<ProviderId, string[]> = {
   groq: [
     'לחצי על הכפתור. אפשר להיכנס עם חשבון Google.',
-    'בעמוד שנפתח: Create API Key ← לתת שם כלשהו (למשל שירון) ← Submit.',
-    'ללחוץ Copy, ולסגור את העמוד. שירון יזהה את המפתח לבד.',
+    'בעמוד שנפתח: Create API Key ← לתת שם כלשהו (למשל PlayGan) ← Submit.',
+    'ללחוץ Copy, ולסגור את העמוד. PlayGan יזהה את המפתח לבד.',
   ],
   gemini: [
     'לחצי על הכפתור ותיכנסי עם חשבון Google.',
     'בעמוד שנפתח: Create API key (אם מתבקש — לאשר את התנאים ולבחור פרויקט).',
-    'ללחוץ על סמל ההעתקה ליד המפתח, ולסגור את העמוד. שירון יזהה את המפתח לבד.',
+    'ללחוץ על סמל ההעתקה ליד המפתח, ולסגור את העמוד. PlayGan יזהה את המפתח לבד.',
   ],
 };
 
@@ -98,7 +98,7 @@ export default function ConnectScreen() {
   }, [checkClipboard]);
 
   /**
-   * In-app browser first (she stays in Shiron). On Android it needs a browser with Custom Tabs
+   * In-app browser first (she stays in the app). On Android it needs a browser with Custom Tabs
    * support — Xiaomi's default browser often has none — so fall back to the system browser.
    * Android returns from openBrowserAsync at once; the AppState listener picks up her return.
    */
@@ -129,7 +129,7 @@ export default function ConnectScreen() {
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <T weight="bold" size={24}>שם, מילים וקטגוריה לכל שיר</T>
       <T soft style={styles.p}>
-        שירון שולח כל הקלטה לשירות AI חינמי, שמתמלל אותה ומציע שם וקטגוריה. החיבור נעשה פעם אחת ולוקח כשתי
+        PlayGan שולח כל הקלטה לשירות AI חינמי, שמתמלל אותה ומציע שם וקטגוריה. החיבור נעשה פעם אחת ולוקח כשתי
         דקות. השירים נשמרים ומתנגנים גם בלעדיו. אפשר לחבר שני שירותים: כשהמכסה היומית של אחד נגמרת, השני ממשיך.
       </T>
 
