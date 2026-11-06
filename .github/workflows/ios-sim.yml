@@ -100,6 +100,6 @@ jobs:
           git fetch origin screenshots && git worktree add ../shots-branch origin/screenshots
           cd ../shots-branch
           rm -rf "$dir"; mkdir -p "$dir"
-          cp "$GITHUB_WORKSPACE"/shots/* "$dir/"; cp "$GITHUB_WORKSPACE"/sim-*.log "$dir/" 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE"/shots/*.png "$GITHUB_WORKSPACE"/shots/*.json "$dir/" 2>/dev/null || true; cp "$GITHUB_WORKSPACE"/sim-*.log "$dir/" 2>/dev/null || true
           git add -A "$dir" && git commit -qm "iPhone share check of $BRANCH at ${GITHUB_SHA::7}"
           for i in 1 2 3; do git pull -q --rebase origin screenshots && git push -q origin HEAD:screenshots && break; sleep 5; done

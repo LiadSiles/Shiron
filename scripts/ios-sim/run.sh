@@ -28,20 +28,21 @@ LOGPID=$!
 run() { # flow, screenshot prefix, extra maestro args…
   local flow=$1 tag=$2; shift 2
   echo "== $tag: $flow"
-  (cd shots && maestro --device "$UDID" test -e VARIANT="$tag" "$@" "$HERE/$flow") \
+  cp "$HERE/$flow" "shots/$flow"
+  (cd shots && maestro --device "$UDID" test --test-output-dir "maestro-$tag" -e VARIANT="$tag" "$@" "$flow" 2>&1 | tail -30) \
     || { echo "== $tag: $flow FAILED"; maestro --device "$UDID" hierarchy 2>/dev/null | head -c 30000 > "shots/$tag-${flow%.yaml}-hierarchy.json"; }
 }
 shot() { xcrun simctl io "$UDID" screenshot "shots/$1.png" >/dev/null 2>&1; }
 run launch.yaml "$VARIANT"
 run share-link.yaml "$VARIANT"
 sleep 5; shot "$VARIANT-8-app-after-link"
-run share-file.yaml "$VARIANT-ext" -e PICK=0
-sleep 5; shot "$VARIANT-9-after-file-ext"
-run share-file.yaml "$VARIANT-openin" -e PICK=1
-sleep 5; shot "$VARIANT-10-after-file-openin"
+run share-file.yaml "$VARIANT"
+sleep 5; shot "$VARIANT-9-after-file"
 run launch.yaml "$VARIANT-final"
 
 sleep 2; kill $LOGPID 2>/dev/null
+find shots -path '*maestro-*' -name '*.png' -exec cp {} shots/ \; 2>/dev/null
+rm -f shots/*.yaml
 echo "== $VARIANT log lines: $(wc -l < "sim-$VARIANT.log")"
 grep -h '\[PlayGan\]' "sim-$VARIANT.log" | head -20
 exit 0

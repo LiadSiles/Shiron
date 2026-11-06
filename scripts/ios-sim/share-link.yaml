@@ -39,3 +39,10 @@ appId: com.apple.mobilesafari
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-4-after-link
+# iOS may ask before the extension opens the app.
+- tapOn:
+    text: Open
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: ${VARIANT}-4b-app

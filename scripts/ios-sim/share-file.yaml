@@ -1,7 +1,9 @@
-# Shares a WhatsApp voice note (.opus) from the Files app: the share sheet shows PlayGan's
-# extension and, through the document types, "Open in PlayGan". Tapped: the extension (index 0).
+# Shares a WhatsApp voice note (.opus) from the Files app through PlayGan in the share sheet.
 appId: com.apple.DocumentsApp
 ---
+- tapOn:  # a question left open by the previous flow
+    text: Open
+    optional: true
 - launchApp
 - waitForAnimationToEnd
 - tapOn:
@@ -27,7 +29,13 @@ appId: com.apple.DocumentsApp
 - takeScreenshot: ${VARIANT}-6-file-share-sheet
 - tapOn:
     text: PlayGan
-    index: ${PICK}
+    index: 0
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-7-after-file
+- tapOn:
+    text: Open
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: ${VARIANT}-7b-app
