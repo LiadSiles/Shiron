@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { textOn } from '../core/color';
 import { playlistSongs, songCount } from '../core/playlists';
 import type { Playlist, SongWithCategories } from '../core/types';
-import { togglePlay, usePlayer } from '../player/player';
+import { togglePlay, usePlayerSelect } from '../player/player';
 import { playAll, T } from './components';
 import { Icon } from './Icon';
 import { PauseIcon, PlayIcon } from './icons';
@@ -38,14 +38,14 @@ export function newPlaylist() {
  */
 export function PlaylistStrip({ playlists, byId }: { playlists: Playlist[]; byId: Map<string, SongWithCategories> }) {
   const c = useTheme();
-  const player = usePlayer();
+  const playingId = usePlayerSelect((s) => (s.playing ? s.song?.id ?? null : null));
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
       {playlists.map((p) => {
         const songs = playableOf(playlistSongs(p.songIds, byId));
         const color = playlistColor(p.id);
         const ink = textOn(color);
-        const playingThis = player.playing && !!player.song && p.songIds.includes(player.song.id);
+        const playingThis = !!playingId && p.songIds.includes(playingId);
         return (
           <Pressable
             key={p.id}

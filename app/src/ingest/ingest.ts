@@ -3,6 +3,7 @@ import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import type { ShareIntent } from 'expo-share-intent';
 import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, youtubeIdFrom } from '../core/ingestRules';
+import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { findBySha, findByYoutube, insertSong } from '../db/repo';
 import { processQueue } from './processor';
@@ -106,18 +107,9 @@ export interface ImportState {
   queued: number;
 }
 
-let importState: ImportState = { saving: false, done: 0, total: 0, queued: 0 };
-const importListeners = new Set<(s: ImportState) => void>();
-function setImportState(patch: Partial<ImportState>) {
-  importState = { ...importState, ...patch };
-  importListeners.forEach((l) => l(importState));
-}
-
-export function onImportState(l: (s: ImportState) => void): () => void {
-  importListeners.add(l);
-  l(importState);
-  return () => importListeners.delete(l);
-}
+/** Read with `useStore(importStore)`; only this module writes it. */
+export const importStore = createStore<ImportState>({ saving: false, done: 0, total: 0, queued: 0 });
+const setImportState = importStore.set;
 
 /** One file failing (unreadable, full disk) never stops the others. */
 async function importFiles(

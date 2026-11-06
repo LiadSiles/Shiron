@@ -5,6 +5,7 @@ import { connectedProviders } from '../api/keys';
 import { youtubeMeta } from '../api/youtube';
 import { AiError, describeAiError } from '../core/ai';
 import { keepCategories, mimeOf } from '../core/ingestRules';
+import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
 import { getSong, listSongs, setCategories, updateSong } from '../db/repo';
@@ -34,20 +35,11 @@ export interface ProcessorState {
   step: { kind: 'convert' | 'name'; title: string; left: number } | null;
 }
 
-type Listener = (state: ProcessorState) => void;
-const listeners = new Set<Listener>();
-let state: ProcessorState = { running: false, needsKey: false, notice: null, pausedUntil: 0, step: null };
-
-function setState(patch: Partial<ProcessorState>) {
-  state = { ...state, ...patch };
-  listeners.forEach((l) => l(state));
-}
-
-export function onProcessorState(l: Listener): () => void {
-  listeners.add(l);
-  l(state);
-  return () => listeners.delete(l);
-}
+/** Read with `useStore(processorStore)`; only this module writes it. */
+export const processorStore = createStore<ProcessorState>({
+  running: false, needsKey: false, notice: null, pausedUntil: 0, step: null,
+});
+const setState = processorStore.set;
 
 /**
  * A serial worker: concurrent triggers share one run, and a trigger during a run schedules one
@@ -114,13 +106,13 @@ async function nameSongs() {
     return;
   }
   setState({ needsKey: false });
-  if (Date.now() < state.pausedUntil) return;
+  if (Date.now() < processorStore.get().pausedUntil) return;
 
   for (const [i, queued] of pending.entries()) {
     const song = await getSong(queued.id);
     if (!song || song.status !== 'pending') continue; // deleted or approved meanwhile
     if (song.kind === 'audio' && song.audioState === 'raw') continue; // the audio lane comes back for it
-    if (state.step?.kind !== 'convert') setState({ step: { kind: 'name', title: song.title, left: pending.length - i } });
+    if (processorStore.get().step?.kind !== 'convert') setState({ step: { kind: 'name', title: song.title, left: pending.length - i } });
     try {
       await understandSong(song);
       setState({ notice: null });

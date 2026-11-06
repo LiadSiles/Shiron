@@ -1,14 +1,15 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { importFromPicker } from '../ingest/ingest';
-import { onProcessorState, ProcessorState } from '../ingest/processor';
+import { processorStore } from '../ingest/processor';
 import { homeSections, LibraryState } from '../db/useLibrary';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
 import { Icon } from '../ui/Icon';
 import { PlaylistStrip } from '../ui/playlists';
 import { toast } from '../ui/toast';
 import { radius, space, useTheme } from '../ui/theme';
+import { useStore } from '../ui/useStore';
 
 function greeting(hour: number) {
   if (hour < 12) return 'בוקר טוב';
@@ -18,8 +19,7 @@ function greeting(hour: number) {
 
 export function HomeScreen({ lib }: { lib: LibraryState }) {
   const c = useTheme();
-  const [proc, setProc] = useState<ProcessorState | null>(null);
-  useEffect(() => onProcessorState(setProc), []);
+  const proc = useStore(processorStore);
 
   // Not on every processor tick: ranking every category runs the Hebrew calendar per song.
   const sections = useMemo(() => homeSections(lib), [lib]);

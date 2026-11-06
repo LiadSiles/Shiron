@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { ImportState, onImportState } from '../ingest/ingest';
-import { onProcessorState, ProcessorState } from '../ingest/processor';
+import { importStore } from '../ingest/ingest';
+import { processorStore } from '../ingest/processor';
 import { T } from './components';
 import { Icon } from './Icon';
 import { cardShadow, radius, space, useTheme } from './theme';
+import { useStore } from './useStore';
 
 /**
  * What the app is doing with new songs, on every screen: saving a share (with "3 מתוך 10" and
@@ -14,10 +14,8 @@ import { cardShadow, radius, space, useTheme } from './theme';
  */
 export function ActivityBanner() {
   const c = useTheme();
-  const [imp, setImp] = useState<ImportState | null>(null);
-  const [proc, setProc] = useState<ProcessorState | null>(null);
-  useEffect(() => onImportState(setImp), []);
-  useEffect(() => onProcessorState(setProc), []);
+  const imp = useStore(importStore);
+  const proc = useStore(processorStore);
 
   if (imp?.saving) {
     const fraction = imp.total ? Math.min(1, imp.done / imp.total) : 0;

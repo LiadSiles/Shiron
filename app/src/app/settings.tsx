@@ -4,19 +4,20 @@ import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { connectedProviders, getPreferred, onKeysChange, removeKey, setPreferred } from '../api/keys';
 import { PROVIDER_IDS, PROVIDERS, ProviderId } from '../core/ai';
 import { importFromPicker } from '../ingest/ingest';
-import { onProcessorState, ProcessorState } from '../ingest/processor';
+import { processorStore } from '../ingest/processor';
 import Constants from 'expo-constants';
 import { T } from '../ui/components';
 import { Icon } from '../ui/Icon';
 import { ListGroup, ListItem } from '../ui/list';
 import { toast } from '../ui/toast';
 import { radius, space, useTheme } from '../ui/theme';
+import { useStore } from '../ui/useStore';
 
 export default function SettingsScreen() {
   const c = useTheme();
   const [connected, setConnected] = useState<ProviderId[] | null>(null);
   const [preferred, setPreferredState] = useState<ProviderId>('groq');
-  const [proc, setProc] = useState<ProcessorState | null>(null);
+  const proc = useStore(processorStore);
 
   useEffect(() => {
     const load = () => {
@@ -24,12 +25,7 @@ export default function SettingsScreen() {
       getPreferred().then(setPreferredState);
     };
     load();
-    const off = onKeysChange(load);
-    const offProc = onProcessorState(setProc);
-    return () => {
-      off();
-      offProc();
-    };
+    return onKeysChange(load);
   }, []);
 
   const disconnect = (p: ProviderId) =>

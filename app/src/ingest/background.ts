@@ -2,8 +2,8 @@ import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import { startBackgroundWork, stopBackgroundWork } from '../../modules/shiron-audio';
 import { diag } from '../diag/log';
-import { onImportState } from './ingest';
-import { onProcessorState, processQueue } from './processor';
+import { importStore } from './ingest';
+import { processorStore, processQueue } from './processor';
 
 /**
  * New songs keep being saved and processed after she leaves the app (owner request, 0.6.0):
@@ -45,20 +45,23 @@ export function keepWorkingInBackground(): void {
     }
   };
   // Settle first: at every launch the queue starts and finds nothing to do within milliseconds.
-  // Starting a foreground service for that only flashes a notification (and on Android a
-  // service stopped before it is foreground crashed the app — 0.7.0).
+  // Starting a foreground service for that only flashes a notification, and stopping one
+  // before it is foreground can crash the app (WorkService guards that too).
   const update = () => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(apply, START_AFTER_MS);
   };
-  onImportState((s) => {
+  importStore.subscribe((s) => {
     saving = s.saving;
     update();
   });
-  onProcessorState((s) => {
+  processorStore.subscribe((s) => {
     processing = s.running;
     update();
   });
+  saving = importStore.get().saving;
+  processing = processorStore.get().running;
+  update();
 }
 
 const TASK = 'shiron-process-songs';

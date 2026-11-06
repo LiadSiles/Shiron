@@ -7,14 +7,15 @@ import {
   setAudioModeAsync,
 } from 'expo-audio';
 import { router } from 'expo-router';
-import { useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
 import { getCategory } from '../core/categories';
+import { createStore } from '../core/store';
 import { audioRun, nativeLoop, nextIndex, nextRepeat, previousIndex, RepeatMode } from '../core/queue';
 import type { SongWithCategories } from '../core/types';
 import { getSong, onLibraryChange, recordPlay } from '../db/repo';
 import { diag } from '../diag/log';
 import { resolveStored } from '../ingest/storage';
+import { useStore } from '../ui/useStore';
 
 export interface PlayerState {
   song: SongWithCategories | null;
@@ -29,23 +30,24 @@ export interface PlayerState {
   error: string | null;
 }
 
-let state: PlayerState = {
+const store = createStore<PlayerState>({
   song: null, queue: [], index: -1, playing: false, position: 0, duration: 0, repeat: 'off', error: null,
-};
-const subscribers = new Set<() => void>();
-function set(patch: Partial<PlayerState>) {
-  state = { ...state, ...patch };
-  subscribers.forEach((s) => s());
+});
+/** Always read fresh: async code runs across state changes. */
+const state = () => store.get();
+const set = store.set;
+
+/** The whole player state — for the player screens, which show position and duration. */
+export function usePlayer(): PlayerState {
+  return useStore(store);
 }
 
-export function usePlayer(): PlayerState {
-  return useSyncExternalStore(
-    (cb) => {
-      subscribers.add(cb);
-      return () => subscribers.delete(cb);
-    },
-    () => state,
-  );
+/**
+ * One value derived from the player. Lists use it so a row re-renders only when it starts or
+ * stops being the song playing — not twice a second while a song plays.
+ */
+export function usePlayerSelect<S>(select: (state: PlayerState) => S): S {
+  return useStore(store, select);
 }
 
 /**
@@ -126,13 +128,13 @@ function onNativeIndex(nativeIndex: number) {
     if (nativeIndex === expectIndex) expectIndex = null;
     return;
   }
-  if (run && !isYoutube(state.song)) moveTo(run.start + nativeIndex);
+  if (run && !isYoutube(state().song)) moveTo(run.start + nativeIndex);
 }
 
 /** Show another audio song of the loaded run as current. */
 function moveTo(index: number) {
-  if (index === state.index || index < 0 || index >= state.queue.length) return;
-  const song = state.queue[index];
+  if (index === state().index || index < 0 || index >= state().queue.length) return;
+  const song = state().queue[index];
   startSession(song);
   set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null });
   player?.updateLockScreenMetadata(lockScreenInfo(song));
@@ -146,13 +148,14 @@ function moveTo(index: number) {
  */
 let refreshSeq = 0;
 async function refreshCurrent() {
-  const current = state.song;
+  const current = state().song;
   if (!current) return;
   const seq = ++refreshSeq;
   const fresh = await getSong(current.id).catch(() => null);
-  if (!fresh || seq !== refreshSeq || state.song?.id !== fresh.id) return;
-  if (fresh.updatedAt === state.song.updatedAt && sameCategories(fresh, state.song)) return;
-  set({ song: fresh, queue: state.queue.map((s) => (s.id === fresh.id ? fresh : s)) });
+  const shown = state().song;
+  if (!fresh || seq !== refreshSeq || !shown || shown.id !== fresh.id) return;
+  if (fresh.updatedAt === shown.updatedAt && sameCategories(fresh, shown)) return;
+  set({ song: fresh, queue: state().queue.map((s) => (s.id === fresh.id ? fresh : s)) });
   if (!isYoutube(fresh)) player?.updateLockScreenMetadata(lockScreenInfo(fresh));
 }
 
@@ -161,14 +164,14 @@ function sameCategories(a: SongWithCategories, b: SongWithCategories): boolean {
 }
 
 function onStatus(status: AudioPlaylistStatus) {
-  if (isYoutube(state.song)) return; // the native player is idle while YouTube plays
+  if (isYoutube(state().song)) return; // the native player is idle while YouTube plays
   if (typeof status.currentIndex === 'number') onNativeIndex(status.currentIndex);
   if (typeof status.currentTime === 'number') track(status.currentTime);
   // Not in the typed status, but both platforms report playback errors here.
   const raw = (status as { error?: unknown }).error;
   const error = raw == null ? null : typeof raw === 'string' ? raw : String((raw as { message?: unknown }).message ?? 'שגיאה');
-  if (error && error !== state.error) {
-    diag('play failed', state.song?.title ?? '?', error);
+  if (error && error !== state().error) {
+    diag('play failed', state().song?.title ?? '?', error);
     set({ error });
   }
   const patch: Partial<PlayerState> = {};
@@ -178,9 +181,9 @@ function onStatus(status: AudioPlaylistStatus) {
   set(patch);
   // The last song of the run ended (the native loop handles repeat-one and a whole-queue
   // repeat-all): continue past the run — to a YouTube song, or around the list.
-  if (status.didJustFinish && run && state.index === run.end && state.repeat !== 'one') {
-    const n = nextIndex(state.index, state.queue.length, state.repeat);
-    const wrapsNatively = state.repeat === 'all' && run.start === 0 && run.end === state.queue.length - 1;
+  if (status.didJustFinish && run && state().index === run.end && state().repeat !== 'one') {
+    const n = nextIndex(state().index, state().queue.length, state().repeat);
+    const wrapsNatively = state().repeat === 'all' && run.start === 0 && run.end === state().queue.length - 1;
     if (n === null) {
       set({ playing: false });
       void finishSession();
@@ -222,7 +225,7 @@ export async function playSong(song: SongWithCategories, queue: SongWithCategori
 
 /** Make queue[index] the current song: native playlist for audio, the YouTube player otherwise. */
 async function startAt(index: number) {
-  const song = state.queue[index];
+  const song = state().queue[index];
   if (!song) return;
   if (skipTimer) clearTimeout(skipTimer);
   startSession(song);
@@ -235,7 +238,7 @@ async function startAt(index: number) {
       player.pause();
       player.clearLockScreenControls(); // the notification would show the previous song
     }
-    diag('play youtube', song.title, `${index + 1}/${state.queue.length}`);
+    diag('play youtube', song.title, `${index + 1}/${state().queue.length}`);
     openPlayerScreen();
     return;
   }
@@ -245,14 +248,14 @@ async function startAt(index: number) {
     notificationsAsked = true;
     await requestNotificationPermissionsAsync().catch(() => undefined);
   }
-  run = audioRun(state.queue.map((s) => s.kind === 'audio'), index)!;
-  const songs = state.queue.slice(run.start, run.end + 1);
-  diag('play', song.title, `${index + 1}/${state.queue.length}`, `native ${songs.length}`);
+  run = audioRun(state().queue.map((s) => s.kind === 'audio'), index)!;
+  const songs = state().queue.slice(run.start, run.end + 1);
+  diag('play', song.title, `${index + 1}/${state().queue.length}`, `native ${songs.length}`);
   expectIndex = index - run.start;
   p.clear();
   for (const s of songs) p.add({ uri: resolveStored(s.playableUri!).uri });
   p.skipTo(index - run.start);
-  p.loop = nativeLoop(state.repeat, run, state.queue.length);
+  p.loop = nativeLoop(state().repeat, run, state().queue.length);
   p.volume = 1;
   p.play();
   p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
@@ -262,7 +265,7 @@ async function startAt(index: number) {
 let playerScreenOpen = false;
 export function setPlayerScreenOpen(open: boolean) {
   playerScreenOpen = open;
-  if (!open && isYoutube(state.song) && state.playing) {
+  if (!open && isYoutube(state().song) && state().playing) {
     // Closing the screen removes YouTube's player, which stops it.
     void finishSession();
     set({ playing: false });
@@ -306,14 +309,14 @@ export function youtubeEvent(e: {
   /** The video can never play here (removed, embedding forbidden) — not just offline. */
   permanent?: boolean;
 }) {
-  if (!isYoutube(state.song)) return;
+  if (!isYoutube(state().song)) return;
   if (typeof e.position === 'number') track(e.position);
   const patch: Partial<PlayerState> = {};
   if (typeof e.playing === 'boolean') patch.playing = e.playing;
   if (typeof e.position === 'number' && Date.now() >= seekingUntil) patch.position = e.position;
   if (e.duration) patch.duration = e.duration;
   if (e.error) {
-    diag('youtube failed', state.song?.title ?? '?', e.error);
+    diag('youtube failed', state().song?.title ?? '?', e.error);
     patch.error = e.error;
   }
   set(patch);
@@ -321,27 +324,27 @@ export function youtubeEvent(e: {
     // Offline or still loading: stay, so she can retry or go either way herself. A video that
     // can never play here shouldn't stop the list: show why, then move on the way she was going.
     if (!e.permanent) return;
-    const stuck = state.song?.id;
-    const mode = state.repeat === 'one' ? 'off' : state.repeat;
+    const stuck = state().song?.id;
+    const mode = state().repeat === 'one' ? 'off' : state().repeat;
     const n = direction === 1
-      ? nextIndex(state.index, state.queue.length, mode)
-      : previousIndex(state.index, state.queue.length, mode);
-    if (n !== null && n !== state.index) {
+      ? nextIndex(state().index, state().queue.length, mode)
+      : previousIndex(state().index, state().queue.length, mode);
+    if (n !== null && n !== state().index) {
       if (skipTimer) clearTimeout(skipTimer);
       skipTimer = setTimeout(() => {
-        if (state.song?.id === stuck) void startAt(n).catch((err) => diag('continue failed', err));
+        if (state().song?.id === stuck) void startAt(n).catch((err) => diag('continue failed', err));
       }, 3000);
     }
     return;
   }
   if (e.ended) {
     direction = 1;
-    if (state.repeat === 'one') {
+    if (state().repeat === 'one') {
       youtube?.seek(0);
       youtube?.play();
       return;
     }
-    const n = nextIndex(state.index, state.queue.length, state.repeat);
+    const n = nextIndex(state().index, state().queue.length, state().repeat);
     if (n === null) {
       set({ playing: false });
       void finishSession();
@@ -359,12 +362,12 @@ export function youtubeEvent(e: {
  * button changes at once instead of waiting for the next status update.
  */
 export function togglePlay(): Promise<void> {
-  if (!state.song) return Promise.resolve();
-  if (isYoutube(state.song)) {
+  if (!state().song) return Promise.resolve();
+  if (isYoutube(state().song)) {
     if (!youtube) {
       openPlayerScreen(); // it starts playing when it appears
       set({ playing: true });
-    } else if (state.playing) {
+    } else if (state().playing) {
       youtube.pause();
       set({ playing: false });
     } else {
@@ -375,7 +378,7 @@ export function togglePlay(): Promise<void> {
   }
   const p = player;
   if (!p) return Promise.resolve();
-  if (!state.playing) {
+  if (!state().playing) {
     p.volume = 1;
     p.play();
     set({ playing: true });
@@ -404,16 +407,16 @@ export function togglePlay(): Promise<void> {
 
 /** Tapping a song: the one already loaded pauses/resumes; any other starts from the beginning. */
 export async function playOrToggle(song: SongWithCategories, queue: SongWithCategories[]) {
-  if (state.song?.id === song.id) return togglePlay();
+  if (state().song?.id === song.id) return togglePlay();
   return playSong(song, queue);
 }
 
 /** Inside the loaded run the native playlist moves (gapless, notification in sync); else restart. */
 async function go(target: number) {
-  if (player && run && !isYoutube(state.song) && target >= run.start && target <= run.end) {
+  if (player && run && !isYoutube(state().song) && target >= run.start && target <= run.end) {
     expectIndex = target - run.start;
     player.skipTo(target - run.start);
-    if (!state.playing) player.play();
+    if (!state().playing) player.play();
     moveTo(target);
     set({ playing: true });
     return;
@@ -423,44 +426,44 @@ async function go(target: number) {
 
 export async function next() {
   direction = 1;
-  const n = nextIndex(state.index, state.queue.length, state.repeat === 'one' ? 'all' : state.repeat);
-  if (n !== null && n !== state.index) await go(n);
+  const n = nextIndex(state().index, state().queue.length, state().repeat === 'one' ? 'all' : state().repeat);
+  if (n !== null && n !== state().index) await go(n);
 }
 
 export async function previous() {
   direction = -1;
-  if (state.position > 3 && !(isYoutube(state.song) && state.error)) {
+  if (state().position > 3 && !(isYoutube(state().song) && state().error)) {
     await seek(0);
     return;
   }
-  const n = previousIndex(state.index, state.queue.length, state.repeat === 'one' ? 'all' : state.repeat);
-  if (n === null || n === state.index) await seek(0);
+  const n = previousIndex(state().index, state().queue.length, state().repeat === 'one' ? 'all' : state().repeat);
+  if (n === null || n === state().index) await seek(0);
   else await go(n);
 }
 
 /** Repeat button: off → the whole list → this song → off. */
 export function cycleRepeat() {
-  const repeat = nextRepeat(state.repeat);
+  const repeat = nextRepeat(state().repeat);
   set({ repeat });
-  if (player && run) player.loop = nativeLoop(repeat, run, state.queue.length);
+  if (player && run) player.loop = nativeLoop(repeat, run, state().queue.length);
 }
 
 export async function seek(seconds: number) {
-  const to = Math.max(0, Math.min(seconds, state.duration || seconds));
+  const to = Math.max(0, Math.min(seconds, state().duration || seconds));
   seekingUntil = Date.now() + 800;
   set({ position: to });
-  if (isYoutube(state.song)) youtube?.seek(to);
+  if (isYoutube(state().song)) youtube?.seek(to);
   else if (player) await player.seekTo(to);
 }
 
 /** Is this song loaded in the player's queue (its file may be read at any moment)? */
 export function isQueued(songId: string): boolean {
-  return state.queue.some((s) => s.id === songId);
+  return state().queue.some((s) => s.id === songId);
 }
 
 /** Stop and forget the current song (e.g. it was deleted). */
 export async function clearIfCurrent(songId: string) {
-  if (state.song?.id !== songId) return;
+  if (state().song?.id !== songId) return;
   youtube?.pause();
   if (player) {
     player.pause();

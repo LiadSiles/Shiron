@@ -5,7 +5,7 @@ import { getCategory } from '../core/categories';
 import { isPreparing } from '../core/ingestRules';
 import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
-import { MissingFileError, NotPlayableError, playOrToggle, playSong, usePlayer } from '../player/player';
+import { MissingFileError, NotPlayableError, playOrToggle, playSong, usePlayerSelect } from '../player/player';
 import { Icon, IconName } from './Icon';
 import { PauseIcon, PlayIcon } from './icons';
 import { font, radius, space, TOUCH, useTheme } from './theme';
@@ -124,14 +124,16 @@ export function SongRow({ song, queue, showCategory = true, query }: {
   query?: string;
 }) {
   const c = useTheme();
-  const player = usePlayer();
-  const active = player.song?.id === song.id;
+  // Only "is this the song, and is it playing" — not every position tick.
+  const mine = usePlayerSelect((p) => (p.song?.id !== song.id ? 'other' : p.playing ? 'playing' : 'paused'));
+  const active = mine !== 'other';
+  const playing = mine === 'playing';
   const catId = song.categories[0]?.categoryId ?? 'unsorted';
   const status = statusLabel(song);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={active && player.playing ? `השהיית ${song.title}` : `נגני ${song.title}`}
+      accessibilityLabel={playing ? `השהיית ${song.title}` : `נגני ${song.title}`}
       accessibilityHint="לחיצה ארוכה או ⋮ פותחים את פרטי השיר"
       onPress={() => playOrOpen(song, queue)}
       onLongPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
@@ -143,7 +145,7 @@ export function SongRow({ song, queue, showCategory = true, query }: {
       {/* The song playing shows a pause button in place of its category; any other row a badge. */}
       {active ? (
         <View style={[styles.lead, { backgroundColor: c.primary }]}>
-          {player.playing ? <PauseIcon size={18} color={c.primaryInk} /> : <PlayIcon size={18} color={c.primaryInk} />}
+          {playing ? <PauseIcon size={18} color={c.primaryInk} /> : <PlayIcon size={18} color={c.primaryInk} />}
         </View>
       ) : isPreparing(song) ? (
         <View style={[styles.lead, { backgroundColor: c.surfaceAlt }]}>
