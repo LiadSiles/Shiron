@@ -1,4 +1,4 @@
-import { requireNativeModule } from 'expo-modules-core';
+import { requireNativeModule } from 'expo';
 
 export interface ProcessedAudio {
   /** Length of the output after trimming silence. */

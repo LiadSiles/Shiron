@@ -402,11 +402,6 @@ export function togglePlay(): Promise<void> {
   });
 }
 
-/** Pause (with the fade) if something is playing. */
-export function pause(): Promise<void> {
-  return state.playing ? togglePlay() : Promise.resolve();
-}
-
 /** Tapping a song: the one already loaded pauses/resumes; any other starts from the beginning. */
 export async function playOrToggle(song: SongWithCategories, queue: SongWithCategories[]) {
   if (state.song?.id === song.id) return togglePlay();

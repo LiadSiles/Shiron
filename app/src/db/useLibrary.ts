@@ -56,7 +56,7 @@ export function useLibrary(): LibraryState {
 }
 
 /** Songs in a category, ranked by use. */
-export function rankedCategory(
+function rankedCategory(
   lib: LibraryState,
   categoryId: string,
   now = Date.now(),
