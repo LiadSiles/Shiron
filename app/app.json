@@ -22,7 +22,7 @@
     "android": {
       "package": "app.shiron.gan",
       "adaptiveIcon": {
-        "backgroundColor": "#FBF7F1",
+        "backgroundColor": "#FFF8EC",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -85,7 +85,7 @@
         {
           "backgroundColor": "#FBF7F1",
           "image": "./assets/splash-icon.png",
-          "imageWidth": 180,
+          "imageWidth": 220,
           "dark": {
             "backgroundColor": "#16151A",
             "image": "./assets/splash-icon.png"

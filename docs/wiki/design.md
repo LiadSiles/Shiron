@@ -107,8 +107,12 @@ stacks, at the top:
   it. `expo-system-ui` sets the window background to `c.bg` (light/dark), so transitions never
   show white either. The Android 12+ system splash is drawn natively, so check it on a release build.
 - The icon set (icon, adaptive foreground/background/monochrome, splash logo, favicon) is drawn
-  as SVG by `app/assets/source/make-icons.py` (Playwright renders it): white beamed notes on a
-  coral gradient with a small sun. Change the drawing there and re-run; don't hand-edit the PNGs.
+  as SVG by `app/assets/source/make-icons.py` (Playwright renders it). Since 0.9.0 (PlayGan): a
+  play arrow of six rainbow xylophone bars with white nails, on cream `#FFF8EC`, three small
+  notes above its upper edge — the owner approved this exact layout after several rounds
+  (arrow big and centred; only three small notes, close but not touching). Adaptive layers draw
+  it at 72 % so Android's mask doesn't cut it. Change the drawing there and re-run; don't
+  hand-edit the PNGs.
 
 ## Organisation patterns (0.8.0)
 
