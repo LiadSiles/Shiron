@@ -22,9 +22,10 @@ _Last updated: 2026-11-06_
 | 0.7.1 | Fix: Android release closed at launch (R8 stripped WorkManager's `WorkDatabase_Impl` constructor; keep rules via `plugins/withKeepRules.js`); safe stop for WorkService; emulator launch check on every dev push | released as v0.7.1 — passed the emulator launch check (API 34) |
 | 0.8.0 | Polish: no white flash at launch (splash in app colours until home is ready), real app icon, grouped settings lists, song-screen and player action bars, ⋮ on every song row, settings beside search, white tile text; emulator screen walk with screenshots | released as v0.8.0 — checked on the emulator (API 34, light and dark), not on a phone |
 | 0.8.1 | Code review: one store implementation (`core/store.ts`), one shared library load for all screens, song rows no longer re-render on player ticks, named song rules (`primaryCategoryId`, `canStart`), `SearchField`, dead code removed, wiki conventions | released as v0.8.1 — emulator walk (light/dark) identical to 0.8.0 |
-| 0.9 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
-| 0.9 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
-| 0.10 | Sleep timer with fade, big-tile class mode | planned |
+| 0.9.0 | Renamed PlayGan (visible names only; ids unchanged), xylophone play-arrow logo, previous button in the mini player | released as v0.9.0 — emulator walk passed (light/dark) |
+| 0.10 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
+| 0.10 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
+| 0.11 | Sleep timer with fade, big-tile class mode | planned |
 | 0.9 | Library shared with the assistant (needs accounts + sync: a server or a sync service — owner decision, conflicts with "no server") | planned |
 | beta | Pilot with 10 teachers; TestFlight | — |
 | 1.0 | Privacy review (minors' data), App Store | — |
