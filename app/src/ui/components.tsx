@@ -132,7 +132,7 @@ export function SongRow({ song, queue, showCategory = true, query }: {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={active && player.playing ? `השהיית ${song.title}` : `נגני ${song.title}`}
-      accessibilityHint="לחיצה ארוכה פותחת את פרטי השיר"
+      accessibilityHint="לחיצה ארוכה או ⋮ פותחים את פרטי השיר"
       onPress={() => playOrOpen(song, queue)}
       onLongPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
       style={({ pressed }) => [
@@ -140,20 +140,41 @@ export function SongRow({ song, queue, showCategory = true, query }: {
         { backgroundColor: active ? c.primarySoft : pressed ? c.surfaceAlt : c.surface, borderColor: c.line },
       ]}
     >
-      <CategoryBadge id={catId} />
+      {/* The song playing shows a pause button in place of its category; any other row a badge. */}
+      {active ? (
+        <View style={[styles.lead, { backgroundColor: c.primary }]}>
+          {player.playing ? <PauseIcon size={18} color={c.primaryInk} /> : <PlayIcon size={18} color={c.primaryInk} />}
+        </View>
+      ) : isPreparing(song) ? (
+        <View style={[styles.lead, { backgroundColor: c.surfaceAlt }]}>
+          <ActivityIndicator color={c.inkSoft} />
+        </View>
+      ) : (
+        <CategoryBadge id={catId} />
+      )}
       <View style={{ flex: 1, gap: 2 }}>
-        <Highlighted weight="medium" size={18} numberOfLines={1} text={song.title} query={query} />
+        <Highlighted
+          weight={active ? 'bold' : 'medium'}
+          size={18}
+          numberOfLines={1}
+          text={song.title}
+          query={query}
+          style={active ? { color: c.primary } : undefined}
+        />
         <T soft size={13} numberOfLines={1}>
           {[showCategory ? getCategory(catId).name : null, status].filter(Boolean).join(' · ')}
         </T>
       </View>
-      {isPreparing(song) ? (
-        <ActivityIndicator color={c.inkSoft} />
-      ) : (
-        <View style={[styles.playDot, { backgroundColor: active && player.playing ? c.primary : c.surfaceAlt }]}>
-          {active && player.playing ? <PauseIcon size={16} color={c.primaryInk} /> : <PlayIcon size={16} color={c.ink} />}
-        </View>
-      )}
+      {song.pinnedAt ? <Icon name="pin" size={16} color={c.inkSoft} /> : null}
+      <Pressable
+        onPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
+        hitSlop={4}
+        accessibilityRole="button"
+        accessibilityLabel={`פרטים ואפשרויות: ${song.title}`}
+        style={({ pressed }) => [styles.more, { backgroundColor: pressed ? c.surfaceAlt : 'transparent' }]}
+      >
+        <Icon name="ellipsis-vertical" size={20} color={c.inkSoft} />
+      </Pressable>
     </Pressable>
   );
 }
@@ -209,7 +230,8 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     marginBottom: space.s,
   },
-  playDot: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center' },
+  lead: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  more: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center', marginEnd: -space.s },
   emptyIcon: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
   empty: { alignItems: 'center', gap: space.m, paddingVertical: space.xxl, paddingHorizontal: space.xl },
 });

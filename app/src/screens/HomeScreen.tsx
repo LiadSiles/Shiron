@@ -51,12 +51,18 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
         <Pressable
           onPress={() => router.push('/connect')}
           accessibilityRole="button"
-          style={[styles.banner, { backgroundColor: c.surfaceAlt }]}
+          style={({ pressed }) => [styles.banner, { backgroundColor: c.primarySoft, borderColor: c.primary, opacity: pressed ? 0.85 : 1 }]}
         >
-          <T weight="medium">
-            {pendingCount === 1 ? 'שיר אחד מחכה לשם ולקטגוריה' : `${pendingCount} שירים מחכים לשם ולקטגוריה`}
-          </T>
-          <T soft size={14}>חיבור חד-פעמי לשירות AI חינמי, כשתי דקות ›</T>
+          <View style={[styles.bannerIcon, { backgroundColor: c.primary }]}>
+            <Icon name="sparkles" size={22} color={c.primaryInk} />
+          </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <T weight="bold">
+              {pendingCount === 1 ? 'שיר אחד מחכה לשם ולקטגוריה' : `${pendingCount} שירים מחכים לשם ולקטגוריה`}
+            </T>
+            <T soft size={14}>חיבור חד-פעמי לשירות AI חינמי, כשתי דקות</T>
+          </View>
+          <Icon name="chevron-back" size={20} color={c.primary} />
         </Pressable>
       ) : null}
 
@@ -81,7 +87,10 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
                 hitSlop={12}
                 accessibilityRole="link"
               >
-                <T weight="medium" style={{ color: c.primary, marginTop: space.xl }}>הכול ›</T>
+                <View style={styles.all}>
+                  <T weight="medium" style={{ color: c.primary }}>הכול</T>
+                  <Icon name="chevron-back" size={16} color={c.primary} />
+                </View>
               </Pressable>
             ) : null}
           </View>
@@ -113,7 +122,9 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
 const styles = StyleSheet.create({
   content: { padding: space.l, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: space.s },
-  gear: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  banner: { padding: space.l, borderRadius: radius.m, marginTop: space.m, gap: 4 },
+  gear: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  all: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 40, marginBottom: space.xs },
+  banner: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: space.m, borderRadius: radius.m, borderWidth: 1, marginTop: space.m },
+  bannerIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
 });

@@ -10,7 +10,8 @@ import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from 
 import { retrySong } from '../../ingest/processor';
 import { deleteStored, resolveStored } from '../../ingest/storage';
 import { clearIfCurrent } from '../../player/player';
-import { Button, CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
+import { CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
+import { ActionBar, ListGroup, ListItem } from '../../ui/list';
 import { Icon } from '../../ui/Icon';
 import { toast } from '../../ui/toast';
 import { font, radius, space, useTheme } from '../../ui/theme';
@@ -104,30 +105,35 @@ export default function SongScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: space.l, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
-      <T soft size={13}>שם השיר</T>
-      <TextInput
-        value={title}
-        onChangeText={setTitle}
-        onBlur={saveTitle}
-        onSubmitEditing={saveTitle}
-        returnKeyType="done"
-        accessibilityLabel="שם השיר"
-        style={[styles.titleInput, { color: c.ink, borderColor: c.line, backgroundColor: c.surface, fontFamily: font.bold }]}
-      />
-      {status ? <T soft size={14} style={{ marginTop: space.xs }}>{status}</T> : null}
-
-      <View style={styles.actions}>
-        <Button label="ניגון" icon="play" onPress={() => playOrOpen(song, [song])} style={{ flex: 1 }} />
-        <Button label={song.pinnedAt ? 'בטל הצמדה' : 'הצמדה'} icon={song.pinnedAt ? 'pin' : 'pin-outline'} kind="quiet" onPress={togglePin} style={{ flex: 1 }} />
+      <View style={styles.hero}>
+        <CategoryBadge id={selected[0] ?? 'unsorted'} size={64} />
+        <View style={{ flex: 1 }}>
+          <View style={[styles.titleBox, { borderColor: c.line, backgroundColor: c.surface }]}>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              onBlur={saveTitle}
+              onSubmitEditing={saveTitle}
+              returnKeyType="done"
+              accessibilityLabel="שם השיר"
+              style={[styles.titleInput, { color: c.ink, fontFamily: font.bold }]}
+            />
+            <Icon name="pencil" size={16} color={c.inkSoft} />
+          </View>
+          {status ? <T soft size={14} style={{ marginTop: space.xs }}>{status}</T> : null}
+        </View>
       </View>
-      <Button
-        label="הוספה לרשימה"
-        icon="list"
-        kind="quiet"
-        onPress={() => router.push({ pathname: '/playlist/add', params: { song: song.id } })}
-        style={{ marginTop: space.m }}
-      />
-      {song.error ? <T size={14} style={{ marginTop: space.xs, color: c.warn }}>{song.error}</T> : null}
+      {song.error ? <T size={14} style={{ marginTop: space.s, color: c.warn }}>{song.error}</T> : null}
+
+      <View style={{ marginTop: space.l }}>
+        <ActionBar
+          actions={[
+            { icon: 'play', label: 'ניגון', primary: true, onPress: () => playOrOpen(song, [song]) },
+            { icon: song.pinnedAt ? 'pin' : 'pin-outline', label: song.pinnedAt ? 'מוצמד' : 'הצמדה', active: !!song.pinnedAt, onPress: togglePin },
+            { icon: 'list', label: 'לרשימה', onPress: () => router.push({ pathname: '/playlist/add', params: { song: song.id } }) },
+          ]}
+        />
+      </View>
 
       <T weight="bold" size={18} style={styles.h}>קטגוריות</T>
       <View style={[styles.chips, { marginBottom: space.s }]}>
@@ -150,20 +156,16 @@ export default function SongScreen() {
 
       <View style={[styles.lyricsHeader]}>
         <T weight="bold" size={18} style={{ flex: 1 }}>מילות השיר</T>
-        <Pressable onPress={() => (editingLyrics ? saveLyrics() : setEditingLyrics(true))} hitSlop={10}>
-          <T weight="medium" style={{ color: c.primary }}>{editingLyrics ? 'שמירה' : 'עריכה'}</T>
+        <Pressable
+          onPress={() => (editingLyrics ? saveLyrics() : setEditingLyrics(true))}
+          hitSlop={10}
+          accessibilityRole="button"
+          style={[styles.pill, { backgroundColor: editingLyrics ? c.primary : c.surfaceAlt }]}
+        >
+          <Icon name={editingLyrics ? 'checkmark' : 'create-outline'} size={16} color={editingLyrics ? c.primaryInk : c.ink} />
+          <T weight="medium" size={14} style={{ color: editingLyrics ? c.primaryInk : c.ink }}>{editingLyrics ? 'שמירה' : 'עריכה'}</T>
         </Pressable>
       </View>
-      {canTranscribe(song) && !editingLyrics ? (
-        <Button
-          label={song.status === 'pending' ? 'מתמללת…' : 'תמלול מחדש'}
-          icon="refresh"
-          kind="quiet"
-          disabled={song.status === 'pending'}
-          onPress={transcribeAgain}
-          style={{ marginBottom: space.m }}
-        />
-      ) : null}
       {editingLyrics ? (
         <TextInput
           value={lyrics}
@@ -177,22 +179,43 @@ export default function SongScreen() {
         </T>
       )}
 
-      <T weight="bold" size={18} style={styles.h}>מקור</T>
-      {song.sourceName ? <T soft size={14}>קובץ: {song.sourceName}</T> : null}
-      {song.durationSec ? <T soft size={14}>אורך: {formatTime(song.durationSec)}</T> : null}
-      {song.contextText ? <T soft size={14}>נשלח עם ההודעה: “{song.contextText}”</T> : null}
-      {song.summary ? <T soft size={14}>תקציר: {song.summary}</T> : null}
+      {song.sourceName || song.durationSec || song.contextText || song.summary ? (
+        <>
+          <T weight="bold" size={18} style={styles.h}>מקור</T>
+          <View style={{ gap: 4 }}>
+            {song.sourceName ? <T soft size={14}>קובץ: {song.sourceName}</T> : null}
+            {song.durationSec ? <T soft size={14}>אורך: {formatTime(song.durationSec)}</T> : null}
+            {song.contextText ? <T soft size={14}>נשלח עם ההודעה: “{song.contextText}”</T> : null}
+            {song.summary ? <T soft size={14}>תקציר: {song.summary}</T> : null}
+          </View>
+        </>
+      ) : null}
+
+      <ListGroup title="עוד פעולות">
+        {canTranscribe(song) ? (
+          <ListItem
+            icon="refresh"
+            tint={c.accent}
+            title={song.status === 'pending' ? 'מתמללת…' : 'תמלול מחדש'}
+            subtitle="שם ומילים חדשים מההקלטה"
+            disabled={song.status === 'pending'}
+            onPress={transcribeAgain}
+            chevron={false}
+          />
+        ) : null}
+        <ListItem icon="trash-outline" title="מחיקת השיר" onPress={remove} danger chevron={false} last />
+      </ListGroup>
 
       <TechDetails song={song} />
-
-      <Button label="מחיקת השיר" kind="quiet" onPress={remove} style={{ marginTop: space.xxl }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleInput: { fontSize: 22, borderWidth: 1, borderRadius: radius.m, padding: space.m, marginTop: space.xs },
-  actions: { flexDirection: 'row', gap: space.s, marginTop: space.l },
+  hero: { flexDirection: 'row', alignItems: 'flex-start', gap: space.m, marginTop: space.s },
+  titleBox: { flexDirection: 'row', alignItems: 'center', gap: space.s, borderWidth: 1, borderRadius: radius.m, paddingHorizontal: space.m },
+  titleInput: { flex: 1, fontSize: 21, paddingVertical: space.m },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingHorizontal: space.m, borderRadius: 18 },
   h: { marginTop: space.xl, marginBottom: space.s },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: space.m, borderRadius: radius.l, borderWidth: 1.5, minHeight: 40 },
