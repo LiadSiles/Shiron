@@ -79,6 +79,7 @@ for mode in light dark; do
   tap '^נגני '; shot "$mode-after-play" 4
   open_link "shiron://player"; shot "$mode-player" 5
   back
+  shot "$mode-mini-player" 2
   open_link "shiron://playlist/pick"; shot "$mode-new-playlist"
   back
   open_link "shiron://settings"; shot "$mode-settings"
