@@ -3,7 +3,7 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
-### 2026-11-06 — Our own iOS share extension, and "Open in PlayGan" (0.9.2)
+### 2026-11-06 — Our own iOS share extension (0.9.2, 0.9.3)
 First iPhone install (Sideloadly, free Apple ID): sharing a recording from WhatsApp froze
 WhatsApp and nothing arrived. Sideloadly with a free Apple ID grants no App Group, and the
 library's extension force-unwrapped the group container and crashed behind its invisible view.
@@ -14,10 +14,18 @@ library's extension force-unwrapped the group container and crashed behind its i
   representation, not necessarily a file URL), one attachment at a time, and always ends the
   request (alert in Hebrew, 60 s watchdog).
 - Without a group, a link or text travels in the URL (`shiron://share?text=…`, parsed by
-  `core/incoming.ts`); files cannot, so the alert says what to do.
-- The app declares audio/video document types (plus Opus/Ogg type declarations iOS lacks), so
-  "Open in PlayGan" brings a file in on any install: iOS copies it to `Documents/Inbox`, the
-  app receives a `file://` link, saves it and deletes the inbox copy.
+  `core/incoming.ts`); files cannot, so the alert says the way round: save to Files, then
+  Settings → בחירת קבצי שמע או וידאו in the app.
+- Also tried in 0.9.2: audio/video document types, for an "Open in PlayGan" that needs no App
+  Group. Removed in 0.9.3: the simulator check showed the share sheet lists PlayGan once — the
+  extension — so the "Open in" entry never appears beside it.
+- Why WhatsApp froze even for links: the template started work in `viewDidLoad` with an
+  invisible view and, on an error, presented an alert before the view was on screen; iOS drops
+  that alert, so the request was never completed. Ours starts in `viewDidAppear`.
+- Verified on the iPhone simulator (`ios-sim.yml`): with the group, a YouTube link from Safari
+  and a voice note from Files both arrive; without entitlements, the voice note gets the Hebrew
+  alert, the extension receives a link (`group none`), iOS asks "Open in PlayGan?", and the app
+  saves the link from `shiron://share?text=…`.
 - Rejected: passing files through the pasteboard (wipes or races her clipboard, size limits)
   or inside the URL (megabytes). The real fix for the teacher is a signing route that grants App
   Groups — AltStore/SideStore (free, auto-refresh) or a paid Apple Developer account

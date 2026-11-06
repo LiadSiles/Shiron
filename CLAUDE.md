@@ -75,8 +75,7 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     store.ts                 the shared-state container (read in React with ui/useStore)
     queue.ts                 play order: audio runs, next/previous, repeat modes
     transcript.ts            dropping Whisper's invented lines ("תודה רבה", loops)
-    incoming.ts              links that bring a song in besides the share extension's
-                             ("Open in PlayGan" file://, shiron://share?text=)
+    incoming.ts              the share extension's link without an App Group (shiron://share?text=)
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
   src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts

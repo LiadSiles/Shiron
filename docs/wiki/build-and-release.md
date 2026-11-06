@@ -111,8 +111,25 @@ Needs the owner's Apple Developer account ($99/yr) and an Expo account:
 See `.github/release-install.md` (also appended to every release). Android: download APK,
 allow unknown sources once, install over the previous version. iPhone: Sideloadly with an
 Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+. Sideloadly with a
-free ID grants no App Group, so the share extension can pass links but not files; files come in
-through "Open in PlayGan". AltStore/SideStore (free) or a paid account give the full share.
+free ID grants no App Group, so the share extension can pass links but not files (files: save to
+Files, then the in-app picker). AltStore/SideStore (free) or a paid account give the full share.
+
+## iPhone share check (`ios-sim.yml`)
+
+Every push to a dev branch touching the app builds a simulator build twice — with the App Group
+and with no entitlements (like Sideloadly with a free ID) — and drives the share sheet with
+Maestro (`scripts/ios-sim/`): a YouTube page shared from Safari, a WhatsApp voice note shared
+from Files, and the extension's no-group link sent straight to the app (`simctl openurl`).
+Screenshots and the simulator log go to the `screenshots` branch under `ios-dev-<branch>`; the
+extension's `[PlayGan]` log lines become annotations. Gotchas:
+- The share sheet is another process; Maestro sometimes can't see it, so its taps are retried
+  and can still miss — read the screenshots and the `[PlayGan] share:` lines, not the job
+  status (always green).
+- "PlayGan" also labels the status bar's back link: the sheet's icon is `index: 1`.
+- Taps by position break: GitHub picks different iPhone models between runs.
+- Without App Group entitlements, iOS asks "Open in PlayGan?" before the extension opens the
+  app; the flows tap "Open".
+- WhatsApp can't run on a simulator; Safari and Files stand in for it.
 
 ## Local builds
 

@@ -9,8 +9,8 @@ import { AppState, I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { connectedProviders } from '../api/keys';
 import { getSetting, setSetting } from '../db/repo';
-import { parseIncomingUrl } from '../core/incoming';
-import { describeSummary, enqueueOpenedFile, enqueueShare, ImportSummary } from '../ingest/ingest';
+import { sharedTextFromUrl } from '../core/incoming';
+import { describeSummary, enqueueShare, ImportSummary } from '../ingest/ingest';
 import { keepWorkingInBackground, registerBackgroundProcessing } from '../ingest/background';
 import { processQueue } from '../ingest/processor';
 import { appReady, SPLASH_MAX_MS } from '../ui/launch';
@@ -46,18 +46,14 @@ function ShareHandler() {
     if (error) toast(`שגיאה בקבלת השיתוף: ${error}`, 'error');
   }, [error]);
 
-  // "Open in PlayGan" files and links the extension sent in the URL (core/incoming).
+  // A link the extension sent inside the URL, having no App Group (core/incoming).
   const url = useLinkingURL();
   const handled = useRef<string | null>(null);
   useEffect(() => {
-    const incoming = parseIncomingUrl(url, SCHEME);
-    if (!incoming || handled.current === url) return;
+    const text = sharedTextFromUrl(url, SCHEME);
+    if (!text || handled.current === url) return;
     handled.current = url;
-    report(
-      incoming.kind === 'file'
-        ? enqueueOpenedFile(incoming.uri, incoming.name)
-        : enqueueShare({ type: 'text', text: incoming.text, files: null, webUrl: null }),
-    );
+    report(enqueueShare({ type: 'text', text, files: null, webUrl: null }));
   }, [url]);
 
   return null;

@@ -15,55 +15,7 @@
         "CFBundleDisplayName": "PlayGan",
         "CFBundleDevelopmentRegion": "he",
         "CFBundleAllowMixedLocalizations": true,
-        "ITSAppUsesNonExemptEncryption": false,
-        "CFBundleDocumentTypes": [
-          {
-            "CFBundleTypeName": "Audio and video",
-            "CFBundleTypeRole": "Viewer",
-            "LSHandlerRank": "Alternate",
-            "LSItemContentTypes": [
-              "public.audio",
-              "public.movie",
-              "org.xiph.opus",
-              "org.xiph.ogg-audio"
-            ]
-          }
-        ],
-        "UTImportedTypeDeclarations": [
-          {
-            "UTTypeIdentifier": "org.xiph.opus",
-            "UTTypeDescription": "Opus audio",
-            "UTTypeConformsTo": [
-              "public.audio"
-            ],
-            "UTTypeTagSpecification": {
-              "public.filename-extension": [
-                "opus"
-              ],
-              "public.mime-type": [
-                "audio/opus"
-              ]
-            }
-          },
-          {
-            "UTTypeIdentifier": "org.xiph.ogg-audio",
-            "UTTypeDescription": "Ogg audio",
-            "UTTypeConformsTo": [
-              "public.audio"
-            ],
-            "UTTypeTagSpecification": {
-              "public.filename-extension": [
-                "ogg",
-                "oga"
-              ],
-              "public.mime-type": [
-                "audio/ogg",
-                "application/ogg"
-              ]
-            }
-          }
-        ],
-        "LSSupportsOpeningDocumentsInPlace": false
+        "ITSAppUsesNonExemptEncryption": false
       },
       "buildNumber": "1"
     },
