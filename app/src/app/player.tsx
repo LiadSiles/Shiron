@@ -6,14 +6,15 @@ import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, use
 import { Button, CategoryBadge, T } from '../ui/components';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from '../ui/icons';
 import { Scrubber } from '../ui/Scrubber';
-import { Icon } from '../ui/Icon';
+import { ActionBar } from '../ui/list';
 import { YouTubeView } from '../ui/YouTubeView';
-import { radius, space, useTheme } from '../ui/theme';
+import { cardShadow, space, useTheme } from '../ui/theme';
 
+/** Short enough for an action tile: off → the whole list → this song. */
 const REPEAT_LABEL = {
-  off: 'חזרה: כבויה',
-  all: 'חוזר על כל הרשימה',
-  one: 'חוזר על השיר הזה',
+  off: 'בלי חזרה',
+  all: 'חזרה על הכול',
+  one: 'חזרה על השיר',
 } as const;
 
 /**
@@ -85,19 +86,20 @@ export default function PlayerScreen() {
         </Pressable>
       </View>
 
-      <Pressable
-        onPress={cycleRepeat}
-        accessibilityRole="button"
-        accessibilityHint="מחליף בין: בלי חזרה, חזרה על כל הרשימה, חזרה על השיר"
-        style={[styles.repeat, { backgroundColor: p.repeat !== 'off' ? c.primarySoft : c.surfaceAlt, borderColor: p.repeat !== 'off' ? c.primary : 'transparent' }]}
-      >
-        <Icon name="repeat" size={20} color={p.repeat !== 'off' ? c.primary : c.inkSoft} />
-        <T weight="medium">{REPEAT_LABEL[p.repeat]}</T>
-      </Pressable>
+      <View style={{ marginTop: space.xl }}>
+        <ActionBar
+          actions={[
+            { icon: 'repeat', label: REPEAT_LABEL[p.repeat], active: p.repeat !== 'off', onPress: cycleRepeat },
+            { icon: 'list', label: 'לרשימה', onPress: () => router.push({ pathname: '/playlist/add', params: { song: p.song!.id } }) },
+            { icon: 'ellipsis-horizontal', label: 'פרטים', onPress: () => router.push({ pathname: '/song/[id]', params: { id: p.song!.id } }) },
+          ]}
+        />
+      </View>
 
       {p.song.kind === 'youtube' && p.song.youtubeId ? (
         <Button
           label="פתיחה באפליקציית יוטיוב"
+          icon="logo-youtube"
           kind="quiet"
           onPress={() => Linking.openURL(`https://youtu.be/${p.song!.youtubeId}`)}
           style={{ marginTop: space.s }}
@@ -111,9 +113,6 @@ export default function PlayerScreen() {
         </View>
       ) : null}
 
-      <Pressable onPress={() => router.push({ pathname: '/song/[id]', params: { id: p.song!.id } })} style={{ marginTop: space.xl, alignSelf: 'center' }}>
-        <T weight="medium" style={{ color: c.primary }}>פרטי השיר ועריכה</T>
-      </Pressable>
     </ScrollView>
   );
 }
@@ -121,9 +120,8 @@ export default function PlayerScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { padding: space.xl, paddingBottom: 60, gap: space.s },
-  art: { alignSelf: 'center', width: 200, height: 200, borderRadius: radius.l, alignItems: 'center', justifyContent: 'center', marginBottom: space.l },
+  art: { alignSelf: 'center', width: 240, height: 240, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: space.l, ...cardShadow },
   controls: { direction: 'ltr', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xl, marginTop: space.l },
   main: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center' },
   side: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-  repeat: { flexDirection: 'row', alignItems: 'center', gap: space.s, alignSelf: 'center', marginTop: space.l, paddingVertical: space.m, paddingHorizontal: space.xl, borderRadius: radius.l, borderWidth: 1.5 },
 });
