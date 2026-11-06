@@ -24,18 +24,11 @@ appId: com.apple.mobilesafari
           optional: true
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-3-share-sheet
-- runFlow:
-    when:
-      notVisible: PlayGan
-    commands:
-      - tapOn:
-          text: More
-          optional: true
-      - waitForAnimationToEnd
-      - takeScreenshot: ${VARIANT}-3b-more
+# The share sheet's PlayGan, not the status bar's "◂ PlayGan" back link.
 - tapOn:
     text: PlayGan
-    index: 0
+    below:
+      text: "Options.*"
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-4-after-link

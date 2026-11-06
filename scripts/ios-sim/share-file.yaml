@@ -27,9 +27,11 @@ appId: com.apple.DocumentsApp
     text: Share
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-6-file-share-sheet
+# The share sheet's PlayGan, not the status bar's "◂ PlayGan" back link.
 - tapOn:
     text: PlayGan
-    index: 0
+    below:
+      text: "Audio Recording.*"
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-7-after-file
