@@ -25,7 +25,6 @@ grep -q '^== alive' "$LOG" && ! grep -q "Process: $PKG" "$LOG" || exit 1
 # ---------- screenshots ----------
 mkdir -p shots
 n=0
-shot() { n=$((n+1)); sleep "${2:-3}"; adb exec-out screencap -p > "shots/$(printf %02d $n)-$1.png"; echo "shot $1"; }
 open_link() { adb shell am start -a android.intent.action.VIEW -d "$1" "$PKG" >/dev/null; }
 back() { adb shell input keyevent KEYCODE_BACK; sleep 1; }
 # Tap the first on-screen element whose text or accessibility label matches (uiautomator dump).
@@ -44,6 +43,16 @@ for m in re.finditer(r'<node [^>]*>', x):
 " "$1")
   if [ -n "$b" ]; then adb shell input tap $b; echo "tap $1 at $b"; else echo "tap $1: not found"; fi
 }
+# A slow emulator often shows "System UI isn't responding" over everything: hide such dialogs,
+# and if one still shows, answer "Wait" before taking the picture.
+adb shell settings put global hide_error_dialogs 1
+adb shell settings put global anr_show_background 0
+dismiss_anr() {
+  if adb shell dumpsys window | grep -q "Application Not Responding\|isn't responding"; then
+    tap '^(Wait|המתן)$'; sleep 1
+  fi
+}
+shot() { n=$((n+1)); sleep "${2:-3}"; dismiss_anr; adb exec-out screencap -p > "shots/$(printf %02d $n)-$1.png"; echo "shot $1"; }
 share_text() {
   adb shell am start -a android.intent.action.SEND -t text/plain --es android.intent.extra.TEXT "'$1'" -n "$ACT" >/dev/null
 }
@@ -59,7 +68,11 @@ for mode in light dark; do
     share_text "https://www.youtube.com/watch?v=e_04ZrNroTo"
     sleep 2
     share_text "https://youtu.be/BQ0mxQXmLsk"
-    shot "$mode-home-with-songs" 8
+    sleep 6
+    # The first song opens "connect an AI service" once (by design): picture it, then close it.
+    shot "$mode-connect-offer" 1
+    back
+    shot "$mode-home-with-songs" 2
   fi
   tap '^ספרייה$'; shot "$mode-library"
   open_link "shiron://category/all"; shot "$mode-category-all"
