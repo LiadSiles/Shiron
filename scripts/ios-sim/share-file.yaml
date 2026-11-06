@@ -27,11 +27,15 @@ appId: com.apple.DocumentsApp
     text: Share
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-6-file-share-sheet
-# The share sheet's PlayGan icon, by position: the sheet is another process whose elements
-# Maestro sometimes can't see, and "PlayGan" also labels the status bar's back link.
-- waitForAnimationToEnd
-- tapOn:
-    point: "9%,51%"
+# The share sheet's PlayGan icon (index 1: the status bar's back link is also "PlayGan").
+# The sheet is another process that Maestro sometimes can't see at first: retry.
+- retry:
+    maxRetries: 3
+    commands:
+      - waitForAnimationToEnd
+      - tapOn:
+          text: PlayGan
+          index: 1
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-7-after-file

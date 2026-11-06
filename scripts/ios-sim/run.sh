@@ -36,6 +36,9 @@ shot() { xcrun simctl io "$UDID" screenshot "shots/$1.png" >/dev/null 2>&1; }
 run launch.yaml "$VARIANT"
 run share-link.yaml "$VARIANT"
 sleep 5; shot "$VARIANT-8-app-after-link"
+# The link the extension sends when it has no App Group, straight to the app.
+xcrun simctl openurl "$UDID" "shiron://share?text=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
+sleep 8; shot "$VARIANT-8b-app-after-url-link"
 run share-file.yaml "$VARIANT"
 sleep 5; shot "$VARIANT-9-after-file"
 run launch.yaml "$VARIANT-final"
