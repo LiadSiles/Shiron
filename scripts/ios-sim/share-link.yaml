@@ -17,7 +17,7 @@ appId: com.apple.mobilesafari
           id: ShareButton
 - runFlow:
     when:
-      notVisible: PlayGan
+      notVisible: Add to Reading List
     commands:
       - tapOn:
           text: Share
