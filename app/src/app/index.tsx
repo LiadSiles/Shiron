@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, Keyboard, Pressable, StyleSheet, TextInput, TextInputInstance, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -85,7 +86,17 @@ export default function Shell() {
           <Pressable onPress={endSearch} hitSlop={8} accessibilityRole="button" style={styles.cancel}>
             <T weight="medium" style={{ color: c.primary }}>ביטול</T>
           </Pressable>
-        ) : null}
+        ) : (
+          // Settings sit in the same spot on every tab, next to search.
+          <Pressable
+            onPress={() => router.push('/settings')}
+            accessibilityRole="button"
+            accessibilityLabel="הגדרות"
+            style={({ pressed }) => [styles.gear, { backgroundColor: pressed ? c.surfaceAlt : c.surface, borderColor: c.line }]}
+          >
+            <Icon name="settings-outline" size={22} color={c.ink} />
+          </Pressable>
+        )}
       </View>
 
       <View style={{ flex: 1 }}>
@@ -139,6 +150,7 @@ const styles = StyleSheet.create({
   },
   input: { flex: 1, fontSize: 17, paddingVertical: space.s },
   cancel: { minHeight: TOUCH, justifyContent: 'center' },
+  gear: { width: TOUCH, height: TOUCH, borderRadius: radius.m, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   bar: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space.xs },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 56, gap: 2 },
 });

@@ -17,8 +17,13 @@ function contrast(a: number, b: number): number {
 const WHITE = '#FFFFFF';
 const INK = '#1B1B22';
 
-/** White or near-black text, whichever reads better on a coloured tile. */
+/**
+ * Text colour for a coloured tile. White whenever it meets WCAG AA for large text (3:1) — tile
+ * names are big and bold, and white on colour is the app's look (buttons, playlist cards);
+ * near-black only on light colours (yellow, light green) where white would not read.
+ */
 export function textOn(background: string): string {
   const bg = luminance(background);
+  if (contrast(bg, 1) >= 3) return WHITE;
   return contrast(bg, 1) >= contrast(bg, luminance(INK)) ? WHITE : INK;
 }

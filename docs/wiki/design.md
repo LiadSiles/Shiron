@@ -110,3 +110,17 @@ stacks, at the top:
   as SVG by `app/assets/source/make-icons.py` (Playwright renders it): white beamed notes on a
   coral gradient with a small sun. Change the drawing there and re-run; don't hand-edit the PNGs.
 
+## Organisation patterns (0.8.0)
+
+- **`ui/list.tsx`**: `ListGroup` + `ListItem` — the phone-settings pattern (small heading, rows
+  in one rounded card, coloured icon tile, title, explanation, value, chevron; `danger` rows in
+  red). Settings and the song screen's secondary actions use it. `ActionBar` — 2–3 equal big
+  tiles (icon over a word) for a screen's main actions: song screen (ניגון · הצמדה · לרשימה),
+  full player (חזרה · לרשימה · פרטים). New screens should reuse these, not invent buttons.
+- **Song rows**: tap = play/pause; a visible ⋮ opens the song (long-press still works). The song
+  playing shows a pause button in the coral circle where its category badge was.
+- **Settings** live next to the search bar on every tab (not in the home header).
+- **Tile text**: `core/color.textOn` prefers white whenever it reaches 3:1 (WCAG AA for large
+  text), so coral/purple tiles match the buttons; dark text only on light colours.
+- Review real screens with the emulator walk (`build-and-release.md` → screenshots).
+

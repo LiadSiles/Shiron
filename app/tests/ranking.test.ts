@@ -53,6 +53,8 @@ describe('library tiles', () => {
   it('picks readable text on every category colour', () => {
     expect(textOn('#1F3A8A')).toBe('#FFFFFF');
     expect(textOn('#F2C94C')).toBe('#1B1B22');
+    // The brand coral: white, like the buttons (large text needs 3:1).
+    expect(textOn('#D9573B')).toBe('#FFFFFF');
     for (const c of CATEGORIES) expect(['#FFFFFF', '#1B1B22']).toContain(textOn(c.color));
   });
 });

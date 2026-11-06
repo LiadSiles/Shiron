@@ -33,18 +33,8 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <T soft size={15}>{greeting(new Date().getHours())}</T>
-          <T weight="bold" size={30}>שירון</T>
-        </View>
-        <Pressable
-          onPress={() => router.push('/settings')}
-          accessibilityLabel="הגדרות"
-          hitSlop={12}
-          style={[styles.gear, { backgroundColor: c.surfaceAlt }]}
-        >
-          <Icon name="settings-outline" size={22} color={c.ink} />
-        </Pressable>
+        <T soft size={15}>{greeting(new Date().getHours())}</T>
+        <T weight="bold" size={30}>שירון</T>
       </View>
 
       {proc?.needsKey && pendingCount > 0 ? (
@@ -121,8 +111,7 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
 
 const styles = StyleSheet.create({
   content: { padding: space.l, paddingBottom: 40 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: space.s },
-  gear: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  header: { marginBottom: space.s },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   all: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 40, marginBottom: space.xs },
   banner: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: space.m, borderRadius: radius.m, borderWidth: 1, marginTop: space.m },

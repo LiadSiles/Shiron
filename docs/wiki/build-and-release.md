@@ -156,3 +156,16 @@ logcat crash buffer as annotations and a screenshot artifact. Runs on every push
 touching `app/`; a branch should pass it before merging to `main`. Dispatch with a tag to open a
 published APK instead. (The released APK has only ARM code, so it can't fully start on the x86_64
 emulator — a crash before native code loads, like 0.7.0's, still shows.)
+
+### Screenshots from the launch check
+
+With `SHOTS=1` (set in `smoke.yml`) the script then walks the app on a Pixel 6 profile, light and
+dark: shares three YouTube links the way WhatsApp does (`am start -a SEND -t text/plain`),
+pictures the save toast, the connect offer, home, library (tapped by label via `uiautomator
+dump`), a category, the player (deep links `shiron://…`), a new playlist, settings and connect.
+The PNGs are pushed to the **`screenshots`** branch under the dev branch's name
+(`dev-0.6/NN-mode-screen.png`) — fetch it with git; artifact downloads are blocked in some review
+sandboxes. Gotchas: the slow emulator shows "System UI isn't responding" over everything —
+the script sets `hide_error_dialogs` and taps "Wait"; the first song opens the connect offer
+once, so the walk presses back. A crash of our process during the walk fails the check.
+
