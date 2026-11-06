@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { BackHandler, Keyboard, Pressable, StyleSheet, TextInput, TextInputInstance, View } from 'react-native';
+import { BackHandler, Keyboard, Pressable, StyleSheet, TextInputInstance, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLibrary } from '../db/useLibrary';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -10,7 +10,8 @@ import { T } from '../ui/components';
 import { Icon, IconName } from '../ui/Icon';
 import { appReady } from '../ui/launch';
 import { MiniPlayer } from '../ui/MiniPlayer';
-import { font, radius, space, TOUCH, useTheme } from '../ui/theme';
+import { SearchField } from '../ui/SearchField';
+import { radius, space, TOUCH, useTheme } from '../ui/theme';
 
 type Tab = 'home' | 'library';
 
@@ -60,28 +61,16 @@ export default function Shell() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
       <View style={styles.searchRow}>
-        <View style={[styles.field, { backgroundColor: c.surface, borderColor: focused ? c.primary : c.line }]}>
-          <Icon name="search" size={20} color={focused ? c.primary : c.inkSoft} />
-          <TextInput
-            ref={input}
-            value={query}
-            onChangeText={setQuery}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onSubmitEditing={() => setSubmitted((n) => n + 1)}
-            placeholder="חיפוש: מילה מהשיר, נושא או שם"
-            placeholderTextColor={c.inkSoft}
-            returnKeyType="search"
-            autoCorrect={false}
-            accessibilityLabel="חיפוש שיר"
-            style={[styles.input, { color: c.ink, fontFamily: font.regular }]}
-          />
-          {query ? (
-            <Pressable onPress={() => setQuery('')} hitSlop={12} accessibilityLabel="ניקוי החיפוש">
-              <Icon name="close-circle" size={22} color={c.inkSoft} />
-            </Pressable>
-          ) : null}
-        </View>
+        <SearchField
+          inputRef={input}
+          value={query}
+          onChangeText={setQuery}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onSubmitEditing={() => setSubmitted((n) => n + 1)}
+          placeholder="חיפוש: מילה מהשיר, נושא או שם"
+          label="חיפוש שיר"
+        />
         {searching ? (
           <Pressable onPress={endSearch} hitSlop={8} accessibilityRole="button" style={styles.cancel}>
             <T weight="medium" style={{ color: c.primary }}>ביטול</T>
@@ -138,17 +127,6 @@ export default function Shell() {
 
 const styles = StyleSheet.create({
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingHorizontal: space.l, paddingTop: space.s, paddingBottom: space.xs },
-  field: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.s,
-    minHeight: TOUCH,
-    borderRadius: radius.m,
-    borderWidth: 1,
-    paddingHorizontal: space.m,
-  },
-  input: { flex: 1, fontSize: 17, paddingVertical: space.s },
   cancel: { minHeight: TOUCH, justifyContent: 'center' },
   gear: { width: TOUCH, height: TOUCH, borderRadius: radius.m, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   bar: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space.xs },

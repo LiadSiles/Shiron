@@ -9,7 +9,7 @@ import { createPlaylist, setPlaylistSongs } from '../../db/repo';
 import { ALL_ID, songsFor, useLibrary } from '../../db/useLibrary';
 import { diag } from '../../diag/log';
 import { Button, CategoryBadge, T } from '../../ui/components';
-import { Icon } from '../../ui/Icon';
+import { SearchField } from '../../ui/SearchField';
 import { toast } from '../../ui/toast';
 import { font, radius, space, TOUCH, useTheme } from '../../ui/theme';
 
@@ -76,23 +76,8 @@ export default function PickSongs() {
             />
           </>
         ) : null}
-        <View style={[styles.search, { borderColor: c.line, backgroundColor: c.surface }]}>
-          <Icon name="search" size={20} color={c.inkSoft} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="חיפוש שיר להוספה"
-            placeholderTextColor={c.inkSoft}
-            autoCorrect={false}
-            returnKeyType="search"
-            accessibilityLabel="חיפוש שיר להוספה"
-            style={{ flex: 1, color: c.ink, fontFamily: font.regular, fontSize: 17, paddingVertical: space.s }}
-          />
-          {query ? (
-            <Pressable onPress={() => setQuery('')} hitSlop={12} accessibilityLabel="ניקוי החיפוש">
-              <Icon name="close-circle" size={22} color={c.inkSoft} />
-            </Pressable>
-          ) : null}
+        <View style={{ flexDirection: 'row' }}>
+          <SearchField value={query} onChangeText={setQuery} placeholder="חיפוש שיר להוספה" />
         </View>
       </View>
 
@@ -145,15 +130,6 @@ export default function PickSongs() {
 const styles = StyleSheet.create({
   top: { padding: space.l, paddingBottom: space.s, gap: space.s },
   input: { minHeight: TOUCH, borderWidth: 1, borderRadius: radius.m, paddingHorizontal: space.m, marginBottom: space.s },
-  search: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.s,
-    minHeight: TOUCH,
-    borderWidth: 1,
-    borderRadius: radius.m,
-    paddingHorizontal: space.m,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
