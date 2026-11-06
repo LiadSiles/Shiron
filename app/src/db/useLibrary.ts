@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { activeCategoryIds, CATEGORIES, getCategory, UNSORTED_ID } from '../core/categories';
 import { CategoryTile, frecency, orderCategoryTiles, rankSongs } from '../core/ranking';
 import type { PlayEvent, Playlist, SongWithCategories } from '../core/types';
+import { createStore } from '../core/store';
 import { diag } from '../diag/log';
+import { useStore } from '../ui/useStore';
 import { listPlaylists, listSongs, onLibraryChange, playsBySong, recentlyPlayedIds } from './repo';
 
 export interface LibraryState {
@@ -15,44 +16,58 @@ export interface LibraryState {
   playlists: Playlist[];
   /** usage score per song, used to break ties in search */
   usage: Record<string, number>;
-  reload: () => void;
 }
 
-/** Loads the whole library into memory and refreshes it whenever it changes. */
-export function useLibrary(): LibraryState {
-  const [state, setState] = useState<Omit<LibraryState, 'reload' | 'byId' | 'usage'>>({
-    loading: true, songs: [], plays: new Map(), recentIds: [], playlists: [],
-  });
+type Loaded = Pick<LibraryState, 'songs' | 'plays' | 'recentIds' | 'playlists'>;
 
-  // Writes come in bursts (processing a song is several updates); each triggers a reload, and
-  // an older query must not land after a newer one.
-  const latest = useRef(0);
-  const load = useCallback(async () => {
-    const id = ++latest.current;
+function derive(data: Loaded, loading: boolean): LibraryState {
+  const byId = new Map(data.songs.map((s) => [s.id, s]));
+  const now = Date.now();
+  const usage: Record<string, number> = {};
+  for (const s of data.songs) usage[s.id] = frecency(data.plays.get(s.id) ?? [], s.durationSec, now);
+  return { ...data, loading, byId, usage };
+}
+
+/**
+ * The library in memory, shared by every screen: one query per change however many screens are
+ * open (each used to load it on its own). Writes come in bursts — processing a song is several
+ * updates — so a change during a load just schedules one more load after it.
+ */
+const libraryStore = createStore<{ lib: LibraryState }>({
+  lib: derive({ songs: [], plays: new Map(), recentIds: [], playlists: [] }, true),
+});
+let started = false;
+let loadingNow = false;
+let again = false;
+
+async function load() {
+  if (loadingNow) {
+    again = true;
+    return;
+  }
+  loadingNow = true;
+  do {
+    again = false;
     try {
       const [songs, plays, recentIds, playlists] = await Promise.all([
         listSongs(), playsBySong(), recentlyPlayedIds(10), listPlaylists(),
       ]);
-      if (id === latest.current) setState({ loading: false, songs, plays, recentIds, playlists });
+      libraryStore.set({ lib: derive({ songs, plays, recentIds, playlists }, false) });
     } catch (e) {
       diag('library load failed', e);
     }
-  }, []);
+  } while (again);
+  loadingNow = false;
+}
 
-  useEffect(() => {
-    load();
-    return onLibraryChange(() => {
-      load();
-    });
-  }, [load]);
-
-  return useMemo(() => {
-    const byId = new Map(state.songs.map((s) => [s.id, s]));
-    const now = Date.now();
-    const usage: Record<string, number> = {};
-    for (const s of state.songs) usage[s.id] = frecency(state.plays.get(s.id) ?? [], s.durationSec, now);
-    return { ...state, byId, usage, reload: load };
-  }, [state, load]);
+/** The whole library, kept current: loads on first use and again after every change. */
+export function useLibrary(): LibraryState {
+  if (!started) {
+    started = true;
+    onLibraryChange(() => void load());
+    void load();
+  }
+  return useStore(libraryStore, (s) => s.lib);
 }
 
 /** Songs in a category, ranked by use. */
