@@ -16,6 +16,8 @@ FILES=$(xcrun simctl get_app_container "$UDID" com.apple.DocumentsApp groups 2>/
 if [ -n "$FILES" ]; then
   mkdir -p "$FILES/File Provider Storage"
   cp app/modules/shiron-audio/fixtures/voice-whatsapp.opus "$FILES/File Provider Storage/"
+  cp app/modules/shiron-audio/fixtures/song.mp3 "$FILES/File Provider Storage/boker-tov.mp3"
+  cp app/modules/shiron-audio/fixtures/song.mp3 "$FILES/File Provider Storage/old-song.wma"
 else
   echo "== no Files local storage container"
 fi
@@ -41,7 +43,9 @@ xcrun simctl openurl "$UDID" "shiron://share?text=https%3A%2F%2Fwww.youtube.com%
 sleep 8; shot "$VARIANT-8b-app-after-url-link"
 run share-file.yaml "$VARIANT"
 sleep 5; shot "$VARIANT-9-after-file"
-run launch.yaml "$VARIANT-final"
+run add-files.yaml "$VARIANT-add-mp3" -e FILE=boker-tov
+run add-files.yaml "$VARIANT-add-wma" -e FILE=old-song
+run tour.yaml "$VARIANT-tour"
 
 sleep 2; kill $LOGPID 2>/dev/null
 find shots -path '*maestro-*' -name '*.png' -exec cp {} shots/ \; 2>/dev/null

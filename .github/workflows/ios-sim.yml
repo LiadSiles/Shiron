@@ -1,9 +1,11 @@
 name: iPhone share check
 
-# Builds the app for the iPhone simulator and drives the share sheet with Maestro: a YouTube
-# link shared from Safari, a WhatsApp voice note (.opus) shared from Files through the share
-# extension and through "Open in PlayGan". Twice: with the App Group (AltStore / a paid
-# account) and without any entitlements, the way Sideloadly with a free Apple ID installs it.
+# Builds the app for the iPhone simulator and drives it with Maestro: a YouTube link shared
+# from Safari, a WhatsApp voice note (.opus) shared from Files, adding files with the home
+# screen's "+" (an mp3, and a WMA that must be explained), then a walk through the player,
+# library, search and settings. Twice: with the App Group (AltStore / a paid account) and
+# without any entitlements, the way Sideloadly with a free Apple ID installs it. With the
+# GEMINI_API_KEY secret it also sends Gemini a Hebrew recording (tests/gemini.live.test.ts).
 # Screenshots go to the `screenshots` branch under ios-<dev branch>; the extension's log lines
 # become annotations. WhatsApp itself can't run on a simulator.
 on:
@@ -26,6 +28,8 @@ jobs:
   share:
     runs-on: macos-15
     timeout-minutes: 90
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - uses: actions/checkout@v5
       - uses: maxim-lobanov/setup-xcode@v1
@@ -43,6 +47,16 @@ jobs:
         run: |
           npm ci
           npx expo prebuild --platform ios --clean
+
+      - name: Gemini, live (only with the GEMINI_API_KEY secret)
+        if: env.GEMINI_API_KEY != ''
+        continue-on-error: true
+        working-directory: app
+        run: |
+          say -v Carmit -o "$RUNNER_TEMP/speech.aiff" "שיר הגן. בוקר טוב ילדים, בוקר טוב לגן. השמש זורחת והציפורים שרות לנו שיר."
+          afconvert -f m4af -d aac "$RUNNER_TEMP/speech.aiff" "$RUNNER_TEMP/speech.m4a"
+          LIVE_AUDIO="$RUNNER_TEMP/speech.m4a" npx vitest run tests/gemini.live.test.ts 2>&1 | tee gemini.log
+          grep -E 'gemini-|✓|×|FAIL|Error' gemini.log | head -20 | tr '\n' '|' | sed 's/^/::notice::gemini live: /'; echo
 
       - name: Build for the simulator (with and without entitlements)
         working-directory: app/ios

@@ -117,9 +117,12 @@ Files, then the in-app picker). AltStore/SideStore (free) or a paid account give
 ## iPhone share check (`ios-sim.yml`)
 
 Every push to a dev branch touching the app builds a simulator build twice — with the App Group
-and with no entitlements (like Sideloadly with a free ID) — and drives the share sheet with
-Maestro (`scripts/ios-sim/`): a YouTube page shared from Safari, a WhatsApp voice note shared
-from Files, and the extension's no-group link sent straight to the app (`simctl openurl`).
+and with no entitlements (like Sideloadly with a free ID) — and drives it with Maestro
+(`scripts/ios-sim/`): a YouTube page shared from Safari, a WhatsApp voice note shared from
+Files, the extension's no-group link sent straight to the app (`simctl openurl`), the home
+screen's "+" picking an mp3 and a WMA (explanation alert), and a tour (play → mini player →
+full player, library, search, settings with the "שיתוף מוואטסאפ" row). With the
+`GEMINI_API_KEY` secret it also runs the live Gemini test.
 Screenshots and the simulator log go to the `screenshots` branch under `ios-dev-<branch>`; the
 extension's `[PlayGan]` log lines become annotations. Gotchas:
 - The share sheet is another process; Maestro sometimes can't see it, so its taps are retried
