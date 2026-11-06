@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AiError, describeAiError, findKey, pastedKey, parseRetryAfter, providerOrder } from '../src/core/ai';
-import { errorFromGemini, geminiAudioMime, geminiText } from '../src/core/geminiRules';
+import { errorFromGemini, geminiAudioMime, geminiStopReason, geminiText } from '../src/core/geminiRules';
 import { errorFromGroq } from '../src/core/groqRules';
 import { buildUserMessage } from '../src/core/understand';
 
@@ -82,6 +82,13 @@ describe('gemini rules', () => {
     expect(errorFromGemini(400, '{"error":{"status":"INVALID_ARGUMENT","message":"schema"}}').kind).toBe('bad-request');
     expect(errorFromGemini(404, 'not json').kind).toBe('unavailable');
     expect(errorFromGemini(503, '').kind).toBe('server');
+  });
+
+  it('says why an answer is empty', () => {
+    expect(geminiStopReason({ candidates: [{ finishReason: 'RECITATION' }] })).toBe('RECITATION');
+    expect(geminiStopReason({ promptFeedback: { blockReason: 'SAFETY' } })).toBe('blocked: SAFETY');
+    expect(geminiStopReason({ candidates: [{ finishReason: 'STOP', content: { parts: [{ text: '{}' }] } }] })).toBeNull();
+    expect(geminiStopReason({})).toBe('no candidates');
   });
 
   it('takes the answer text, skipping thoughts', () => {

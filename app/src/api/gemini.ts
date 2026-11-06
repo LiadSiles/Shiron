@@ -1,18 +1,10 @@
 import { File } from 'expo-file-system';
 import { AiError } from '../core/ai';
-import { errorFromGemini, GEMINI_API, GEMINI_MAX_AUDIO_BYTES, GEMINI_MODELS, geminiAudioMime, geminiText } from '../core/geminiRules';
 import {
-  buildUserMessage,
-  EXPAND_PROMPT,
-  fallbackUnderstanding,
-  parseExpansion,
-  parseModelJson,
-  sanitize,
-  SongInput,
-  SYSTEM_PROMPT,
-  UNDERSTANDING_SCHEMA,
-  Understanding,
-} from '../core/understand';
+  errorFromGemini, GEMINI_API, GEMINI_MAX_AUDIO_BYTES, GEMINI_MODELS, geminiAudioMime, geminiNamingRequest, geminiStopReason, geminiText,
+} from '../core/geminiRules';
+import { EXPAND_PROMPT, fallbackUnderstanding, parseExpansion, parseModelJson, sanitize, SongInput, Understanding } from '../core/understand';
+import { diag } from '../diag/log';
 import { eachModel, fetchWithTimeout } from './http';
 
 /**
@@ -42,11 +34,16 @@ async function generate(key: string, model: string, body: object, timeoutMs: num
   );
   const text = await res.text();
   if (!res.ok) throw errorFromGemini(res.status, text);
+  let json: unknown = null;
   try {
-    return geminiText(JSON.parse(text));
+    json = JSON.parse(text);
   } catch {
-    return '';
+    throw new AiError('server', `Gemini answered with no JSON: ${text.slice(0, 120)}`, null, 'gemini');
   }
+  const answer = geminiText(json);
+  // An empty answer used to pass as "no lyrics, title from the file name" without a trace.
+  if (!answer.trim()) throw new AiError('bad-request', `Gemini gave no answer (${geminiStopReason(json) ?? 'empty'})`, null, 'gemini');
+  return answer;
 }
 
 /** A YouTube video by URL (public videos; free tier: up to 8 hours of video a day). */
@@ -77,25 +74,20 @@ export async function understandWithGemini(
   try {
     return await understand(key, input, sound);
   } catch (e) {
-    if (e instanceof AiError && (e.kind === 'bad-request' || e.kind === 'too-large')) return understand(key, input, null);
+    if (e instanceof AiError && (e.kind === 'bad-request' || e.kind === 'too-large')) {
+      diag('gemini refused the audio, naming from the text', e.message);
+      return understand(key, input, null);
+    }
     throw e;
   }
 }
 
-async function understand(key: string, input: SongInput, sound: object | null): Promise<Understanding> {
-  const withAudio: SongInput = { ...input, audioAttached: !!sound };
+async function understand(key: string, input: SongInput, sound: object | null, noLyrics = false): Promise<Understanding> {
   const ask = (model: string, schema: boolean) =>
     generate(
       key,
       model,
-      {
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: buildUserMessage(withAudio) }, ...(sound ? [sound] : [])] }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          ...(schema ? { responseJsonSchema: UNDERSTANDING_SCHEMA } : {}),
-        },
-      },
+      geminiNamingRequest(input, sound, { schema, noLyrics }),
       sound && 'file_data' in sound ? 180_000 : 120_000,
     );
   return eachModel(GEMINI_MODELS, async (model) => {
@@ -103,8 +95,13 @@ async function understand(key: string, input: SongInput, sound: object | null): 
     try {
       content = await ask(model, true);
     } catch (e) {
-      // The schema rejected (models differ in what they accept): plain JSON mode, sanitize() checks.
       if (!(e instanceof AiError) || e.kind !== 'bad-request') throw e;
+      if (/RECITATION/.test(e.message) && !noLyrics) {
+        // A well-known song: Gemini won't write its words out (copyright). Name it anyway.
+        diag('gemini withheld the lyrics', model, e.message);
+        return understand(key, input, sound, true);
+      }
+      // The schema rejected (models differ in what they accept): plain JSON mode, sanitize() checks.
       content = await ask(model, false);
     }
     const parsed = parseModelJson(content);

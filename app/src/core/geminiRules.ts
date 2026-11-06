@@ -1,6 +1,7 @@
 /** Pure rules for talking to Gemini (Google AI Studio key): models, audio, errors, answers. */
 import { AiError, parseRetryAfter } from './ai';
 import { extensionOf } from './ingestRules';
+import { buildUserMessage, SongInput, SYSTEM_PROMPT, UNDERSTANDING_SCHEMA } from './understand';
 
 export const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -25,6 +26,30 @@ export function geminiAudioMime(fileName: string): string | null {
     webm: 'audio/webm',
   };
   return map[extensionOf(fileName)] ?? null;
+}
+
+/** Asked again without lyrics when Gemini refuses to write out a known song (RECITATION). */
+const NO_LYRICS = 'אל תכתבי את מילות השיר: lyrics = null. שאר השדות כרגיל.';
+
+/**
+ * The generateContent body that names a song: our prompt, the recording (inline audio or a
+ * YouTube URL) when there is one, JSON out — with our schema, or plain JSON for a model that
+ * rejects it. Shared by the app and the live test (tests/gemini.live.test.ts).
+ */
+export function geminiNamingRequest(
+  input: SongInput,
+  sound: object | null,
+  { schema = true, noLyrics = false }: { schema?: boolean; noLyrics?: boolean } = {},
+): object {
+  const text = buildUserMessage({ ...input, audioAttached: !!sound }) + (noLyrics ? `\n\n${NO_LYRICS}` : '');
+  return {
+    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: [{ role: 'user', parts: [{ text }, ...(sound ? [sound] : [])] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      ...(schema ? { responseJsonSchema: UNDERSTANDING_SCHEMA } : {}),
+    },
+  };
 }
 
 interface GoogleError {
@@ -63,7 +88,21 @@ export function errorFromGemini(status: number, body: string): AiError {
 }
 
 interface GenerateResponse {
-  candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
+  candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] }; finishReason?: string }[];
+  promptFeedback?: { blockReason?: string };
+}
+
+/**
+ * Why a response has no answer text, e.g. "RECITATION" (Gemini won't reproduce known
+ * copyrighted text — the lyrics of a well-known song), "SAFETY", or a blocked prompt.
+ * Null when it ended normally.
+ */
+export function geminiStopReason(json: unknown): string | null {
+  const r = json as GenerateResponse;
+  if (r?.promptFeedback?.blockReason) return `blocked: ${r.promptFeedback.blockReason}`;
+  const reason = r?.candidates?.[0]?.finishReason;
+  if (!r?.candidates?.length) return 'no candidates';
+  return reason && reason !== 'STOP' ? reason : null;
 }
 
 /** The answer text of a generateContent response (thinking parts, if any, left out). */
