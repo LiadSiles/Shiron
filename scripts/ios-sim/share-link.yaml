@@ -1,0 +1,41 @@
+# Shares a YouTube page from Safari through PlayGan's share extension — the path a YouTube or
+# WhatsApp link takes. Uncertain taps are optional; screenshots tell what happened.
+appId: com.apple.mobilesafari
+---
+- openLink:
+    link: https://www.youtube.com/watch?v=jNQXAC9IVRw
+    browser: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: ${VARIANT}-2-safari
+- runFlow:
+    when:
+      visible:
+        id: ShareButton
+    commands:
+      - tapOn:
+          id: ShareButton
+- runFlow:
+    when:
+      notVisible: PlayGan
+    commands:
+      - tapOn:
+          text: Share
+          optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-3-share-sheet
+- runFlow:
+    when:
+      notVisible: PlayGan
+    commands:
+      - tapOn:
+          text: More
+          optional: true
+      - waitForAnimationToEnd
+      - takeScreenshot: ${VARIANT}-3b-more
+- tapOn:
+    text: PlayGan
+    index: 0
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: ${VARIANT}-4-after-link

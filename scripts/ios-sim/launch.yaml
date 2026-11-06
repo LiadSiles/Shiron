@@ -1,0 +1,8 @@
+# Opens PlayGan and photographs the home screen.
+appId: app.shiron.gan
+---
+- launchApp:
+    clearState: false
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: ${VARIANT}-1-home

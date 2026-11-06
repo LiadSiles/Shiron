@@ -1,0 +1,33 @@
+# Shares a WhatsApp voice note (.opus) from the Files app: the share sheet shows PlayGan's
+# extension and, through the document types, "Open in PlayGan". Tapped: the extension (index 0).
+appId: com.apple.DocumentsApp
+---
+- launchApp
+- waitForAnimationToEnd
+- tapOn:
+    text: Continue
+    optional: true
+- tapOn:
+    text: Browse
+    optional: true
+- tapOn:
+    text: Browse
+    optional: true
+- tapOn:
+    text: On My iPhone
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-5-files
+- longPressOn:
+    text: voice-whatsapp.*
+- waitForAnimationToEnd
+- tapOn:
+    text: Share
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-6-file-share-sheet
+- tapOn:
+    text: PlayGan
+    index: ${PICK}
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: ${VARIANT}-7-after-file
