@@ -26,6 +26,17 @@ class ShironAudioModule : Module() {
       }
     }
 
+    // Consecutive parts of a converted song, for transcription part by part (AudioSplitter).
+    AsyncFunction("splitAsync") { inputUri: String, outputDirUri: String, chunkSec: Double ->
+      try {
+        AudioSplitter.split(fileOf(inputUri), fileOf(outputDirUri), chunkSec).map { Uri.fromFile(it).toString() }
+      } catch (e: AudioProcessingException) {
+        throw CodedException("ERR_AUDIO_${e.code}", e.message ?: "Split failed", e)
+      } catch (e: Exception) {
+        throw CodedException("ERR_AUDIO_FAILED", e.message ?: e.toString(), e)
+      }
+    }
+
     // Keep saving/processing alive in the background (WorkService); the JS side calls these when
     // the processing queue starts and when it is empty again.
     Function("startBackgroundWork") { text: String ->

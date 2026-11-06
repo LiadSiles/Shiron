@@ -97,6 +97,20 @@ oEmbed and search expansion 15 s. A timeout is a retryable `network` error. The 
 upload (`File.upload`) has no timeout option in expo-file-system; a hang there would hold the
 queue until the app is restarted — not seen yet, revisit if the log shows it.
 
+## Lyrics to the end: parts (0.10.0)
+
+Songs were transcribed only partly (owner). `api/ai.ts → transcribeInParts` cuts the converted
+.m4a into 40 s parts on the phone (`splitAudio`) and transcribes each: Groq Whisper with
+`TRANSCRIPTION_PROMPT` + the end of the previous part (continuity), Gemini with a verbatim
+"every word, start to end" request per part (`transcribeWithGemini`; a part it withholds as
+RECITATION is skipped and logged; if no part comes back, Gemini listens to the whole song as
+before). A part that fails transiently stops the song (it is retried later); one refused is
+skipped with a log line (`part not transcribed`), and `transcribed in parts` logs words per part.
+The naming model then works from the whole transcript, the prompt demands every word incl.
+repeats, and `completeLyrics` keeps the transcript when the tidy version has < 85% of its words.
+Whisper's "no speech" rule now needs `no_speech_prob > 0.8` (was 0.6): sung lines over music
+were being dropped.
+
 ## Accuracy: invented words (0.5.2)
 
 Owner report: lyrics contained words never sung, e.g. "תודה רבה". Whisper does this over music

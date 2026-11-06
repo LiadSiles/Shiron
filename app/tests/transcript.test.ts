@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanTranscript, isPhantom, stripPhantomLines } from '../src/core/transcript';
+import { cleanTranscript, completeLyrics, isPhantom, joinParts, stripPhantomLines } from '../src/core/transcript';
 
 describe('transcript cleaning', () => {
   it('drops the stock phrases Whisper invents over music', () => {
@@ -17,6 +17,19 @@ describe('transcript cleaning', () => {
   it('drops stretches Whisper itself marks as no speech', () => {
     expect(isPhantom({ text: 'מה', no_speech_prob: 0.9, avg_logprob: -1.4 })).toBe(true);
     expect(isPhantom({ text: 'בוקר טוב', no_speech_prob: 0.9, avg_logprob: -0.3 })).toBe(false);
+    // Singing over music: Whisper is unsure, but it is the song.
+    expect(isPhantom({ text: 'הנה בא החורף', no_speech_prob: 0.7, avg_logprob: -1.2 })).toBe(false);
+  });
+
+  it('keeps the whole song: the transcript wins when the tidy lyrics left a part out', () => {
+    const transcript = 'בוקר טוב ילדים\nבוקר טוב גננת\nהשמש זורחת\nוהציפורים שרות\nבוקר טוב לכולם';
+    expect(completeLyrics('בוקר טוב ילדים\nבוקר טוב גננת', transcript)).toBe(transcript);
+    const tidy = 'בוקר טוב ילדים, בוקר טוב גננת\nהשמש זורחת והציפורים שרות\nבוקר טוב לכולם';
+    expect(completeLyrics(tidy, transcript)).toBe(tidy);
+    expect(completeLyrics(null, transcript)).toBe(transcript);
+    expect(completeLyrics('מילים', null)).toBe('מילים');
+    expect(joinParts(['בית ראשון', null, '  ', 'פזמון'])).toBe('בית ראשון\nפזמון');
+    expect(joinParts([null])).toBeNull();
   });
 
   it('builds the lyrics from what is left, one line per segment', () => {

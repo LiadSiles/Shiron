@@ -28,6 +28,22 @@ public class ShironAudioModule: Module {
       }
     }
 
+    // Consecutive parts of a converted song, for transcription part by part (AudioSplitter).
+    AsyncFunction("splitAsync") { (inputUri: String, outputDirUri: String, chunkSec: Double) -> [String] in
+      guard let input = URL(string: inputUri), input.isFileURL,
+            let dir = URL(string: outputDirUri), dir.isFileURL else {
+        throw Exception(name: "ShironAudio", description: "Expected file:// URIs", code: "ERR_AUDIO_BAD_URI")
+      }
+      do {
+        return try AudioSplitter.split(input: input, outputDir: dir, chunkSec: chunkSec).map { $0.absoluteString }
+      } catch {
+        let code = (error as? AudioProcessingError)?.code ?? "FAILED"
+        throw Exception(
+          name: "ShironAudio", description: (error as? LocalizedError)?.errorDescription ?? error.localizedDescription,
+          code: "ERR_AUDIO_\(code)")
+      }
+    }
+
     Function("startBackgroundWork") { (_: String) in
       DispatchQueue.main.async { self.beginBackgroundTime() }
     }

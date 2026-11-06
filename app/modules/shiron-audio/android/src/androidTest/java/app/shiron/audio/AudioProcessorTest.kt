@@ -79,4 +79,21 @@ class AudioProcessorTest {
     assertTrue(out.length() in 1_000 until 128_078)
     assertEquals(true, out.exists())
   }
+
+  @Test fun splitPartsCoverTheWholeSong() {
+    val song = File(dir, "split-song.m4a")
+    val r = AudioProcessor.process(copy("song.mp3"), song)
+    val parts = AudioSplitter.split(song, File(dir, "split-parts"), 1.0)
+    val lengths = parts.map { part ->
+      MediaExtractor().run {
+        setDataSource(part.path)
+        val us = getTrackFormat(0).getLong(MediaFormat.KEY_DURATION)
+        release()
+        us / 1_000_000.0
+      }
+    }
+    Log.i("ShironAudioTest", "split ${r.durationSec} s into $lengths")
+    assertEquals(3, parts.size)
+    assertEquals(r.durationSec, lengths.sum(), 0.15)
+  }
 }

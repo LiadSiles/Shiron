@@ -15,6 +15,7 @@ export type AudioErrorCode = 'UNSUPPORTED' | 'NO_AUDIO' | 'TOO_LONG' | 'CORRUPT'
 
 interface NativeModule {
   processAsync(inputUri: string, outputUri: string): Promise<ProcessedAudio>;
+  splitAsync(inputUri: string, outputDirUri: string, chunkSec: number): Promise<string[]>;
   startBackgroundWork(text: string): void;
   stopBackgroundWork(): void;
   appGroupStatus?(): AppGroupStatus;
@@ -29,6 +30,14 @@ const native = requireNativeModule<NativeModule>('ShironAudio');
  */
 export function processAudio(inputUri: string, outputUri: string): Promise<ProcessedAudio> {
   return native.processAsync(inputUri, outputUri);
+}
+
+/**
+ * Consecutive parts (file:// URIs, .m4a, `part-0.m4a`…) of a converted song, cut without
+ * re-encoding, for transcribing part by part. The last part takes a short tail.
+ */
+export function splitAudio(inputUri: string, outputDirUri: string, chunkSec: number): Promise<string[]> {
+  return native.splitAsync(inputUri, outputDirUri, chunkSec);
 }
 
 /**

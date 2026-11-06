@@ -1,8 +1,12 @@
-import { File } from 'expo-file-system';
+import * as Crypto from 'expo-crypto';
+import { Directory, File, Paths } from 'expo-file-system';
+import { splitAudio } from '../../modules/shiron-audio';
 import { AiError, ProviderId, providerOrder } from '../core/ai';
+import { mimeOf } from '../core/ingestRules';
+import { completeLyrics, joinParts } from '../core/transcript';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
 import { diag } from '../diag/log';
-import { relatedWordsWithGemini, understandWithGemini } from './gemini';
+import { relatedWordsWithGemini, transcribeWithGemini, understandWithGemini } from './gemini';
 import { relatedWordsWithGroq, transcribe, understandWithGroq } from './groq';
 import { connectedProviders, getKey, getPreferred } from './keys';
 
@@ -68,11 +72,57 @@ export async function nameSong(
   throw allPaused(last);
 }
 
+/** Parts of this length are transcribed one by one (see transcribeInParts). */
+const PART_SEC = 40;
+
+/**
+ * Transcribes a recording part by part: speech-to-text models drop the rest of a song after a
+ * long instrumental stretch, or stop early, and the owner requires lyrics to the very end. Our
+ * converted .m4a is cut on the phone (no re-encoding); anything else is sent whole. A part a
+ * service can't do right now (quota, network) throws — the song is tried again later; a part
+ * it refuses is skipped, with a log line.
+ */
+async function transcribeInParts(
+  audio: File,
+  transcribePart: (part: File, previous: string | null) => Promise<string | null>,
+): Promise<string | null> {
+  if (!audio.name.toLowerCase().endsWith('.m4a')) return transcribePart(audio, null);
+  const dir = new Directory(Paths.cache, `parts-${Crypto.randomUUID()}`);
+  try {
+    let uris: string[];
+    try {
+      uris = await splitAudio(audio.uri, dir.uri, PART_SEC);
+    } catch (e) {
+      diag('split failed, transcribing whole', e);
+      return await transcribePart(audio, null);
+    }
+    const texts: (string | null)[] = [];
+    for (const [i, uri] of uris.entries()) {
+      try {
+        texts.push(await transcribePart(new File(uri), joinParts(texts)));
+      } catch (e) {
+        if (!(e instanceof AiError) || e.transient) throw e;
+        diag('part not transcribed', `${i + 1}/${uris.length}`, e.message);
+        texts.push(null);
+      }
+    }
+    diag('transcribed in parts', `${uris.length} parts`, texts.map((t) => (t ? t.split(/\s+/).length : 0)).join('+'), 'words');
+    return joinParts(texts);
+  } finally {
+    try {
+      if (dir.exists) dir.delete();
+    } catch {
+      /* the cache is cleared by the system anyway */
+    }
+  }
+}
+
 async function nameWithGroq(key: string, input: SongInput, audio: File | null, mime: string): Promise<Naming> {
   let transcript: string | null = null;
   if (audio?.exists) {
     try {
-      transcript = await transcribe(key, audio, mime);
+      transcript = await transcribeInParts(audio, (part, previous) =>
+        transcribe(key, part, part === audio ? mime : mimeOf(part.name), previous));
     } catch (e) {
       if (!(e instanceof AiError) || e.transient) throw e;
       // e.g. a format Whisper rejects: the name can still come from the file name and message.
@@ -81,7 +131,8 @@ async function nameWithGroq(key: string, input: SongInput, audio: File | null, m
   }
   const withText = { ...input, transcript };
   try {
-    return { result: await understandWithGroq(key, withText), provider: 'groq', refused: null };
+    const result = await understandWithGroq(key, withText);
+    return { result: { ...result, lyrics: completeLyrics(result.lyrics, transcript) }, provider: 'groq', refused: null };
   } catch (e) {
     if (!(e instanceof AiError) || e.transient) throw e;
     // Refused: keep the transcript as lyrics, name it from what we know.
@@ -91,7 +142,17 @@ async function nameWithGroq(key: string, input: SongInput, audio: File | null, m
 
 async function nameWithGemini(key: string, input: SongInput, audio: File | null, youtubeId: string | null): Promise<Naming> {
   try {
-    return { result: await understandWithGemini(key, input, audio, youtubeId), provider: 'gemini', refused: null };
+    if (youtubeId || !audio?.exists) {
+      return { result: await understandWithGemini(key, input, audio, youtubeId), provider: 'gemini', refused: null };
+    }
+    // The words first, part by part (complete to the end), then the name from those words.
+    const transcript = await transcribeInParts(audio, (part) => transcribeWithGemini(key, part));
+    if (!transcript) {
+      // No words came back (Gemini withholds a well-known song's words): let it listen whole.
+      return { result: await understandWithGemini(key, input, audio, null), provider: 'gemini', refused: null };
+    }
+    const result = await understandWithGemini(key, { ...input, transcript }, null, null);
+    return { result: { ...result, lyrics: completeLyrics(result.lyrics, transcript) }, provider: 'gemini', refused: null };
   } catch (e) {
     if (!(e instanceof AiError) || e.transient) throw e;
     return { result: fallbackUnderstanding(input), provider: 'gemini', refused: e };

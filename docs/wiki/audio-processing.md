@@ -67,6 +67,15 @@ sourceDurationSec, gainDb, trimStartSec, trimEndSec }`; errors carry codes `ERR_
 - iOS: each `CMSampleBuffer` is read inside its own `autoreleasepool`, so memory stays flat on
   long recordings.
 
+## Parts for transcription (`AudioSplitter`, 0.10.0)
+
+`splitAudio(input, outDir, chunkSec)` cuts a converted .m4a into consecutive `part-N.m4a`
+files without re-encoding — iOS: `AVAssetExportSession` passthrough per time range; Android:
+`MediaExtractor` → `MediaMuxer`, read straight through. The last part absorbs a tail shorter
+than min(5 s, chunk/4). Used by `api/ai.ts → transcribeInParts` (40 s parts) so every stretch
+of a song is transcribed. Tested on both platforms (`AudioSplitterTests.swift`,
+`AudioProcessorTest.splitPartsCoverTheWholeSong`): parts cover the song within 0.15 s.
+
 ## In the app (`src/ingest/processor.ts`)
 
 The audio lane (`convertNew`, independent of Groq): songs with `audioState = 'raw'` are

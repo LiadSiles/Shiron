@@ -3,6 +3,7 @@ import { AiError } from '../core/ai';
 import {
   errorFromGemini, GEMINI_API, GEMINI_MAX_AUDIO_BYTES, GEMINI_MODELS, geminiAudioMime, geminiNamingRequest, geminiStopReason, geminiText,
 } from '../core/geminiRules';
+import { stripPhantomLines } from '../core/transcript';
 import { EXPAND_PROMPT, fallbackUnderstanding, parseExpansion, parseModelJson, sanitize, SongInput, Understanding } from '../core/understand';
 import { diag } from '../diag/log';
 import { eachModel, fetchWithTimeout } from './http';
@@ -106,6 +107,31 @@ async function understand(key: string, input: SongInput, sound: object | null, n
     }
     const parsed = parseModelJson(content);
     return parsed ? sanitize(parsed) : fallbackUnderstanding(input);
+  });
+}
+
+/** Asks for the words of one part of a recording, verbatim. */
+const TRANSCRIBE_PART = 'תמללי מילה במילה, בעברית, את כל מה שמושר או נאמר בקטע השמע המצורף, מתחילתו ועד סופו, כולל חזרות. ' +
+  'כתבי רק את המילים, שורה לכל שורה מושרת, בלי כותרות ובלי הסברים. אם אין בקטע שירה או דיבור, החזירי שורה ריקה.';
+
+/**
+ * The words of one part of a recording (transcription part by part, see api/ai.ts). Null when
+ * Gemini won't write them out (a well-known song: RECITATION) or the part has no words.
+ */
+export async function transcribeWithGemini(key: string, part: File): Promise<string | null> {
+  const sound = await audioPart(part);
+  if (!sound) return null;
+  return eachModel(GEMINI_MODELS, async (model) => {
+    try {
+      const text = await generate(key, model, { contents: [{ role: 'user', parts: [{ text: TRANSCRIBE_PART }, sound] }] }, 90_000);
+      return stripPhantomLines(text.trim()) || null;
+    } catch (e) {
+      if (e instanceof AiError && e.kind === 'bad-request' && /RECITATION|empty/.test(e.message)) {
+        diag('gemini gave no words for a part', model, e.message);
+        return null;
+      }
+      throw e;
+    }
   });
 }
 

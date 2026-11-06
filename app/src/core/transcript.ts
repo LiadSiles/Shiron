@@ -29,9 +29,33 @@ export function isPhantom(segment: WhisperSegment): boolean {
   if (PHANTOM_EXACT.has(t)) return true;
   if (PHANTOM_PREFIX.some((p) => t.startsWith(p))) return true;
   // Whisper's own rules: "nothing was said here" (high no-speech probability with low
-  // confidence), and "stuck in a loop" (highly compressible text with low confidence).
-  if ((segment.no_speech_prob ?? 0) > 0.6 && (segment.avg_logprob ?? 0) < -1) return true;
+  // confidence), and "stuck in a loop" (highly compressible text with low confidence). Singing
+  // over music often looks unsure to Whisper, so only a clear "no speech" drops a line —
+  // lyrics must not lose sung parts (owner, 0.10).
+  if ((segment.no_speech_prob ?? 0) > 0.8 && (segment.avg_logprob ?? 0) < -1) return true;
   return (segment.compression_ratio ?? 0) > 2.4 && (segment.avg_logprob ?? 0) < -1;
+}
+
+/** Hebrew-insensitive word count (for comparing a tidied text with the transcript it came from). */
+function words(text: string | null): number {
+  return text ? normalize(text).split(/\s+/).filter(Boolean).length : 0;
+}
+
+/**
+ * The lyrics to keep: the model's tidy version, unless it left out a real part of what was
+ * transcribed (it shortened, summarised or stopped early) — then the full transcript, one
+ * line per sung line. Completeness wins over neatness (owner, 0.10).
+ */
+export function completeLyrics(tidy: string | null, transcript: string | null): string | null {
+  if (!transcript?.trim()) return tidy;
+  if (!tidy?.trim()) return transcript;
+  return words(tidy) >= 0.85 * words(transcript) ? tidy : transcript;
+}
+
+/** Transcripts of consecutive parts of one recording, as one text (empty parts skipped). */
+export function joinParts(parts: (string | null)[]): string | null {
+  const text = parts.map((p) => p?.trim()).filter(Boolean).join('\n');
+  return text || null;
 }
 
 /**
