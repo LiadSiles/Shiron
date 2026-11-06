@@ -11,12 +11,21 @@ from playwright.async_api import async_playwright
 OUT = Path(__file__).resolve().parent.parent
 CREAM = '#FFF8EC'
 RAINBOW = ['#E5484D', '#F28C28', '#F5C518', '#3DB46D', '#2F8FE0', '#7B5CD6']
-X0, X1, CY, H = 190, 870, 512, 720          # the arrow: left edge, tip, centre line, height
-NOTES = [  # x, y, size, colour, tilt, kind (e = ♪, b = ♫)
-    (520, 196, 28, '#2F8FE0', -10, 'e'),
-    (675, 292, 26, '#E5484D', 8, 'b'),
-    (827, 366, 24, '#3DB46D', 16, 'e'),
+W, H = 600, 640                              # the arrow: width (left edge to tip) and height
+# Centred in the square: the rounded tip ends short of X1, so the drawn arrow sits ~20 px left
+# of its box; shift the box right so what is seen sits in the middle (a touch right of it, as
+# play symbols are, so the heavy left edge does not pull it off-centre).
+X0, X1, CY = 512 - W / 2 + 30, 512 + W / 2 + 30, 512
+NOTES = [  # along the upper edge (0 = top-left corner, 1 = tip): position, gap above it, size, colour, tilt, kind (e = ♪, b = ♫)
+    (0.47, 128, 34, '#2F8FE0', -10, 'e'),
+    (0.70, 122, 32, '#E5484D', 8, 'b'),
+    (0.92, 124, 30, '#3DB46D', 16, 'e'),
 ]
+
+
+def note_xy(t, gap):
+    """A point `gap` px above the arrow's upper edge, a fraction `t` of the way to the tip."""
+    return X0 + t * W, CY - H / 2 + t * H / 2 - gap
 
 
 def triangle_path(r=60):
@@ -61,7 +70,7 @@ def note(x, y, s, color, rot, kind):
 
 
 def logo(mono=None):
-    return arrow(mono) + ''.join(note(x, y, s, mono or c, r, k) for x, y, s, c, r, k in NOTES)
+    return arrow(mono) + ''.join(note(*note_xy(t, gap), s, mono or c, r, k) for t, gap, s, c, r, k in NOTES)
 
 
 def svg(size, body, bg=None, scale=1.0):

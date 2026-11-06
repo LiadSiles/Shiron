@@ -110,7 +110,10 @@ stacks, at the top:
   as SVG by `app/assets/source/make-icons.py` (Playwright renders it). Since 0.9.0 (PlayGan): a
   play arrow of six rainbow xylophone bars with white nails, on cream `#FFF8EC`, three small
   notes above its upper edge — the owner approved this exact layout after several rounds
-  (arrow big and centred; only three small notes, close but not touching). Adaptive layers draw
+  (arrow big and centred; only three small notes, close but not touching). 0.9.1: the arrow a
+  little smaller (600 × 640 of 1024) and optically centred — the drawn arrow, not its box, sits
+  in the middle — and the notes a little bigger; notes are placed along the upper edge so they
+  follow the arrow if it is resized. Adaptive layers draw
   it at 72 % so Android's mask doesn't cut it. Change the drawing there and re-run; don't
   hand-edit the PNGs.
 
