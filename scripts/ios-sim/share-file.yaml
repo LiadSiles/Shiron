@@ -27,11 +27,11 @@ appId: com.apple.DocumentsApp
     text: Share
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-6-file-share-sheet
-# The share sheet's PlayGan, not the status bar's "◂ PlayGan" back link.
+# The share sheet's PlayGan icon, by position: the sheet is another process whose elements
+# Maestro sometimes can't see, and "PlayGan" also labels the status bar's back link.
+- waitForAnimationToEnd
 - tapOn:
-    text: PlayGan
-    below:
-      text: "Audio Recording.*"
+    point: "9%,51%"
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-7-after-file

@@ -24,11 +24,11 @@ appId: com.apple.mobilesafari
           optional: true
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-3-share-sheet
-# The share sheet's PlayGan, not the status bar's "◂ PlayGan" back link.
+# The share sheet's PlayGan icon, by position: the sheet is another process whose elements
+# Maestro sometimes can't see, and "PlayGan" also labels the status bar's back link.
+- waitForAnimationToEnd
 - tapOn:
-    text: PlayGan
-    below:
-      text: "Options.*"
+    point: "47%,56%"
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-4-after-link
