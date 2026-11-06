@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canStart, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, unsupportedFormat, unsupportedFormatHelp, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -52,6 +52,15 @@ describe('formats', () => {
     }
     expect(isMediaFile('notes.pdf', 'application/pdf')).toBe(false);
     expect(isMediaFile('photo.jpg', 'image/jpeg')).toBe(false);
+  });
+
+  it('names Windows Media files no phone can decode', () => {
+    expect(unsupportedFormat('שיר.WMA', null)).toBe('WMA');
+    expect(unsupportedFormat('x', 'audio/x-ms-wma')).toBe('WMA');
+    expect(unsupportedFormat('clip.wmv', 'video/x-ms-wmv')).toBe('WMV');
+    expect(unsupportedFormat('a.mp3', 'audio/mpeg')).toBeNull();
+    expect(unsupportedFormatHelp([])).toBeNull();
+    expect(unsupportedFormatHelp(['WMA', 'WMA', 'WMV'])).toMatch(/^קבצי WMA ו־WMV /);
   });
 
   it('plays only what the platform reads before conversion', () => {

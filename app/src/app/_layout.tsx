@@ -5,12 +5,15 @@ import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect, useRef } from 'react';
-import { AppState, I18nManager, View } from 'react-native';
+import { AppState, I18nManager, Platform, View } from 'react-native';
+import { appGroupStatus } from '../../modules/shiron-audio';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { connectedProviders } from '../api/keys';
+import { diag } from '../diag/log';
 import { getSetting, setSetting } from '../db/repo';
 import { sharedTextFromUrl } from '../core/incoming';
-import { describeSummary, enqueueShare, ImportSummary } from '../ingest/ingest';
+import { enqueueShare, ImportSummary } from '../ingest/ingest';
+import { showImportResult } from '../ui/importResult';
 import { keepWorkingInBackground, registerBackgroundProcessing } from '../ingest/background';
 import { processQueue } from '../ingest/processor';
 import { appReady, SPLASH_MAX_MS } from '../ui/launch';
@@ -63,7 +66,7 @@ function ShareHandler() {
 function report(saving: Promise<ImportSummary>) {
   saving
     .then(async (s) => {
-      toast(describeSummary(s), s.added.length ? 'success' : 'info');
+      showImportResult(s);
       if (s.added.length) await offerConnectOnce();
     })
     .catch((e) => toast(`השמירה נכשלה: ${String(e)}`, 'error'));
@@ -93,6 +96,12 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    // For the technical log: can the share extension pass files on this install?
+    if (Platform.OS === 'ios') {
+      const g = appGroupStatus();
+      diag('app group', g?.granted ?? 'none granted', `declared ${g?.declared ?? '-'}`,
+        `provisioned ${g?.provisioned.join(',') || '-'}`, `alt ${g?.alt.join(',') || '-'}`);
+    }
     keepWorkingInBackground();
     processQueue();
     void registerBackgroundProcessing();

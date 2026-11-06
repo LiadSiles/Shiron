@@ -1,17 +1,20 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { appGroupStatus } from '../../modules/shiron-audio';
 import { connectedProviders, getPreferred, onKeysChange, removeKey, setPreferred } from '../api/keys';
 import { PROVIDER_IDS, PROVIDERS, ProviderId } from '../core/ai';
-import { importFromPicker } from '../ingest/ingest';
 import { processorStore } from '../ingest/processor';
 import Constants from 'expo-constants';
 import { T } from '../ui/components';
 import { Icon } from '../ui/Icon';
+import { pickAndImport } from '../ui/importResult';
 import { ListGroup, ListItem } from '../ui/list';
-import { toast } from '../ui/toast';
 import { radius, space, useTheme } from '../ui/theme';
 import { useStore } from '../ui/useStore';
+
+/** iPhone: can the share sheet hand files to the app on this install? (null on Android) */
+const shareFiles = Platform.OS === 'ios' ? !!appGroupStatus()?.granted : null;
 
 export default function SettingsScreen() {
   const c = useTheme();
@@ -98,17 +101,24 @@ export default function SettingsScreen() {
 
       <ListGroup
         title="הוספת שירים"
-        footer="הדרך הקלה: בוואטסאפ, לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← PlayGan. אפשר לבחור כמה יחד."
+        footer={shareFiles === false
+          ? 'בהתקנה הזו של האפליקציה (Sideloadly עם Apple ID חינמי) השיתוף מוואטסאפ מעביר רק קישורים. הקלטות: שמרי אותן ב״קבצים״ ובחרי אותן כאן.'
+          : 'הדרך הקלה: בוואטסאפ, לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← PlayGan. אפשר לבחור כמה יחד.'}
       >
+        {shareFiles !== null ? (
+          <ListItem
+            icon="share-outline"
+            tint={shareFiles ? c.good : c.inkSoft}
+            title="שיתוף מוואטסאפ"
+            value={shareFiles ? 'הקלטות וקישורים' : 'רק קישורים'}
+          />
+        ) : null}
         <ListItem
           icon="folder-open-outline"
           tint={c.good}
           title="בחירת קבצי שמע או וידאו"
           subtitle="מאפליקציית הקבצים בטלפון"
-          onPress={async () => {
-            const message = await importFromPicker();
-            if (message) toast(message);
-          }}
+          onPress={pickAndImport}
           last
         />
       </ListGroup>

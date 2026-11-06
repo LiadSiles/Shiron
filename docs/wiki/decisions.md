@@ -3,6 +3,15 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-06 — "+" on the home screen; WMA refused with an explanation (0.9.3)
+- Adding from Files was only offered on the empty library, so it vanished after the first song
+  (owner's report). Now a "+" sits in the home header for good: it is also the way in for
+  recordings on an iPhone install whose share extension can't pass files.
+- WMA/WMV: no decoder on iOS or Android and neither AI service reads them. Refused at import
+  with an alert that says why and how to convert to MP3 (owner: "if they really can't be
+  supported, tell the user"). Rejected for now: shipping an FFmpeg build with the WMA decoder
+  on both platforms (size, build work, two native code paths) — owner's call if WMA matters.
+
 ### 2026-11-06 — Our own iOS share extension (0.9.2, 0.9.3)
 First iPhone install (Sideloadly, free Apple ID): sharing a recording from WhatsApp froze
 WhatsApp and nothing arrived. Sideloadly with a free Apple ID grants no App Group, and the

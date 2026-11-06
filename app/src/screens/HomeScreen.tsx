@@ -1,13 +1,12 @@
 import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { importFromPicker } from '../ingest/ingest';
 import { processorStore } from '../ingest/processor';
 import { homeSections, LibraryState } from '../db/useLibrary';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
 import { Icon } from '../ui/Icon';
 import { PlaylistStrip } from '../ui/playlists';
-import { toast } from '../ui/toast';
+import { pickAndImport } from '../ui/importResult';
 import { radius, space, useTheme } from '../ui/theme';
 import { useStore } from '../ui/useStore';
 
@@ -25,16 +24,24 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
   const sections = useMemo(() => homeSections(lib), [lib]);
   const pendingCount = lib.songs.filter((s) => s.status === 'pending').length;
 
-  const importFiles = async () => {
-    const message = await importFromPicker();
-    if (message) toast(message);
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <T soft size={15}>{greeting(new Date().getHours())}</T>
-        <T weight="bold" size={30}>PlayGan</T>
+        <View style={{ flex: 1 }}>
+          <T soft size={15}>{greeting(new Date().getHours())}</T>
+          <T weight="bold" size={30}>PlayGan</T>
+        </View>
+        {/* Always here, not only on the empty library: adding from Files is how songs come in
+            when sharing can't (an iPhone install without App Groups) or for files on the phone. */}
+        <Pressable
+          onPress={pickAndImport}
+          accessibilityRole="button"
+          accessibilityLabel="הוספת שירים מהקבצים"
+          hitSlop={4}
+          style={({ pressed }) => [styles.add, { backgroundColor: c.primarySoft, opacity: pressed ? 0.8 : 1 }]}
+        >
+          <Icon name="add" size={28} color={c.primary} />
+        </Pressable>
       </View>
 
       {proc?.needsKey && pendingCount > 0 ? (
@@ -96,7 +103,7 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
           title="הספרייה עוד ריקה"
           body={'בוואטסאפ: לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← PlayGan.\nאפשר לבחור כמה יחד.\nהשירים יקבלו שם וקטגוריה לבד.'}
         >
-          <Button label="ייבוא מתיקיית קבצים" kind="quiet" icon="folder-open-outline" onPress={importFiles} />
+          <Button label="ייבוא מתיקיית קבצים" kind="quiet" icon="folder-open-outline" onPress={pickAndImport} />
         </EmptyState>
       ) : null}
 
@@ -111,7 +118,8 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
 
 const styles = StyleSheet.create({
   content: { padding: space.l, paddingBottom: 40 },
-  header: { marginBottom: space.s },
+  header: { marginBottom: space.s, flexDirection: 'row', alignItems: 'center', gap: space.m },
+  add: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   all: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 40, marginBottom: space.xs },
   banner: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: space.m, borderRadius: radius.m, borderWidth: 1, marginTop: space.m },

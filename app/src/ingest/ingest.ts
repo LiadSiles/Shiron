@@ -2,7 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import type { ShareIntent } from 'expo-share-intent';
-import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, youtubeIdFrom } from '../core/ingestRules';
+import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, unsupportedFormat, unsupportedFormatHelp, youtubeIdFrom } from '../core/ingestRules';
 import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { findBySha, findByYoutube, insertSong } from '../db/repo';
@@ -14,6 +14,8 @@ export interface ImportSummary {
   added: string[];
   duplicates: { title: string }[];
   unsupported: string[];
+  /** Of those, formats no phone can decode (WMA…): she gets an explanation, not just a count. */
+  formats: string[];
 }
 
 function toFileUri(path: string): string {
@@ -120,6 +122,13 @@ async function importFiles(
   setImportState({ saving: true, done: 0, total: files.length });
   for (const [i, f] of files.entries()) {
     setImportState({ done: i });
+    const format = unsupportedFormat(f.name, f.mime);
+    if (format) {
+      diag('import refused', f.name, format);
+      summary.unsupported.push(f.name);
+      summary.formats.push(format);
+      continue;
+    }
     if (!isMediaFile(f.name, f.mime)) {
       summary.unsupported.push(f.name);
       continue;
@@ -159,7 +168,7 @@ function enqueue(job: () => Promise<ImportSummary>): Promise<ImportSummary> {
 
 /** Handles everything that arrives through the system share sheet. */
 async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
-  const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
+  const summary: ImportSummary = { added: [], duplicates: [], unsupported: [], formats: [] };
   const text = intent.text?.trim() || null;
 
   diag('share received', `type ${intent.type}`, `${intent.files?.length ?? 0} files`,
@@ -183,20 +192,21 @@ async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
 }
 
 /**
- * Fallback when sharing isn't possible: pick audio or video files from the Files app.
- * Returns the line to show her, or null when she cancelled.
+ * Pick audio or video files from the Files app (for files already on the phone, and the way in
+ * for recordings when sharing can't pass files). Null when she cancelled; throws when the
+ * picker fails. Shown with ui/importResult.
  */
-export async function importFromPicker(): Promise<string | null> {
+export async function importFromPicker(): Promise<ImportSummary | null> {
   try {
     const picked = await File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] });
     if (picked.canceled) return null;
-    const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
+    const summary: ImportSummary = { added: [], duplicates: [], unsupported: [], formats: [] };
     await importFiles(picked.result.map((f) => ({ file: f, name: f.name, mime: f.type })), null, summary);
     if (summary.added.length) processQueue();
-    return describeSummary(summary);
+    return summary;
   } catch (e) {
     diag('file picker failed', e);
-    return 'לא הצלחנו לפתוח את הקבצים';
+    throw e;
   } finally {
     if (!waiting) setImportState({ saving: false, done: 0, total: 0 });
   }
@@ -209,4 +219,9 @@ export function describeSummary(s: ImportSummary): string {
     parts.push(s.duplicates.length === 1 ? `כבר קיים: ${s.duplicates[0].title}` : `${s.duplicates.length} כבר קיימים`);
   if (s.unsupported.length) parts.push(`${s.unsupported.length} לא נתמכו`);
   return parts.join(' · ') || 'לא נמצא שיר לשמירה';
+}
+
+/** The longer explanation for formats no phone can decode, or null. */
+export function formatWarning(s: ImportSummary): string | null {
+  return unsupportedFormatHelp(s.formats);
 }

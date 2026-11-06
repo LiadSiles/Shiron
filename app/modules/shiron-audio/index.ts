@@ -17,6 +17,7 @@ interface NativeModule {
   processAsync(inputUri: string, outputUri: string): Promise<ProcessedAudio>;
   startBackgroundWork(text: string): void;
   stopBackgroundWork(): void;
+  appGroupStatus?(): AppGroupStatus;
 }
 
 const native = requireNativeModule<NativeModule>('ShironAudio');
@@ -40,6 +41,20 @@ export function startBackgroundWork(text: string): void {
 
 export function stopBackgroundWork(): void {
   native.stopBackgroundWork();
+}
+
+/** iOS: the share extension's App Group on this install (see the Swift module). */
+export interface AppGroupStatus {
+  declared?: string;
+  /** The group this signature grants; missing = the extension can pass links but not files. */
+  granted?: string;
+  alt: string[];
+  provisioned: string[];
+}
+
+/** iOS only (null elsewhere): whether files can be shared into the app on this install. */
+export function appGroupStatus(): AppGroupStatus | null {
+  return native.appGroupStatus?.() ?? null;
 }
 
 export function audioErrorCode(e: unknown): AudioErrorCode | null {

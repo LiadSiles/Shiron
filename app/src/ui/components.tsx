@@ -89,7 +89,7 @@ async function explainPlayErrors(song: SongWithCategories, play: () => Promise<v
       const unsupported = song.audioState === 'unsupported';
       Alert.alert(
         unsupported ? 'לא ניתן לנגן' : 'עוד רגע',
-        unsupported ? 'הפורמט של הקובץ הזה לא נתמך במכשיר.' : 'השיר עדיין בהכנה. הוא יהיה מוכן לניגון בעוד כמה שניות.',
+        unsupported ? song.error ?? 'הפורמט של הקובץ הזה לא נתמך במכשיר.' : 'השיר עדיין בהכנה. הוא יהיה מוכן לניגון בעוד כמה שניות.',
       );
     } else if (e instanceof MissingFileError) {
       Alert.alert('לא ניתן לנגן', 'קובץ השמע של השיר חסר. אפשר למחוק את השיר ולשתף אותו שוב.');

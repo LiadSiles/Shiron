@@ -35,6 +35,35 @@ public class ShironAudioModule: Module {
     Function("stopBackgroundWork") {
       DispatchQueue.main.async { self.endBackgroundTime() }
     }
+
+    // Whether the share extension can hand files to the app on this install: the App Group the
+    // signature grants (Sideloadly with a free Apple ID may grant none). Same lookup as the
+    // share extension (patches/expo-share-intent); shown in Settings and the technical log.
+    Function("appGroupStatus") { () -> [String: Any] in
+      let declared = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String
+      let alt = Bundle.main.object(forInfoDictionaryKey: "ALTAppGroups") as? [String] ?? []
+      let provisioned = Self.provisionedAppGroups()
+      let granted = ([declared].compactMap { $0 } + alt + provisioned).first {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: $0) != nil
+      }
+      var status: [String: Any] = ["alt": alt, "provisioned": provisioned]
+      if let declared = declared { status["declared"] = declared }
+      if let granted = granted { status["granted"] = granted }
+      return status
+    }
+  }
+
+  /// The groups in the app's embedded.mobileprovision (a signed plist); none on the simulator.
+  private static func provisionedAppGroups() -> [String] {
+    guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
+      let data = try? Data(contentsOf: url),
+      let start = data.range(of: Data("<?xml".utf8)),
+      let end = data.range(of: Data("</plist>".utf8), in: start.lowerBound..<data.endIndex),
+      let plist = try? PropertyListSerialization.propertyList(
+        from: data.subdata(in: start.lowerBound..<end.upperBound), format: nil) as? [String: Any],
+      let entitlements = plist["Entitlements"] as? [String: Any]
+    else { return [] }
+    return entitlements["com.apple.security.application-groups"] as? [String] ?? []
   }
 
   private func beginBackgroundTime() {
