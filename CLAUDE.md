@@ -95,6 +95,7 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     android/                 MediaExtractor/MediaCodec/MediaMuxer; unit + instrumented tests
     swift-tests/             runs ios/Core as a Swift package on macOS
     fixtures/                one test signal in every format (see its README)
+    native/wma/              C: WMA/WMV → WAV with a minimal FFmpeg (scripts/build-wma-decoder.sh)
   plugins/withSigningKey.js  signs Android builds with app/keystore/shiron.keystore
   plugins/withKeepRules.js   R8 keep rules (WorkManager; release crashed at launch without them)
   patches/                   patch-package diffs: expo-share-intent (our iOS share extension

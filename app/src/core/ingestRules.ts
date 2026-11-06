@@ -5,9 +5,10 @@ const SUGGEST_CONFIDENCE = 0.5;
 /** Audio formats a teacher may receive. Decoded on the phone (see docs/wiki/audio-processing.md). */
 const AUDIO_EXT = [
   'mp3', 'mpga', 'm4a', 'aac', 'wav', 'aif', 'aiff', 'caf', 'flac', 'ogg', 'oga', 'opus', 'amr', 'awb',
+  'wma', // Windows Media: no phone decodes it; our FFmpeg build does (native/wma)
 ];
 /** Videos: the sound track is extracted (a song filmed in another kindergarten, a clip). */
-const VIDEO_EXT = ['mp4', 'm4v', 'mov', '3gp', '3g2', 'mpeg', 'mpg', 'webm', 'mkv', 'avi'];
+const VIDEO_EXT = ['mp4', 'm4v', 'mov', '3gp', '3g2', 'mpeg', 'mpg', 'webm', 'mkv', 'avi', 'wmv', 'asf'];
 
 const MEDIA_MIME = /^(audio|video)\//;
 const MEDIA_MIME_EXTRA = new Set(['application/ogg', 'application/x-ogg']);
@@ -17,24 +18,13 @@ export function extensionOf(name: string): string {
   return m ? m[1].toLowerCase() : '';
 }
 
-/**
- * Windows Media (WMA/WMV/ASF): neither iPhone nor Android can decode it, and neither AI service
- * reads it, so it can't be played, converted or named. Reported by name, not saved.
- */
-export function unsupportedFormat(fileName: string, mimeType?: string | null): 'WMA' | 'WMV' | null {
+/** Windows Media (WMA/WMV/ASF): converted by our own decoder, not the phone's. Null for anything else. */
+export function windowsMediaFormat(fileName: string, mimeType?: string | null): 'WMA' | 'WMV' | null {
   const ext = extensionOf(fileName);
   const mime = (mimeType ?? '').toLowerCase();
   if (ext === 'wma' || mime === 'audio/x-ms-wma') return 'WMA';
   if (ext === 'wmv' || ext === 'asf' || mime === 'video/x-ms-wmv' || mime === 'video/x-ms-asf') return 'WMV';
   return null;
-}
-
-/** What she is told about such files (with describeSummary's line). */
-export function unsupportedFormatHelp(formats: string[]): string | null {
-  const unique = [...new Set(formats)];
-  if (!unique.length) return null;
-  return `קבצי ${unique.join(' ו־')} (פורמט של Windows) לא נתמכים בטלפונים — לא באייפון ולא באנדרואיד, ` +
-    'ולכן אי אפשר לנגן אותם או להמיר אותם כאן. אפשר להמיר אותם ל־MP3 במחשב (למשל בנגן המדיה של Windows או באתר המרה) ולשתף שוב.';
 }
 
 /** Anything worth trying to decode. The native decoder has the final word. */

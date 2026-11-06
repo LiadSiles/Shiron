@@ -67,6 +67,17 @@ sourceDurationSec, gainDb, trimStartSec, trimEndSec }`; errors carry codes `ERR_
 - iOS: each `CMSampleBuffer` is read inside its own `autoreleasepool`, so memory stays flat on
   long recordings.
 
+## Windows Media (WMA/WMV, 0.10.0)
+
+Neither platform decodes it. `native/wma/wma2wav.c` (FFmpeg: ASF demuxer + wmav1/wmav2/wmapro/
+wmalossless/wmavoice) writes a 16-bit WAV at the source rate; then the normal pipeline runs on the
+WAV. iOS: `ShironAudioModule.decodedIfWindowsMedia` (module layer, `#if SHIRON_WMA`; Core and its
+Swift package tests don't see FFmpeg). Android: `AudioProcessor.process` → `WmaDecoder` (JNI), so
+the instrumented tests cover `tone.wma` and `video.wmv`. Build: `scripts/build-wma-decoder.sh
+ios|android|host` (`host` builds a command-line `wma2wav` to try on a Linux/Mac machine); outputs
+are git-ignored; every workflow that builds the app runs it first (cached by the script's and the
+C file's hash). Codes: -1 open, -2 no audio, -3 no decoder, -4 decode, -5 write, -6 over an hour.
+
 ## Parts for transcription (`AudioSplitter`, 0.10.0)
 
 `splitAudio(input, outDir, chunkSec)` cuts a converted .m4a into consecutive `part-N.m4a`

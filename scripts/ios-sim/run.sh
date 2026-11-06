@@ -17,7 +17,7 @@ if [ -n "$FILES" ]; then
   mkdir -p "$FILES/File Provider Storage"
   cp app/modules/shiron-audio/fixtures/voice-whatsapp.opus "$FILES/File Provider Storage/"
   cp app/modules/shiron-audio/fixtures/song.mp3 "$FILES/File Provider Storage/boker-tov.mp3"
-  cp app/modules/shiron-audio/fixtures/song.mp3 "$FILES/File Provider Storage/old-song.wma"
+  cp app/modules/shiron-audio/fixtures/tone.wma "$FILES/File Provider Storage/old-song.wma"
 else
   echo "== no Files local storage container"
 fi

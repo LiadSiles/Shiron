@@ -3,6 +3,18 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-06 — WMA through our own FFmpeg build (0.10.0)
+Owner wants WMA played. No platform decoder exists, ffmpeg-kit was retired (Jan 2025, binaries
+removed), community builds are tens of MB (some GPL), and Hermes has no WebAssembly
+(ffmpeg.wasm). So `scripts/build-wma-decoder.sh` builds FFmpeg (tag pinned, unmodified, LGPL
+2.1, `--disable-everything` + ASF demuxer + WMA decoders, no asm) and one C file,
+`native/wma/wma2wav.c`, that writes a 16-bit WAV; the existing converter then handles it as any
+WAV. iOS: a static `WmaDecoder.xcframework` (device + simulator arm64, module map) vendored by
+the podspec when present (`SHIRON_WMA`); Android: `libshironwma.so` per ABI in `jniLibs`
+(16 KB pages, FFmpeg symbols hidden) + `WmaDecoder.kt` (JNI). Built in CI with a cache, never
+committed. Cost: ~1–2 MB per platform. A WMV's sound comes the same way. LGPL: the source is
+FFmpeg's own tag and the build script is in this repo; review again before an App Store release.
+
 ### 2026-11-06 — Her categories; sorting and tiles; lyrics to the end (0.10.0)
 - **Categories are hers to change** (owner): rename, new emoji/colour, remove, add — also from a
   song's screen ("קטגוריה חדשה" adds it to that song). Built-ins stay in code
@@ -30,10 +42,8 @@ whenever a choice would surprise a future contributor.
 - Adding from Files was only offered on the empty library, so it vanished after the first song
   (owner's report). Now a "+" sits in the home header for good: it is also the way in for
   recordings on an iPhone install whose share extension can't pass files.
-- WMA/WMV: no decoder on iOS or Android and neither AI service reads them. Refused at import
-  with an alert that says why and how to convert to MP3 (owner: "if they really can't be
-  supported, tell the user"). Rejected for now: shipping an FFmpeg build with the WMA decoder
-  on both platforms (size, build work, two native code paths) — owner's call if WMA matters.
+- WMA/WMV: no decoder on iOS or Android and neither AI service reads them. First refused with
+  an explanation; then the owner chose to support them: see "WMA through our own FFmpeg build".
 
 ### 2026-11-06 — Our own iOS share extension (0.9.2, 0.9.3)
 First iPhone install (Sideloadly, free Apple ID): sharing a recording from WhatsApp froze

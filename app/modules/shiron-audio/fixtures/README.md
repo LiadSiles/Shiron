@@ -21,6 +21,8 @@ mono AAC at 44.1 kHz.
 | `video.3gp` | old phone video, H.263 + AAC 16 kHz |
 | `video.mpeg` | MPEG-2 program stream + MP2 audio (reported, not required) |
 | `video.webm` | VP8 + Opus (Android only) |
+| `tone.wma` | Windows Media Audio (WMA v2, ASF) — decoded by our FFmpeg build (`native/wma`) |
+| `video.wmv` | Windows Media Video (WMV2 + WMA v2) — the sound track via the same decoder |
 | `not-audio.mp3` | garbage with an audio extension — must be rejected |
 
 Regenerate with ffmpeg (commands in the commit that last changed this folder). Mind that ffmpeg's

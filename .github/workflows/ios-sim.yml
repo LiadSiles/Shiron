@@ -40,6 +40,13 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: app/package-lock.json
+      - name: Cache the WMA decoder build
+        uses: actions/cache@v4
+        with:
+          path: build/wma
+          key: wma-ios-${{ hashFiles('scripts/build-wma-decoder.sh', 'app/modules/shiron-audio/native/wma/*') }}
+      - name: Build the WMA decoder (FFmpeg, LGPL)
+        run: scripts/build-wma-decoder.sh ios
       - name: Generate iOS project
         working-directory: app
         env:

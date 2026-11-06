@@ -4,7 +4,7 @@ import { nameSong, resumeAllProviders } from '../api/ai';
 import { connectedProviders } from '../api/keys';
 import { youtubeMeta } from '../api/youtube';
 import { AiError, describeAiError } from '../core/ai';
-import { keepCategories, mimeOf, unsupportedFormat } from '../core/ingestRules';
+import { keepCategories, mimeOf, windowsMediaFormat } from '../core/ingestRules';
 import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
@@ -191,8 +191,8 @@ async function convert(song: Song) {
       audioState: 'unsupported',
       error: code === 'TOO_LONG' ? 'ההקלטה ארוכה משעה'
         : code === 'NO_AUDIO' ? 'אין בקובץ שמע'
-        : unsupportedFormat(song.sourceName ?? '')
-          ? `קובץ ${unsupportedFormat(song.sourceName ?? '')} של Windows: טלפונים לא יודעים לקרוא אותו. אפשר להמיר ל־MP3 במחשב ולשתף שוב.`
+        : windowsMediaFormat(song.sourceName ?? '')
+          ? `לא הצלחנו לקרוא את קובץ ה־${windowsMediaFormat(song.sourceName ?? '')}. אפשר להמיר אותו ל־MP3 במחשב ולשתף שוב.`
         : 'הפורמט לא נתמך במכשיר הזה',
     });
   }

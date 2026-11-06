@@ -105,6 +105,13 @@ jobs:
       - name: Stamp build number
         run: node scripts/set-build-number.mjs ${{ needs.plan.outputs.build }}
 
+      - name: Cache the WMA decoder build
+        uses: actions/cache@v4
+        with:
+          path: build/wma
+          key: wma-android-${{ hashFiles('scripts/build-wma-decoder.sh', 'app/modules/shiron-audio/native/wma/*') }}
+      - name: Build the WMA decoder (FFmpeg, LGPL)
+        run: scripts/build-wma-decoder.sh android
       - name: Generate Android project
         working-directory: app
         run: npx expo prebuild --platform android --no-install --clean
@@ -133,6 +140,7 @@ jobs:
           # patched source unless package.json → expo.autolinking.android.buildFromSource has it.
           unzip -p "$APK" 'classes*.dex' | grep -aq 'expo.modules.audio.action.DISMISS' \
             || { echo "::error::expo-audio patch missing from the APK (prebuilt AAR used?)"; exit 1; }
+          unzip -l "$APK" | grep -q 'lib/arm64-v8a/libshironwma.so' || { echo "::error::WMA decoder missing from the APK"; exit 1; }
           echo "::notice::APK $(( $(stat -c%s "$APK") / 1024 / 1024 )) MB"
           cp "$APK" "${{ needs.plan.outputs.name }}.apk"
 
@@ -164,6 +172,13 @@ jobs:
       - name: Stamp build number
         run: node scripts/set-build-number.mjs ${{ needs.plan.outputs.build }}
 
+      - name: Cache the WMA decoder build
+        uses: actions/cache@v4
+        with:
+          path: build/wma
+          key: wma-ios-${{ hashFiles('scripts/build-wma-decoder.sh', 'app/modules/shiron-audio/native/wma/*') }}
+      - name: Build the WMA decoder (FFmpeg, LGPL)
+        run: scripts/build-wma-decoder.sh ios
       - name: Generate iOS project
         working-directory: app
         run: npx expo prebuild --platform ios --clean

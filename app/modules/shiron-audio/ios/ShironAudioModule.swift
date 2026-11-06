@@ -1,5 +1,8 @@
 import ExpoModulesCore
 import UIKit
+#if SHIRON_WMA
+import WmaDecoder
+#endif
 
 public class ShironAudioModule: Module {
   /// Extra time iOS grants after she leaves the app (about 30 s), so a song being saved or
@@ -17,7 +20,9 @@ public class ShironAudioModule: Module {
         throw Exception(name: "ShironAudio", description: "Expected file:// URIs", code: "ERR_AUDIO_BAD_URI")
       }
       do {
-        return try AudioProcessor.process(input: input, output: output).dictionary
+        let source = try Self.decodedIfWindowsMedia(input)
+        defer { if source != input { try? FileManager.default.removeItem(at: source) } }
+        return try AudioProcessor.process(input: source, output: output).dictionary
       } catch {
         // No half-written .m4a left behind, and every failure carries a code the app knows.
         try? FileManager.default.removeItem(at: output)
@@ -67,6 +72,21 @@ public class ShironAudioModule: Module {
       if let granted = granted { status["granted"] = granted }
       return status
     }
+  }
+
+  /// WMA, or a WMV's sound, as a temporary WAV (native/wma, FFmpeg): iOS can't decode Windows
+  /// Media itself. Anything else is returned as is.
+  private static func decodedIfWindowsMedia(_ url: URL) throws -> URL {
+    guard ["wma", "wmv", "asf"].contains(url.pathExtension.lowercased()) else { return url }
+    #if SHIRON_WMA
+    let wav = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).wav")
+    let code = shiron_wma_to_wav(url.path, wav.path)
+    if code == -6 { throw AudioProcessingError.tooLong }
+    guard code == 0 else { throw AudioProcessingError.unsupported("Windows Media (decoder \(code))") }
+    return wav
+    #else
+    throw AudioProcessingError.unsupported("Windows Media (decoder not in this build)")
+    #endif
   }
 
   /// The groups in the app's embedded.mobileprovision (a signed plist); none on the simulator.

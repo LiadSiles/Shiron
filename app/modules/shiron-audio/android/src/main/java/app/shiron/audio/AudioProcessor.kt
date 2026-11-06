@@ -48,9 +48,11 @@ object AudioProcessor {
 
   fun process(input: File, output: File): ProcessResult {
     val tmp = File(output.parentFile, ".${System.nanoTime()}.f32")
+    // Windows Media: decoded to WAV first by our FFmpeg build (WmaDecoder).
+    val source = if (WmaDecoder.handles(input)) WmaDecoder.decode(input, output.parentFile!!) else input
     try {
       val sink = PcmSink(tmp)
-      sink.use { decode(input, it) }
+      sink.use { decode(source, it) }
       if (sink.totalFrames == 0) throw AudioProcessingException("NO_AUDIO", "The file has no audio")
       val plan = LoudnessPlan.make(sink.blockPower(), sink.blockPeak(), sink.totalFrames)
       val written = encode(tmp, plan, output)
@@ -63,6 +65,7 @@ object AudioProcessor {
       )
     } finally {
       tmp.delete()
+      if (source != input) source.delete()
     }
   }
 

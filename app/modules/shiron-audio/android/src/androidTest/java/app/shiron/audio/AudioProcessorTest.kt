@@ -24,6 +24,8 @@ class AudioProcessorTest {
   private val required = listOf(
     "voice-whatsapp.opus", "voice-60ms.ogg", "song.mp3", "memo.m4a", "tone.wav", "tone.flac",
     "tone-vorbis.ogg", "video.mp4", "video.mov", "video.3gp", "video.webm",
+    // Windows Media through our FFmpeg build (WmaDecoder, libshironwma.so).
+    "tone.wma", "video.wmv",
   )
 
   private fun copy(name: String): File {

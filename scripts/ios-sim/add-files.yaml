@@ -1,5 +1,5 @@
 # The home screen's "+" (always there, also after the first song): picks a file from Files.
-# FILE is the name to pick; the result (toast, or the WMA explanation) is photographed.
+# FILE is the name to pick (an mp3, and a real WMA for our decoder); the result is photographed.
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
