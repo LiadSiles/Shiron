@@ -1,25 +1,32 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCategory, primaryCategoryId } from '../../core/categories';
 import { textOn } from '../../core/color';
 import { canStart } from '../../core/ingestRules';
 import { cleanName, moveSong, playlistSongs, songCount } from '../../core/playlists';
+import { SONG_SORTS, sortSongs } from '../../core/sorting';
 import type { SongWithCategories } from '../../core/types';
 import { deletePlaylist, renamePlaylist, setPlaylistSongs } from '../../db/repo';
 import { useLibrary } from '../../db/useLibrary';
-import { Button, CategoryBadge, EmptyState, playAll, SongRow, T } from '../../ui/components';
+import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from '../../ui/components';
 import { Icon, IconName } from '../../ui/Icon';
 import { MiniPlayer } from '../../ui/MiniPlayer';
 import { playlistColor } from '../../ui/playlists';
 import { font, radius, space, TOUCH, useTheme } from '../../ui/theme';
+import { useStore } from '../../ui/useStore';
+import { setViewPref, viewPrefs } from '../../ui/viewPrefs';
+import { ViewControls } from '../../ui/ViewControls';
+
+const COLUMNS = 2;
 
 /**
  * One of her lists. Normally: tap a song to play from there, "נגני הכול" to play it all in her
  * order. "סידור" switches to arranging: arrows move a song, ✕ takes it out (the song stays in
  * the library). Arrows rather than drag-and-drop: big targets, no precise gestures, works the
- * same on both platforms without another library.
+ * same on both platforms without another library. She can also see it sorted another way (by
+ * name, plays…) and in tiles; "שמירה כסדר הרשימה" makes that order hers.
  */
 export default function PlaylistScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,6 +36,8 @@ export default function PlaylistScreen() {
   const [arranging, setArranging] = useState(false);
   const [name, setName] = useState(list?.name ?? '');
   const [editingName, setEditingName] = useState(false);
+  const prefs = useStore(viewPrefs);
+  const { width } = useWindowDimensions();
 
   useEffect(() => {
     if (list && !editingName) setName(list.name);
@@ -43,8 +52,12 @@ export default function PlaylistScreen() {
     );
   }
 
-  const songs = playlistSongs(list.songIds, lib.byId);
+  const ordered = playlistSongs(list.songIds, lib.byId);
+  const sort = arranging ? 'manual' : prefs.playlistSort;
+  const songs = sortSongs(ordered, sort, lib.plays);
   const playable = songs.filter(canStart);
+  const tiles = !arranging && prefs.songLayout === 'tiles';
+  const size = Math.floor((width - space.l * 2 - space.m * (COLUMNS - 1)) / COLUMNS);
   const color = playlistColor(list.id);
   const ink = textOn(color);
 
@@ -55,8 +68,12 @@ export default function PlaylistScreen() {
     else setName(list.name);
   };
 
-  const move = (from: number, to: number) => setPlaylistSongs(list.id, moveSong(songs.map((s) => s.id), from, to));
-  const remove = (songId: string) => setPlaylistSongs(list.id, songs.map((s) => s.id).filter((x) => x !== songId));
+  const move = (from: number, to: number) => setPlaylistSongs(list.id, moveSong(ordered.map((s) => s.id), from, to));
+  const remove = (songId: string) => setPlaylistSongs(list.id, ordered.map((s) => s.id).filter((x) => x !== songId));
+  const keepOrder = async () => {
+    await setPlaylistSongs(list.id, songs.map((s) => s.id));
+    setViewPref({ playlistSort: 'manual' });
+  };
 
   const confirmDelete = () =>
     Alert.alert('למחוק את הרשימה?', `"${list.name}" תימחק. השירים עצמם נשארים בספרייה.`, [
@@ -80,7 +97,7 @@ export default function PlaylistScreen() {
           title: '',
           headerRight: () =>
             songs.length > 1 ? (
-              <Pressable onPress={() => setArranging((a) => !a)} hitSlop={12} accessibilityRole="button" style={styles.headerBtn}>
+              <Pressable onPress={() => setArranging((a) => !a)} hitSlop={12} accessibilityRole="button" accessibilityLabel={arranging ? 'סיום הסידור' : 'סידור הרשימה'} style={styles.headerBtn}>
                 <Icon name={arranging ? 'checkmark' : 'swap-vertical'} size={20} color={c.primary} />
                 <T weight="medium" style={{ color: c.primary }}>{arranging ? 'סיום' : 'סידור'}</T>
               </Pressable>
@@ -88,9 +105,12 @@ export default function PlaylistScreen() {
         }}
       />
       <FlatList
+        key={tiles ? 'tiles' : 'rows'}
         data={songs}
+        numColumns={tiles ? COLUMNS : 1}
+        columnWrapperStyle={tiles ? { gap: space.m } : undefined}
         keyExtractor={(s) => s.id}
-        contentContainerStyle={{ padding: space.l, paddingBottom: 24 }}
+        contentContainerStyle={{ padding: space.l, paddingBottom: 24, gap: tiles ? space.m : undefined }}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={{ marginBottom: space.l }}>
@@ -128,6 +148,23 @@ export default function PlaylistScreen() {
               <Button label="הוספת שירים" icon="add" kind="quiet" onPress={addSongs} style={{ flex: 1 }} />
             </View>
             {arranging ? <T soft size={14} style={{ marginTop: space.m }}>החצים מזיזים שיר למעלה או למטה. ✕ מוציא אותו מהרשימה (הוא נשאר בספרייה).</T> : null}
+            {!arranging && songs.length > 1 ? (
+              <View style={{ marginTop: space.l }}>
+                <ViewControls
+                  sorts={SONG_SORTS.filter((s) => s.id !== 'smart')}
+                  sort={prefs.playlistSort}
+                  onSort={(playlistSort) => setViewPref({ playlistSort })}
+                  layout={prefs.songLayout}
+                  onLayout={(songLayout) => setViewPref({ songLayout })}
+                />
+                {prefs.playlistSort !== 'manual' && prefs.playlistSort !== 'smart' ? (
+                  <Pressable onPress={keepOrder} accessibilityRole="button" style={styles.keep} hitSlop={8}>
+                    <Icon name="checkmark-done" size={18} color={c.primary} />
+                    <T weight="medium" size={14} style={{ color: c.primary }}>שמירה כסדר הרשימה</T>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         }
         renderItem={({ item, index }) =>
@@ -140,6 +177,8 @@ export default function PlaylistScreen() {
               onDown={() => move(index, index + 1)}
               onRemove={() => remove(item.id)}
             />
+          ) : tiles ? (
+            <SongTile song={item} queue={songs} size={size} />
           ) : (
             <SongRow song={item} queue={songs} />
           )
@@ -210,6 +249,7 @@ function RoundButton({ icon, label, onPress, disabled, danger }: {
 }
 
 const styles = StyleSheet.create({
+  keep: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: 40, alignSelf: 'flex-start' },
   headerBtn: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: TOUCH, paddingHorizontal: space.s },
   hero: { borderRadius: radius.l, padding: space.l, gap: space.xs },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, minHeight: TOUCH },

@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { connectedProviders } from '../../api/keys';
-import { CATEGORIES } from '../../core/categories';
+import { allCategories } from '../../core/categories';
 import { canTranscribe } from '../../core/ingestRules';
 import { formatTime } from '../../core/time';
 import type { SongWithCategories } from '../../core/types';
@@ -137,7 +137,7 @@ export default function SongScreen() {
 
       <T weight="bold" size={18} style={styles.h}>קטגוריות</T>
       <View style={[styles.chips, { marginBottom: space.s }]}>
-        {CATEGORIES.map((cat) => {
+        {allCategories().map((cat) => {
           const on = selected.includes(cat.id);
           return (
             <Pressable
@@ -152,6 +152,14 @@ export default function SongScreen() {
             </Pressable>
           );
         })}
+        <Pressable
+          onPress={() => router.push({ pathname: '/category/edit', params: { song: song.id } })}
+          accessibilityRole="button"
+          style={[styles.chip, { backgroundColor: c.surface, borderColor: c.primary, borderStyle: 'dashed' }]}
+        >
+          <Icon name="add" size={20} color={c.primary} />
+          <T size={14} weight="medium" style={{ color: c.primary }}>קטגוריה חדשה</T>
+        </Pressable>
       </View>
 
       <View style={[styles.lyricsHeader]}>

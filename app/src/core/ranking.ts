@@ -85,7 +85,7 @@ export interface CategoryTile {
  * Order of the library's category tiles: what's in season first (Hanukkah in Hanukkah), then
  * the categories she uses most, then the bigger ones; ties keep the taxonomy order.
  */
-export function orderCategoryTiles(tiles: CategoryTile[], inSeason: string[] = []): CategoryTile[] {
+export function orderCategoryTiles<T extends CategoryTile>(tiles: T[], inSeason: string[] = []): T[] {
   const pos = new Map(tiles.map((t, i) => [t.id, i]));
   const season = (id: string) => (inSeason.includes(id) ? 0 : 1);
   return [...tiles].sort(

@@ -63,7 +63,7 @@ npm run version:bump -- minor   # when a roadmap version is reached
 ```
 app/                         Expo app (React Native, TypeScript, expo-router)
   src/core/                  pure TS, unit-tested (no React Native imports):
-    categories.ts            taxonomy (32 categories), Hebrew calendar seasons, time of day
+    categories.ts            built-in taxonomy + her changes (category_custom), seasons, time of day
     hebrew.ts, search.ts     Hebrew normalization + full-text search
     ranking.ts               frecency ranking (τ = 30 days), pins, seasonal boost
     ingestRules.ts           formats, YouTube ids, fallback titles, playability, category suggestions
@@ -76,6 +76,7 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     queue.ts                 play order: audio runs, next/previous, repeat modes
     transcript.ts            dropping Whisper's invented lines ("תודה רבה", loops)
     incoming.ts              the share extension's link without an App Group (shiron://share?text=)
+    sorting.ts               sort songs / categories, rows or tiles (choices in ui/viewPrefs.ts)
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
   src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts
@@ -88,7 +89,8 @@ app/                         Expo app (React Native, TypeScript, expo-router)
                              lists, SearchField, playlists), theme, launch (splash)
   src/app/                   expo-router routes (layout, shell, category, song, playlist/,
                              player, settings, connect, log)
-  modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a
+  modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a;
+                             cut into parts for transcription (AudioSplitter)
     ios/Core/                plain AVFoundation (Ogg Opus demux, asset reader, encoder)
     android/                 MediaExtractor/MediaCodec/MediaMuxer; unit + instrumented tests
     swift-tests/             runs ios/Core as a Swift package on macOS

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CATEGORIES } from '../src/core/categories';
-import { buildUserMessage, fallbackUnderstanding, parseModelJson, sanitize, UNDERSTANDING_SCHEMA } from '../src/core/understand';
+import { allCategories } from '../src/core/categories';
+import { buildUserMessage, fallbackUnderstanding, parseModelJson, sanitize, understandingSchema } from '../src/core/understand';
 
 describe('understanding', () => {
   it('drops invented categories and clamps confidence', () => {
@@ -49,10 +49,11 @@ describe('understanding', () => {
   });
 
   it('schema is valid for strict mode: every property required, no extras, ids enumerated', () => {
-    expect(UNDERSTANDING_SCHEMA.required).toEqual(Object.keys(UNDERSTANDING_SCHEMA.properties));
-    expect(UNDERSTANDING_SCHEMA.additionalProperties).toBe(false);
-    const item = UNDERSTANDING_SCHEMA.properties.categories.items;
+    const schema = understandingSchema();
+    expect(schema.required).toEqual(Object.keys(schema.properties));
+    expect(schema.additionalProperties).toBe(false);
+    const item = schema.properties.categories.items;
     expect(item.additionalProperties).toBe(false);
-    expect(item.properties.id.enum).toHaveLength(CATEGORIES.length);
+    expect(item.properties.id.enum).toHaveLength(allCategories().length);
   });
 });

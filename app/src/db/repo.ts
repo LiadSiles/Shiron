@@ -1,5 +1,6 @@
 import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
+import { CategoryCustomization, isBuiltinCategory, UNSORTED_ID } from '../core/categories';
 import type { PlayEvent, Playlist, Song, SongCategory, SongStatus, SongWithCategories } from '../core/types';
 
 interface SongRow {
@@ -269,6 +270,67 @@ async function writeItems(db: Awaited<ReturnType<typeof getDb>>, playlistId: str
   for (let i = 0; i < unique.length; i++) {
     await db.runAsync('INSERT INTO playlist_songs (playlist_id, song_id, position) VALUES (?, ?, ?)', [playlistId, unique[i], i]);
   }
+}
+
+// ---------- her categories ----------
+
+export async function listCategoryCustomizations(): Promise<CategoryCustomization[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ id: string; name: string | null; icon: string | null; color: string | null; hidden: number; created_at: number }>(
+    'SELECT * FROM category_custom',
+  );
+  return rows.map((r) => ({ id: r.id, name: r.name, icon: r.icon, color: r.color, hidden: !!r.hidden, createdAt: r.created_at }));
+}
+
+/** A new category of hers; returns its id. */
+export async function createCategory(name: string, icon: string, color: string): Promise<string> {
+  const db = await getDb();
+  const id = `u-${Crypto.randomUUID()}`;
+  await db.runAsync('INSERT INTO category_custom (id, name, icon, color, hidden, created_at) VALUES (?, ?, ?, ?, 0, ?)', [
+    id, name.trim(), icon, color, Date.now(),
+  ]);
+  emit();
+  return id;
+}
+
+/** Rename / new emoji or colour, for hers and for built-in ones alike. */
+export async function updateCategory(id: string, name: string, icon: string, color: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO category_custom (id, name, icon, color, hidden, created_at) VALUES (?, ?, ?, ?, 0, ?)
+     ON CONFLICT(id) DO UPDATE SET name = excluded.name, icon = excluded.icon, color = excluded.color`,
+    [id, name.trim(), icon, color, Date.now()],
+  );
+  emit();
+}
+
+/**
+ * Removes a category: hers are deleted, built-in ones hidden. Its songs stay in the library
+ * (under their other categories, or "לא מסווג"); the AI stops suggesting it.
+ */
+export async function deleteCategory(id: string): Promise<void> {
+  if (id === UNSORTED_ID) return;
+  const db = await getDb();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM song_categories WHERE category_id = ?', [id]);
+    if (isBuiltinCategory(id)) {
+      await db.runAsync(
+        `INSERT INTO category_custom (id, hidden, created_at) VALUES (?, 1, ?)
+         ON CONFLICT(id) DO UPDATE SET hidden = 1`,
+        [id, Date.now()],
+      );
+    } else {
+      await db.runAsync('DELETE FROM category_custom WHERE id = ?', [id]);
+    }
+  });
+  emit();
+}
+
+/** Brings back the built-in categories she removed (their songs are not re-sorted). */
+export async function restoreBuiltinCategories(): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE category_custom SET hidden = 0 WHERE hidden = 1');
+  emit();
 }
 
 // ---------- settings ----------

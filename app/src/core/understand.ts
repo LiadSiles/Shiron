@@ -2,7 +2,7 @@
  * Turning a transcript into a song: the prompt, the JSON schema and the clean-up of the model's
  * answer. Pure TypeScript; the network calls live in src/api/ (Groq, Gemini).
  */
-import { CATEGORIES, UNSORTED_ID } from './categories';
+import { allCategories, UNSORTED_ID } from './categories';
 import { stripPhantomLines } from './transcript';
 
 export interface SongInput {
@@ -35,7 +35,9 @@ export interface RawUnderstanding {
 }
 
 /** JSON schema for strict structured output: every property required, no extras. */
-export const UNDERSTANDING_SCHEMA = {
+/** The answer's JSON schema; category ids are the ones in use now (hers included). */
+export function understandingSchema() {
+  return {
   type: 'object',
   additionalProperties: false,
   required: ['title', 'title_confidence', 'categories', 'lyrics', 'summary', 'keywords'],
@@ -50,7 +52,7 @@ export const UNDERSTANDING_SCHEMA = {
         additionalProperties: false,
         required: ['id', 'confidence'],
         properties: {
-          id: { type: 'string', enum: CATEGORIES.map((c) => c.id) },
+          id: { type: 'string', enum: allCategories().map((c) => c.id) },
           confidence: { type: 'number' },
         },
       },
@@ -60,6 +62,7 @@ export const UNDERSTANDING_SCHEMA = {
     keywords: { type: 'array', items: { type: 'string' }, description: '5–10 מילות חיפוש בעברית' },
   },
 } as const;
+}
 
 export const SYSTEM_PROMPT = `את עוזרת לגננת בישראל לסדר ספריית שירים לגן ילדים.
 מקבלים פרטים על הקלטה אחת: שם הקובץ, ההודעה שנשלחה איתה בוואטסאפ, תמלול אוטומטי (או ההקלטה עצמה), ולפעמים כותרת מיוטיוב.
@@ -73,11 +76,12 @@ export const SYSTEM_PROMPT = `את עוזרת לגננת בישראל לסדר �
    - אם ההודעה שנשלחה עם הקובץ מציינת את שם השיר, היא הרמז החזק ביותר.
 2. categories — עד 3 מזהים (id) מתוך הרשימה בלבד, עם ביטחון 0–1.
    ביטחון 0.85 ומעלה רק כשהנושא ברור מתוך המילים או ההודעה.
-3. lyrics — סדרי את התמלול לשורות לפי מבנה השיר. הדיוק חשוב יותר מהשלמות:
-   - כתבי רק מילים שבאמת מושרות או נאמרות בהקלטה. אל תוסיפי מילים, ואל תשלימי חלקים שלא נשמעו.
+3. lyrics — כל מילות השיר, מההתחלה ועד הסוף, מסודרות בשורות לפי מבנה השיר:
+   - חובה לכתוב את כל מה שמושר או נאמר, כולל כל הבתים וכל החזרות של הפזמון. אסור לקצר, לסכם, לדלג או לכתוב "וכו'".
+   - אל תוסיפי מילים שלא נשמעו.
    - תקני רק שגיאות תמלול ברורות (מילה שנשמעה לא נכון כשההקשר ברור).
-   - מוזיקה ברקע גורמת לתמלול אוטומטי "לשמוע" משפטים שלא נאמרו, כמו "תודה רבה", "תודה שצפיתם", "כתוביות" או קרדיטים. השמיטי אותם.
-   - קטע שלא ברור מה שרים בו — השמיטי אותו, אל תנחשי.
+   - מוזיקה ברקע גורמת לתמלול אוטומטי "לשמוע" משפטים שלא נאמרו, כמו "תודה רבה", "תודה שצפיתם", "כתוביות" או קרדיטים. השמיטי רק אותם.
+   - מילה שלא ברורה — כתבי את מה שהכי קרוב למה שנשמע.
    אם אין תמלול ואין הקלטה, החזירי null.
 4. summary — משפט אחד.
 5. keywords — מילים שגננת עשויה להקליד כדי למצוא את השיר: נושאים, חפצים, חגים, מילים נרדפות.
@@ -91,7 +95,7 @@ export const TRANSCRIPTION_PROMPT = 'שיר ילדים בעברית מגן יל�
 
 export function buildUserMessage(input: SongInput): string {
   const parts = [
-    `קטגוריות אפשריות:\n${CATEGORIES.map((c) => `- ${c.id}: ${c.name} — ${c.hint}`).join('\n')}`,
+    `קטגוריות אפשריות:\n${allCategories().map((c) => `- ${c.id}: ${c.name} — ${c.hint}`).join('\n')}`,
     '',
     'פרטי ההקלטה:',
     `שם הקובץ: ${input.fileName ?? '(אין)'}`,
@@ -107,14 +111,14 @@ export function buildUserMessage(input: SongInput): string {
   return parts.join('\n');
 }
 
-const VALID_IDS = new Set(CATEGORIES.map((c) => c.id));
 const clamp = (n: unknown) => (typeof n === 'number' && Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0);
 
 /** Parse and clean the model's answer. Unknown ids dropped, confidences clamped, caps applied. */
 export function sanitize(raw: Partial<RawUnderstanding> | null | undefined): Understanding {
   const seen = new Set<string>();
+  const valid = new Set(allCategories().map((c) => c.id));
   const categories = (Array.isArray(raw?.categories) ? raw.categories : [])
-    .filter((c) => c && VALID_IDS.has(c.id) && !seen.has(c.id) && seen.add(c.id))
+    .filter((c) => c && valid.has(c.id) && !seen.has(c.id) && seen.add(c.id))
     .map((c) => ({ id: c.id, confidence: clamp(c.confidence) }))
     .slice(0, 3);
   const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);

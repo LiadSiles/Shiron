@@ -34,6 +34,15 @@ font, no network): tab bar (outline when inactive, filled when active), search f
 Emoji stay only where they are content: category icons and the big art on library tiles.
 The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exactly at every size.
 
+## Sorting, rows or tiles, her categories (0.10.0)
+
+`ui/ViewControls.tsx`: sort chips that scroll sideways and a rows/tiles switch (48 pt), above
+the library's categories, a category's songs and a playlist. Choices are remembered
+(`ui/viewPrefs.ts`). Tiles for songs: `SongTile` (category colour, emoji, title; tap = play,
+long press / ⋮ = details). Rows for categories: badge, name, count. Category editor
+(`app/category/edit.tsx`, modal): name, emoji grid, 12 colours, live preview, remove; opened from
+a category's ✎, the library's "קטגוריה חדשה", and a song's "קטגוריה חדשה" chip.
+
 ## Library (`src/screens/LibraryScreen.tsx`, 0.3.1; playlists 0.7.0)
 
 "הרשימות שלי" comes first: one tile per playlist (colour from its id, `ui/playlists.tsx →

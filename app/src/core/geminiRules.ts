@@ -1,7 +1,7 @@
 /** Pure rules for talking to Gemini (Google AI Studio key): models, audio, errors, answers. */
 import { AiError, parseRetryAfter } from './ai';
 import { extensionOf } from './ingestRules';
-import { buildUserMessage, SongInput, SYSTEM_PROMPT, UNDERSTANDING_SCHEMA } from './understand';
+import { buildUserMessage, SongInput, SYSTEM_PROMPT, understandingSchema } from './understand';
 
 export const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -47,7 +47,7 @@ export function geminiNamingRequest(
     contents: [{ role: 'user', parts: [{ text }, ...(sound ? [sound] : [])] }],
     generationConfig: {
       responseMimeType: 'application/json',
-      ...(schema ? { responseJsonSchema: UNDERSTANDING_SCHEMA } : {}),
+      ...(schema ? { responseJsonSchema: understandingSchema() } : {}),
     },
   };
 }

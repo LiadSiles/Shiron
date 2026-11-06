@@ -85,6 +85,18 @@ const MIGRATIONS: string[] = [
   );
   CREATE INDEX IF NOT EXISTS playlist_songs_song ON playlist_songs(song_id);
   `,
+  // v7 — her categories (0.10.0): a row changes a built-in one (name/emoji/colour, or hidden =
+  // removed) or is a category of her own. See core/categories.ts.
+  `
+  CREATE TABLE IF NOT EXISTS category_custom (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT,
+    icon TEXT,
+    color TEXT,
+    hidden INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+  );
+  `,
 ];
 
 async function migrate(db: SQLite.SQLiteDatabase) {

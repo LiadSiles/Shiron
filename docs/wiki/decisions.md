@@ -3,6 +3,29 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-06 — Her categories; sorting and tiles; lyrics to the end (0.10.0)
+- **Categories are hers to change** (owner): rename, new emoji/colour, remove, add — also from a
+  song's screen ("קטגוריה חדשה" adds it to that song). Built-ins stay in code
+  (`BUILTIN_CATEGORIES`: hints, seasons and hours keep working); her changes are rows in
+  `category_custom` (DB v7) applied in memory (`applyCategoryCustomizations`) so lookups stay
+  synchronous. Removing a built-in hides it (restorable in Settings); removing hers deletes it.
+  Either way its song links go, and the AI no longer offers it; her own categories are offered
+  to the AI with their name as the hint. "לא מסווג" can be renamed but not removed. Her empty
+  categories still show in the library (built-in empty ones don't).
+- **Sorting and layout** (owner): songs by smart / A–Z / plays / last played / newest / length
+  (+ "her order" in playlists, where a sorted order can be saved as the list's order);
+  categories by smart / A–Z / song count / plays; rows or tiles for both. One choice per kind,
+  remembered (`ui/viewPrefs.ts`, settings table) rather than per screen — fewer things to set.
+- **Lyrics to the end** (owner: "must not give up on this"): some songs were transcribed only
+  in part. Causes: Whisper skips the rest after long instrumentals; our filter dropped sung
+  lines Whisper was unsure of; the prompt told the model "accuracy over completeness, drop
+  unclear parts". Now: the converted song is cut on the phone into 40 s parts (no
+  re-encoding, `AudioSplitter` in Swift and Kotlin) and each part is transcribed (Groq: Whisper
+  with the previous part's end as prompt; Gemini: a verbatim request per part); only a clear
+  "no speech" drops a line; the prompt requires every word incl. repeats; and if the model's
+  tidy lyrics have under 85% of the transcript's words, the transcript itself is kept
+  (`completeLyrics`). Existing songs: "תמלול מחדש" on the song screen.
+
 ### 2026-11-06 — "+" on the home screen; WMA refused with an explanation (0.9.3)
 - Adding from Files was only offered on the empty library, so it vanished after the first song
   (owner's report). Now a "+" sits in the home header for good: it is also the way in for
@@ -128,7 +151,7 @@ result is marked as "בנושא דומה". Rejected: sending lyrics/library to t
 The owner saw "עולם הילד" with "טבע וגינה" under it and read it as a category inside a
 category. The six groups are gone from the taxonomy and the UI: the library is a two-column grid
 of square tiles (Spotify "browse" style), ordered in season → most used → most songs; the song
-editor shows one list of chips.
+editor shows one list of chips. (Since 0.10.0 she can also see rows and sort otherwise.)
 
 ### 2026-10-26 — Patch expo-audio rather than fork or replace it
 The non-dismissible notification is in expo-audio's native service. A config plugin can't change

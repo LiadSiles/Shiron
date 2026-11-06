@@ -181,6 +181,62 @@ export function SongRow({ song, queue, showCategory = true, query }: {
   );
 }
 
+/**
+ * A song as a square tile (the "tiles" layout): its category's colour and emoji, the title.
+ * Tap = play / pause, long press or ⋮ = details, like SongRow.
+ */
+export function SongTile({ song, queue, size }: { song: SongWithCategories; queue: SongWithCategories[]; size: number }) {
+  const c = useTheme();
+  const mine = usePlayerSelect((p) => (p.song?.id !== song.id ? 'other' : p.playing ? 'playing' : 'paused'));
+  const active = mine !== 'other';
+  const cat = getCategory(primaryCategoryId(song));
+  const status = statusLabel(song);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={mine === 'playing' ? `השהיית ${song.title}` : `נגני ${song.title}`}
+      accessibilityHint="לחיצה ארוכה או ⋮ פותחים את פרטי השיר"
+      onPress={() => playOrOpen(song, queue)}
+      onLongPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
+      style={({ pressed }) => [
+        styles.tile,
+        {
+          width: size,
+          height: size,
+          backgroundColor: active ? c.primarySoft : cat.color + '26',
+          borderColor: active ? c.primary : 'transparent',
+          transform: [{ scale: pressed ? 0.97 : 1 }],
+        },
+      ]}
+    >
+      <View style={styles.tileTop}>
+        {active ? (
+          <View style={[styles.tileLead, { backgroundColor: c.primary }]}>
+            {mine === 'playing' ? <PauseIcon size={16} color={c.primaryInk} /> : <PlayIcon size={16} color={c.primaryInk} />}
+          </View>
+        ) : isPreparing(song) ? (
+          <ActivityIndicator color={c.inkSoft} />
+        ) : (
+          <Text style={{ fontSize: size * 0.22 }}>{cat.icon}</Text>
+        )}
+        <Pressable
+          onPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
+          hitSlop={4}
+          accessibilityRole="button"
+          accessibilityLabel={`פרטים ואפשרויות: ${song.title}`}
+          style={styles.tileMore}
+        >
+          <Icon name="ellipsis-vertical" size={18} color={c.inkSoft} />
+        </Pressable>
+      </View>
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <T weight="bold" size={16} numberOfLines={3} style={active ? { color: c.primary } : undefined}>{song.title}</T>
+        <T soft size={12} numberOfLines={1}>{status ?? cat.name}</T>
+      </View>
+    </Pressable>
+  );
+}
+
 /** An empty list: a large friendly icon in a soft circle, a title, and what to do. */
 export function EmptyState({ icon, emoji, title, body, children }: {
   icon?: IconName;
@@ -212,6 +268,10 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 const styles = StyleSheet.create({
+  tile: { borderRadius: radius.m, padding: space.m, borderWidth: 2, overflow: 'hidden' },
+  tileTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  tileLead: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  tileMore: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginTop: -8, marginEnd: -8 },
   button: {
     minHeight: TOUCH,
     borderRadius: radius.m,

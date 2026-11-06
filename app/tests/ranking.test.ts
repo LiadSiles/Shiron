@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { frecency, orderCategoryTiles, RANKING, rankSongs } from '../src/core/ranking';
 import { textOn } from '../src/core/color';
-import { CATEGORIES } from '../src/core/categories';
+import { BUILTIN_CATEGORIES } from '../src/core/categories';
 import { DAY, NOW } from './fixtures';
 
 describe('ranking', () => {
@@ -55,6 +55,6 @@ describe('library tiles', () => {
     expect(textOn('#F2C94C')).toBe('#1B1B22');
     // The brand coral: white, like the buttons (large text needs 3:1).
     expect(textOn('#D9573B')).toBe('#FFFFFF');
-    for (const c of CATEGORIES) expect(['#FFFFFF', '#1B1B22']).toContain(textOn(c.color));
+    for (const c of BUILTIN_CATEGORIES) expect(['#FFFFFF', '#1B1B22']).toContain(textOn(c.color));
   });
 });

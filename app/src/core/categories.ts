@@ -1,6 +1,9 @@
 /**
- * Default category taxonomy for an Israeli kindergarten.
- * One flat list: every topic is its own category, with no groups above it (owner's decision).
+ * Category taxonomy for an Israeli kindergarten: a built-in flat list (every topic is its own
+ * category, no groups above it — owner's decision) that the teacher can change: rename, new
+ * emoji or colour, remove, and add her own (0.10). Her changes live in the database
+ * (`category_custom`) and are applied here with applyCategoryCustomizations, so getCategory and
+ * allCategories stay synchronous for the UI and the AI prompt.
  * Pure TypeScript (no React Native imports), unit-tested.
  */
 
@@ -25,9 +28,12 @@ export interface Category {
   /** Local hours [start, end) when this category is suggested on the home screen. */
   hours?: [number, number];
   season?: SeasonWindow;
+  /** Hers, not built in. */
+  custom?: boolean;
 }
 
-export const CATEGORIES: Category[] = [
+/** The built-in list, before her changes. */
+export const BUILTIN_CATEGORIES: Category[] = [
   { id: 'morning', name: 'בוקר טוב', icon: '☀️', color: '#F2A93B', hint: 'שירי פתיחת יום, מעגל בוקר, שלום לחברים', hours: [7, 10] },
   { id: 'meal', name: 'ארוחה', icon: '🍎', color: '#E46B5D', hint: 'ברכות לפני אוכל, שירי ארוחת עשר וצהריים', hours: [9, 13] },
   { id: 'cleanup', name: 'סידור', icon: '🧺', color: '#6BAF92', hint: 'שירים לסידור הגן ואיסוף צעצועים' },
@@ -67,14 +73,62 @@ export const CATEGORIES: Category[] = [
   { id: 'unsorted', name: 'לא מסווג', icon: '🎵', color: '#9E9E9E', hint: 'כשאין קטגוריה מתאימה' },
 ];
 
-export const CATEGORY_BY_ID: Record<string, Category> = Object.fromEntries(
-  CATEGORIES.map((c) => [c.id, c]),
-);
-
 export const UNSORTED_ID = 'unsorted';
 
+/** One row of her changes: to a built-in category (by its id) or a category of her own. */
+export interface CategoryCustomization {
+  id: string;
+  /** null = keep the built-in value */
+  name: string | null;
+  icon: string | null;
+  color: string | null;
+  /** Removed (built-in categories are hidden, not deleted). */
+  hidden: boolean;
+  createdAt: number;
+}
+
+const BUILTIN_BY_ID: Record<string, Category> = Object.fromEntries(BUILTIN_CATEGORIES.map((c) => [c.id, c]));
+
+let current: Category[] = BUILTIN_CATEGORIES;
+let byId: Record<string, Category> = BUILTIN_BY_ID;
+
+export function isBuiltinCategory(id: string): boolean {
+  return id in BUILTIN_BY_ID;
+}
+
+/**
+ * The categories as she arranged them: built-ins with her name/emoji/colour, minus the ones she
+ * removed, then her own (oldest first), "לא מסווג" last. "לא מסווג" can't be removed.
+ */
+export function mergeCategories(rows: CategoryCustomization[]): Category[] {
+  const rowById = new Map(rows.map((r) => [r.id, r]));
+  const builtins = BUILTIN_CATEGORIES.filter((c) => c.id !== UNSORTED_ID && !rowById.get(c.id)?.hidden).map((c) => {
+    const r = rowById.get(c.id);
+    return r ? { ...c, name: r.name?.trim() || c.name, icon: r.icon || c.icon, color: r.color || c.color } : c;
+  });
+  const own = rows
+    .filter((r) => !isBuiltinCategory(r.id) && !r.hidden && r.name?.trim())
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .map((r): Category => ({ id: r.id, name: r.name!.trim(), icon: r.icon || '🎵', color: r.color || '#8E7CC3', hint: r.name!.trim(), custom: true }));
+  const unsorted = BUILTIN_BY_ID[UNSORTED_ID];
+  const u = rowById.get(UNSORTED_ID);
+  return [...builtins, ...own, u ? { ...unsorted, name: u.name?.trim() || unsorted.name, icon: u.icon || unsorted.icon } : unsorted];
+}
+
+/** Applies her changes for everything that reads categories (call after loading them). */
+export function applyCategoryCustomizations(rows: CategoryCustomization[]): void {
+  current = mergeCategories(rows);
+  byId = Object.fromEntries(current.map((c) => [c.id, c]));
+}
+
+/** Every category in use, in order ("לא מסווג" last). */
+export function allCategories(): Category[] {
+  return current;
+}
+
+/** A category by id; a removed or unknown one shows as "לא מסווג". */
 export function getCategory(id: string): Category {
-  return CATEGORY_BY_ID[id] ?? CATEGORY_BY_ID[UNSORTED_ID];
+  return byId[id] ?? byId[UNSORTED_ID];
 }
 
 // ---------- Hebrew calendar helpers ----------
@@ -146,12 +200,12 @@ export function activeCategoryIds(now: Date, hebrew: HebrewDate | null = toHebre
 } {
   const hour = now.getHours();
   const seasonal = hebrew
-    ? CATEGORIES.filter((c) => c.season && inSeason(c.season, hebrew)).map((c) => c.id)
+    ? allCategories().filter((c) => c.season && inSeason(c.season, hebrew)).map((c) => c.id)
     : [];
   // Shabbat songs on Thursday afternoon and Friday (kindergartens meet on Friday morning).
   const dow = now.getDay();
   if (dow === 5 || (dow === 4 && hour >= 12)) seasonal.push('shabbat');
-  const timeOfDay = CATEGORIES.filter((c) => c.hours && hour >= c.hours[0] && hour < c.hours[1])
+  const timeOfDay = allCategories().filter((c) => c.hours && hour >= c.hours[0] && hour < c.hours[1])
     .map((c) => c.id);
   return { seasonal, timeOfDay };
 }

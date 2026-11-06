@@ -1,4 +1,4 @@
-import { CATEGORIES, getCategory } from './categories';
+import { allCategories, getCategory } from './categories';
 import { MATCH, normalize, tokenize, tokenMatch } from './hebrew';
 import type { SongWithCategories } from './types';
 
@@ -59,7 +59,7 @@ function indexSong(song: SongWithCategories): Indexed {
 export function matchCategories(query: string): string[] {
   const q = tokenize(query);
   if (!q.length) return [];
-  return CATEGORIES.filter((c) => {
+  return allCategories().filter((c) => {
     const name = tokenize(c.name);
     return q.every((t) => name.some((n) => tokenMatch(t, n) >= MATCH.spelling));
   }).map((c) => c.id);

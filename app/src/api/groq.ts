@@ -11,7 +11,7 @@ import {
   SongInput,
   SYSTEM_PROMPT,
   TRANSCRIPTION_PROMPT,
-  UNDERSTANDING_SCHEMA,
+  understandingSchema,
   Understanding,
 } from '../core/understand';
 import { cleanTranscript } from '../core/transcript';
@@ -27,8 +27,12 @@ export async function checkGroqKey(key: string): Promise<boolean> {
   throw errorFromGroq(res.status, await res.text(), (h) => res.headers.get(h));
 }
 
-/** Whisper transcription in Hebrew; null when the file is over the free upload limit. */
-export async function transcribe(key: string, audio: File, mimeType: string): Promise<string | null> {
+/**
+ * Whisper transcription in Hebrew; null when the file is over the free upload limit.
+ * `previous`: the end of the part before (transcribing part by part), so Whisper carries on
+ * the same song — its prompt allows ~224 tokens.
+ */
+export async function transcribe(key: string, audio: File, mimeType: string, previous: string | null = null): Promise<string | null> {
   if ((audio.size ?? 0) > MAX_TRANSCRIPTION_BYTES) return null;
   return eachModel(TRANSCRIPTION_MODELS, async (model) => {
     let res;
@@ -42,7 +46,7 @@ export async function transcribe(key: string, audio: File, mimeType: string): Pr
         parameters: {
           model,
           language: 'he',
-          prompt: TRANSCRIPTION_PROMPT,
+          prompt: previous ? `${TRANSCRIPTION_PROMPT} ${previous.slice(-200)}` : TRANSCRIPTION_PROMPT,
           response_format: 'verbose_json',
           'timestamp_granularities[]': 'segment',
           temperature: '0',
@@ -99,7 +103,7 @@ async function chat(key: string, model: string, input: SongInput, strict: boolea
         { role: 'user', content: buildUserMessage(input) },
       ],
       response_format: strict
-        ? { type: 'json_schema', json_schema: { name: 'song', strict: true, schema: UNDERSTANDING_SCHEMA } }
+        ? { type: 'json_schema', json_schema: { name: 'song', strict: true, schema: understandingSchema() } }
         : { type: 'json_object' },
     },
     90_000,

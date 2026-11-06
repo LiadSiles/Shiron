@@ -131,6 +131,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="index" options={{ headerShown: false, title: 'PlayGan' }} />
           <Stack.Screen name="category/[id]" options={{ title: '' }} />
+          <Stack.Screen name="category/edit" options={{ presentation: 'modal', title: '' }} />
           <Stack.Screen name="song/[id]" options={{ title: 'פרטי שיר' }} />
           <Stack.Screen name="playlist/[id]" options={{ title: '' }} />
           <Stack.Screen name="playlist/pick" options={{ presentation: 'modal', title: 'בחירת שירים' }} />

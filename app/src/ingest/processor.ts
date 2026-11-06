@@ -8,7 +8,8 @@ import { keepCategories, mimeOf, unsupportedFormat } from '../core/ingestRules';
 import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
-import { getSong, listSongs, setCategories, updateSong } from '../db/repo';
+import { applyCategoryCustomizations } from '../core/categories';
+import { getSong, listCategoryCustomizations, listSongs, setCategories, updateSong } from '../db/repo';
 import { diag } from '../diag/log';
 import { isQueued } from '../player/player';
 import { deleteStored, resolveStored, songsDir, toStoredPath } from './storage';
@@ -107,6 +108,8 @@ async function nameSongs() {
   }
   setState({ needsKey: false });
   if (Date.now() < processorStore.get().pausedUntil) return;
+  // The AI picks from her categories (renamed, removed, her own), even before the library loaded.
+  applyCategoryCustomizations(await listCategoryCustomizations());
 
   for (const [i, queued] of pending.entries()) {
     const song = await getSong(queued.id);

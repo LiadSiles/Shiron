@@ -1,10 +1,10 @@
-import { activeCategoryIds, CATEGORIES, getCategory, UNSORTED_ID } from '../core/categories';
+import { activeCategoryIds, allCategories, applyCategoryCustomizations, getCategory, UNSORTED_ID } from '../core/categories';
 import { CategoryTile, frecency, orderCategoryTiles, rankSongs } from '../core/ranking';
 import type { PlayEvent, Playlist, SongWithCategories } from '../core/types';
 import { createStore } from '../core/store';
 import { diag } from '../diag/log';
 import { useStore } from '../ui/useStore';
-import { listPlaylists, listSongs, onLibraryChange, playsBySong, recentlyPlayedIds } from './repo';
+import { listCategoryCustomizations, listPlaylists, listSongs, onLibraryChange, playsBySong, recentlyPlayedIds } from './repo';
 
 export interface LibraryState {
   loading: boolean;
@@ -49,9 +49,11 @@ async function load() {
   do {
     again = false;
     try {
-      const [songs, plays, recentIds, playlists] = await Promise.all([
-        listSongs(), playsBySong(), recentlyPlayedIds(10), listPlaylists(),
+      const [songs, plays, recentIds, playlists, custom] = await Promise.all([
+        listSongs(), playsBySong(), recentlyPlayedIds(10), listPlaylists(), listCategoryCustomizations(),
       ]);
+      // Her categories first: everything derived below (tiles, names, the AI's list) reads them.
+      applyCategoryCustomizations(custom);
       libraryStore.set({ lib: derive({ songs, plays, recentIds, playlists }, false) });
     } catch (e) {
       diag('library load failed', e);
@@ -103,13 +105,25 @@ export function songsFor(lib: LibraryState, id: string, now = Date.now()): SongW
   return rankedCategory(lib, id, now);
 }
 
-/** Library tiles: categories that have songs, in season and most used first. */
-export function categoryTiles(lib: LibraryState, now = Date.now()): CategoryTile[] {
+export type LibraryTile = CategoryTile & { name: string; plays: number };
+
+/**
+ * Library tiles: categories that have songs — and her own, even while empty — in season and
+ * most used first.
+ */
+export function categoryTiles(lib: LibraryState, now = Date.now()): LibraryTile[] {
   const { seasonal } = activeCategoryIds(new Date(now));
-  const tiles = CATEGORIES.map((c) => {
+  const tiles = allCategories().map((c) => {
     const songs = rankedCategory(lib, c.id, now, seasonal);
-    return { id: c.id, count: songs.length, usage: songs.reduce((sum, s) => sum + (lib.usage[s.id] ?? 0), 0) };
-  }).filter((t) => t.count > 0);
+    return {
+      id: c.id,
+      name: c.name,
+      count: songs.length,
+      usage: songs.reduce((sum, s) => sum + (lib.usage[s.id] ?? 0), 0),
+      plays: songs.reduce((sum, s) => sum + (lib.plays.get(s.id)?.length ?? 0), 0),
+      custom: !!c.custom,
+    };
+  }).filter((t) => t.count > 0 || t.custom).map(({ custom: _custom, ...t }) => t);
   return orderCategoryTiles(tiles, seasonal);
 }
 

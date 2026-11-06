@@ -34,6 +34,7 @@ without a key. Details: [audio-processing.md](audio-processing.md), [ai-pipeline
 | `play_events` | `song_id`, `started_at`, `listened_sec` | one row per listening session, for ranking |
 | `playlists` | `id` (uuid), `name`, `created_at`, `updated_at` | her own lists (0.7.0, DB v6) |
 | `playlist_songs` | `playlist_id`, `song_id`, `position` | PK (playlist, song): a song is in a list once; both FKs cascade, so deleting a song or a list cleans up |
+| `category_custom` | `id`, `name`, `icon`, `color`, `hidden`, `created_at` | her changes to a built-in category (by its id; `hidden` = removed) or a category of her own (`u-<uuid>`), DB v7 (0.10.0) |
 | `settings` | `key`, `value` | `connectOffered`, `recentSearches` (JSON), `diagLog` (JSON, last 150 lines) |
 
 The Groq key is **not** in SQLite: `expo-secure-store`.
@@ -43,7 +44,7 @@ count. Never edit an existing migration. v2 (0.2.0) added `audio_state`; v3 (0.3
 old server's `failed` status back to `pending` (the status no longer exists). v4 (0.3.4) set
 `audio_state = 'done'` on YouTube songs (they were saved as `raw`, and a raw song without a
 playable file shows a spinner — `isPreparing()` now also checks `kind`). v5 (0.5.0) moved `review` → `ready`; v6 (0.7.0) added
-`playlists` and `playlist_songs`.
+`playlists` and `playlist_songs`; v7 (0.10.0) added `category_custom`.
 
 **Paths are stored relative** to the document directory (`songs/<file>`), resolved with
 `ingest/storage.ts → resolveStored()`. iOS changes the absolute container path on app
@@ -70,6 +71,11 @@ no-op when nothing changed) and components read them with `useStore(store, selec
 | player | `player/player.ts` → `usePlayer()`, `usePlayerSelect(sel)` | player screens; rows select only "am I playing" |
 | `processorStore` | `ingest/processor.ts` | status banner, home banner, settings, background work |
 | `importStore` | `ingest/ingest.ts` | status banner, background work |
+| `viewPrefs` | `ui/viewPrefs.ts` (saved in `settings`) | library, category and playlist screens: sort + rows/tiles |
+
+Categories are not a store: `core/categories.ts` keeps the merged list (built-ins + her
+changes from `category_custom`) in module state, applied by the library load and by the AI lane
+before naming; screens re-render with the library.
 
 `useLibrary()` keeps **one** in-memory copy of all songs, categories, plays and playlists for
 the whole app (since 0.8.1; before, each screen loaded its own). It loads on first use and again

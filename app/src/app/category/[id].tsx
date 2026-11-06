@@ -1,42 +1,89 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { FlatList, View } from 'react-native';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
+import { FlatList, Pressable, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getCategory } from '../../core/categories';
+import { getCategory, UNSORTED_ID } from '../../core/categories';
 import { canStart } from '../../core/ingestRules';
+import { SONG_SORTS, sortSongs } from '../../core/sorting';
 import { ALL_ID, RECENT_ID, songsFor, useLibrary } from '../../db/useLibrary';
-import { Button, CategoryBadge, EmptyState, playAll, SongRow, T } from '../../ui/components';
+import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from '../../ui/components';
+import { Icon } from '../../ui/Icon';
 import { MiniPlayer } from '../../ui/MiniPlayer';
-import { space } from '../../ui/theme';
+import { space, useTheme } from '../../ui/theme';
+import { useStore } from '../../ui/useStore';
+import { setViewPref, viewPrefs } from '../../ui/viewPrefs';
+import { ViewControls } from '../../ui/ViewControls';
+
+const COLUMNS = 2;
 
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const c = useTheme();
   const lib = useLibrary();
+  const prefs = useStore(viewPrefs);
+  const { width } = useWindowDimensions();
   const isAll = id === ALL_ID;
   const isRecent = id === RECENT_ID;
   const isList = isAll || isRecent;
   const cat = getCategory(id);
-  const songs = songsFor(lib, id);
+  const editable = !isList && id !== UNSORTED_ID;
+  const songs = useMemo(() => sortSongs(songsFor(lib, id), prefs.songSort, lib.plays), [lib, id, prefs.songSort]);
   const playable = songs.filter(canStart);
+  const tiles = prefs.songLayout === 'tiles';
+  const size = Math.floor((width - space.l * 2 - space.m * (COLUMNS - 1)) / COLUMNS);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
-      <Stack.Screen options={{ title: isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name }} />
+      <Stack.Screen
+        options={{
+          title: isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name,
+          headerRight: editable
+            ? () => (
+                <Pressable
+                  onPress={() => router.push({ pathname: '/category/edit', params: { id } })}
+                  accessibilityRole="button"
+                  accessibilityLabel="עריכת הקטגוריה"
+                  hitSlop={8}
+                  style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Icon name="create-outline" size={24} color={c.primary} />
+                </Pressable>
+              )
+            : undefined,
+        }}
+      />
       <FlatList
+        key={prefs.songLayout}
         data={songs}
+        numColumns={tiles ? COLUMNS : 1}
+        columnWrapperStyle={tiles ? { gap: space.m } : undefined}
         keyExtractor={(s) => s.id}
-        contentContainerStyle={{ padding: space.l, paddingBottom: 24 }}
+        contentContainerStyle={{ padding: space.l, paddingBottom: 24, gap: tiles ? space.m : undefined }}
         ListHeaderComponent={
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.m, marginBottom: space.l }}>
-            {!isList ? <CategoryBadge id={cat.id} size={56} /> : null}
-            <View style={{ flex: 1 }}>
-              <T soft>{songs.length} שירים · {isRecent ? 'החדשים למעלה' : 'השירים הנפוצים למעלה'}</T>
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.m, marginBottom: space.m }}>
+              {!isList ? <CategoryBadge id={cat.id} size={56} /> : null}
+              <View style={{ flex: 1 }}>
+                <T soft>{songs.length} שירים</T>
+              </View>
+              {playable.length > 1 ? (
+                <Button label="נגני הכול" icon="play" onPress={() => playAll(playable)} />
+              ) : null}
             </View>
-            {playable.length > 1 ? (
-              <Button label="נגני הכול" icon="play" onPress={() => playAll(playable)} />
+            {songs.length > 1 ? (
+              <ViewControls
+                sorts={SONG_SORTS.filter((s) => s.id !== 'manual')}
+                sort={prefs.songSort}
+                onSort={(songSort) => setViewPref({ songSort })}
+                layout={prefs.songLayout}
+                onLayout={(songLayout) => setViewPref({ songLayout })}
+              />
             ) : null}
           </View>
         }
-        renderItem={({ item }) => <SongRow song={item} queue={songs} showCategory={isList} />}
+        renderItem={({ item }) =>
+          tiles ? <SongTile song={item} queue={songs} size={size} /> : <SongRow song={item} queue={songs} showCategory={isList} />
+        }
         ListEmptyComponent={<EmptyState emoji={cat.icon} title="אין כאן שירים עדיין" body="שירים שיסווגו לקטגוריה הזו יופיעו כאן." />}
       />
       <MiniPlayer />

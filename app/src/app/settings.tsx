@@ -5,10 +5,13 @@ import { appGroupStatus } from '../../modules/shiron-audio';
 import { connectedProviders, getPreferred, onKeysChange, removeKey, setPreferred } from '../api/keys';
 import { PROVIDER_IDS, PROVIDERS, ProviderId } from '../core/ai';
 import { processorStore } from '../ingest/processor';
+import { isBuiltinCategory } from '../core/categories';
+import { listCategoryCustomizations, onLibraryChange, restoreBuiltinCategories } from '../db/repo';
 import Constants from 'expo-constants';
 import { T } from '../ui/components';
 import { Icon } from '../ui/Icon';
 import { pickAndImport } from '../ui/importResult';
+import { toast } from '../ui/toast';
 import { ListGroup, ListItem } from '../ui/list';
 import { radius, space, useTheme } from '../ui/theme';
 import { useStore } from '../ui/useStore';
@@ -21,6 +24,16 @@ export default function SettingsScreen() {
   const [connected, setConnected] = useState<ProviderId[] | null>(null);
   const [preferred, setPreferredState] = useState<ProviderId>('groq');
   const proc = useStore(processorStore);
+  const [removed, setRemoved] = useState(0);
+
+  useEffect(() => {
+    const load = () =>
+      listCategoryCustomizations()
+        .then((rows) => setRemoved(rows.filter((r) => r.hidden && isBuiltinCategory(r.id)).length))
+        .catch(() => undefined);
+    load();
+    return onLibraryChange(load);
+  }, []);
 
   useEffect(() => {
     const load = () => {
@@ -122,6 +135,22 @@ export default function SettingsScreen() {
           last
         />
       </ListGroup>
+
+      {removed ? (
+        <ListGroup title="קטגוריות">
+          <ListItem
+            icon="refresh"
+            tint={c.inkSoft}
+            title="החזרת קטגוריות שהוסרו"
+            subtitle={removed === 1 ? 'קטגוריה מובנית אחת הוסרה' : `${removed} קטגוריות מובנות הוסרו`}
+            onPress={async () => {
+              await restoreBuiltinCategories();
+              toast('הקטגוריות חזרו', 'success');
+            }}
+            last
+          />
+        </ListGroup>
+      ) : null}
 
       <ListGroup title="עזרה">
         <ListItem
