@@ -143,9 +143,36 @@ let shareQueue: Promise<unknown> = Promise.resolve();
 let waiting = 0;
 
 export function enqueueShare(intent: ShareIntent): Promise<ImportSummary> {
+  return enqueue(() => importShareIntent(intent));
+}
+
+/**
+ * A file iOS opened in the app ("Open in PlayGan"; see core/incoming). iOS put a copy in
+ * Documents/Inbox for us; it is removed once saved, so the inbox doesn't grow.
+ */
+export function enqueueOpenedFile(uri: string, name: string): Promise<ImportSummary> {
+  return enqueue(async () => {
+    diag('file opened in the app', name, uri.slice(0, 80));
+    const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
+    const file = new File(uri);
+    try {
+      await importFiles([{ file, name, mime: null }], null, summary);
+    } finally {
+      try {
+        if (file.exists) file.delete();
+      } catch (e) {
+        diag('inbox cleanup failed', name, e);
+      }
+    }
+    if (summary.added.length) processQueue();
+    return summary;
+  });
+}
+
+function enqueue(job: () => Promise<ImportSummary>): Promise<ImportSummary> {
   waiting += 1;
   setImportState({ saving: true, queued: waiting - 1 });
-  const done = shareQueue.then(() => importShareIntent(intent)).finally(() => {
+  const done = shareQueue.then(job).finally(() => {
     waiting -= 1;
     setImportState(waiting ? { queued: waiting - 1 } : { saving: false, queued: 0, done: 0, total: 0 });
   });

@@ -51,6 +51,8 @@ jobs:
           grep -q 'NSExtensionActivationSupportsMovieWithMaxCount' ios/PlayGan/ShareExtension-Info.plist || fail "share extension does not accept videos"
           grep -A1 CFBundleDisplayName ios/app/Info.plist | grep -q PlayGan || fail "iOS home-screen name is not PlayGan"
           grep -A1 CFBundleDisplayName ios/PlayGan/ShareExtension-Info.plist | grep -q PlayGan || fail "share-sheet name is not PlayGan"
+          grep -q 'resolvedAppGroup' ios/PlayGan/ShareViewController.swift || fail "share extension is the library template, not ours (patches/expo-share-intent)"
+          grep -q 'org.xiph.opus' ios/app/Info.plist || fail "\"Open in PlayGan\" document types missing"
           grep -q 'mediaPlayback' android/app/src/main/AndroidManifest.xml || fail "media playback service missing"
           grep -q 'audio/\*' android/app/src/main/AndroidManifest.xml || fail "audio share intent missing"
           grep -q 'video/\*' android/app/src/main/AndroidManifest.xml || fail "video share intent missing"

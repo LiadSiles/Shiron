@@ -110,7 +110,9 @@ Needs the owner's Apple Developer account ($99/yr) and an Expo account:
 
 See `.github/release-install.md` (also appended to every release). Android: download APK,
 allow unknown sources once, install over the previous version. iPhone: Sideloadly with an
-Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+.
+Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+. Sideloadly with a
+free ID grants no App Group, so the share extension can pass links but not files; files come in
+through "Open in PlayGan". AltStore/SideStore (free) or a paid account give the full share.
 
 ## Local builds
 

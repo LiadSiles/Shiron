@@ -13,9 +13,16 @@ _Last verified: 2026-10-26 (0.2.0; share flow not yet tested on a device)_
   the Xcode target name; a Hebrew name became "" and prebuild failed with
   `withIosXcodeprojBaseMod: Target name missing`. The display name in the share sheet is
   therefore "Shiron".
+- iOS: the extension's controller is ours (patch-package replaces the plugin's template; see
+  [decisions.md](decisions.md) 2026-11-06): it finds the App Group the signature really grants,
+  reads audio/video from any provider, and never leaves the share sheet hanging.
 - The extension opens the app with `shiron://dataUrl=<key>`; `src/app/+native-intent.tsx`
-  redirects that to `/` so expo-router doesn't show "unmatched route".
-- `ShareHandler` in `_layout.tsx` imports, toasts a summary, then `resetShareIntent()`.
+  redirects that to `/` so expo-router doesn't show "unmatched route". Same for the two links
+  `core/incoming.ts` reads: `shiron://share?text=…` (extension without an App Group) and
+  `file://…/Documents/Inbox/…` ("Open in PlayGan", `enqueueOpenedFile`, which deletes the inbox
+  copy once saved).
+- `ShareHandler` in `_layout.tsx` imports, toasts a summary, then `resetShareIntent()`; it also
+  watches the app's incoming link (`useLinkingURL`) for the two links above.
 - Expo Go cannot test this (native code). Needs a dev or release build.
 
 ## What a share contains

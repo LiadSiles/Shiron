@@ -1,19 +1,24 @@
 import { Rubik_400Regular, Rubik_500Medium, Rubik_700Bold, useFonts } from '@expo-google-fonts/rubik';
+import { useLinkingURL } from 'expo-linking';
 import { router, Stack } from 'expo-router';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { connectedProviders } from '../api/keys';
 import { getSetting, setSetting } from '../db/repo';
-import { describeSummary, enqueueShare } from '../ingest/ingest';
+import { parseIncomingUrl } from '../core/incoming';
+import { describeSummary, enqueueOpenedFile, enqueueShare, ImportSummary } from '../ingest/ingest';
 import { keepWorkingInBackground, registerBackgroundProcessing } from '../ingest/background';
 import { processQueue } from '../ingest/processor';
 import { appReady, SPLASH_MAX_MS } from '../ui/launch';
 import { font, useTheme } from '../ui/theme';
 import { StatusHost, toast } from '../ui/toast';
+
+/** app.json → expo.scheme */
+const SCHEME = 'shiron';
 
 // Hebrew UI: right-to-left everywhere. The config plugin forces it natively;
 // this covers the very first launch on Android.
@@ -34,20 +39,38 @@ function ShareHandler() {
     if (!hasShareIntent) return;
     const intent = shareIntent;
     resetShareIntent(); // free the slot for the next share; the files stay where they are
-    // Progress shows in the status banner (ui/ActivityBanner); the result as a toast.
-    enqueueShare(intent)
-      .then(async (s) => {
-        toast(describeSummary(s), s.added.length ? 'success' : 'info');
-        if (s.added.length) await offerConnectOnce();
-      })
-      .catch((e) => toast(`השמירה נכשלה: ${String(e)}`, 'error'));
+    report(enqueueShare(intent));
   }, [hasShareIntent, shareIntent, resetShareIntent]);
 
   useEffect(() => {
     if (error) toast(`שגיאה בקבלת השיתוף: ${error}`, 'error');
   }, [error]);
 
+  // "Open in PlayGan" files and links the extension sent in the URL (core/incoming).
+  const url = useLinkingURL();
+  const handled = useRef<string | null>(null);
+  useEffect(() => {
+    const incoming = parseIncomingUrl(url, SCHEME);
+    if (!incoming || handled.current === url) return;
+    handled.current = url;
+    report(
+      incoming.kind === 'file'
+        ? enqueueOpenedFile(incoming.uri, incoming.name)
+        : enqueueShare({ type: 'text', text: incoming.text, files: null, webUrl: null }),
+    );
+  }, [url]);
+
   return null;
+}
+
+/** Progress shows in the status banner (ui/ActivityBanner); the result as a toast. */
+function report(saving: Promise<ImportSummary>) {
+  saving
+    .then(async (s) => {
+      toast(describeSummary(s), s.added.length ? 'success' : 'info');
+      if (s.added.length) await offerConnectOnce();
+    })
+    .catch((e) => toast(`השמירה נכשלה: ${String(e)}`, 'error'));
 }
 
 /** After the first song arrives, show how to connect an AI service — once; later the home banner reminds. */

@@ -75,6 +75,8 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     store.ts                 the shared-state container (read in React with ui/useStore)
     queue.ts                 play order: audio runs, next/previous, repeat modes
     transcript.ts            dropping Whisper's invented lines ("תודה רבה", loops)
+    incoming.ts              links that bring a song in besides the share extension's
+                             ("Open in PlayGan" file://, shiron://share?text=)
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
   src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts
@@ -94,8 +96,9 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     fixtures/                one test signal in every format (see its README)
   plugins/withSigningKey.js  signs Android builds with app/keystore/shiron.keystore
   plugins/withKeepRules.js   R8 keep rules (WorkManager; release crashed at launch without them)
-  patches/                   patch-package diffs (expo-audio notification; must also be in
-                             package.json → expo.autolinking.android.buildFromSource)
+  patches/                   patch-package diffs: expo-share-intent (our iOS share extension
+                             controller + App Group lookup); expo-audio notification (must also
+                             be in package.json → expo.autolinking.android.buildFromSource)
   tests/                     vitest — one file per core module, fixtures.ts
 scripts/                     version bump, CI build-number stamp
 docs/wiki/                   engineering knowledge (this is for you)

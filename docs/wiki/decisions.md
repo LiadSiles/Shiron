@@ -3,6 +3,26 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-06 — Our own iOS share extension, and "Open in PlayGan" (0.9.2)
+First iPhone install (Sideloadly, free Apple ID): sharing a recording from WhatsApp froze
+WhatsApp and nothing arrived. Sideloadly with a free Apple ID grants no App Group, and the
+library's extension force-unwrapped the group container and crashed behind its invisible view.
+- The extension controller is ours (`patches/expo-share-intent+9.0.0.patch` replaces the
+  plugin's template; the module gets the same App Group lookup). It looks the group up:
+  declared name → `ALTAppGroups` (AltStore/SideStore rename it) → the embedded provisioning
+  profile. It reads audio/video from any provider (WhatsApp offers a voice note as an audio file
+  representation, not necessarily a file URL), one attachment at a time, and always ends the
+  request (alert in Hebrew, 60 s watchdog).
+- Without a group, a link or text travels in the URL (`shiron://share?text=…`, parsed by
+  `core/incoming.ts`); files cannot, so the alert says what to do.
+- The app declares audio/video document types (plus Opus/Ogg type declarations iOS lacks), so
+  "Open in PlayGan" brings a file in on any install: iOS copies it to `Documents/Inbox`, the
+  app receives a `file://` link, saves it and deletes the inbox copy.
+- Rejected: passing files through the pasteboard (wipes or races her clipboard, size limits)
+  or inside the URL (megabytes). The real fix for the teacher is a signing route that grants App
+  Groups — AltStore/SideStore (free, auto-refresh) or a paid Apple Developer account
+  (TestFlight); the owner decides.
+
 ### 2026-10-26 — No server: audio on the phone, AI through Groq with the teacher's own key (0.2.0)
 Owner: processing must happen in the app, not on a server behind the scenes; support more
 formats (mpeg and anything that may arrive); understanding (including transcription) by
