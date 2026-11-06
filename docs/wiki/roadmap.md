@@ -25,6 +25,7 @@ _Last updated: 2026-11-06_
 | 0.9.0 | Renamed PlayGan (visible names only; ids unchanged), xylophone play-arrow logo, previous button in the mini player | released as v0.9.0 — emulator walk passed (light/dark) |
 | 0.9.1 | Logo: arrow smaller and optically centred, notes a little bigger | released as v0.9.1 |
 | 0.9.2 | iPhone sharing on a Sideloadly install: own share extension controller (App Group lookup, no hangs), "Open in PlayGan" document types | released as v0.9.2 — checked on the simulator |
+| 0.9.3 | iPhone: no-App-Group message points to Files; "Open in PlayGan" removed (never shown); iPhone share check on the simulator | released as v0.9.3 |
 | 0.10 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.11 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
 | 0.12 | Sleep timer with fade, big-tile class mode | planned |
