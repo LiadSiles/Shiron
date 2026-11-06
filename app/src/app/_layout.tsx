@@ -2,6 +2,7 @@ import { Rubik_400Regular, Rubik_500Medium, Rubik_700Bold, useFonts } from '@exp
 import { router, Stack } from 'expo-router';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
 import { AppState, I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,6 +11,7 @@ import { getSetting, setSetting } from '../db/repo';
 import { describeSummary, enqueueShare } from '../ingest/ingest';
 import { keepWorkingInBackground, registerBackgroundProcessing } from '../ingest/background';
 import { processQueue } from '../ingest/processor';
+import { appReady, SPLASH_MAX_MS } from '../ui/launch';
 import { font, useTheme } from '../ui/theme';
 import { StatusHost, toast } from '../ui/toast';
 
@@ -60,6 +62,17 @@ export default function RootLayout() {
   const c = useTheme();
   const [fontsLoaded] = useFonts({ Rubik_400Regular, Rubik_500Medium, Rubik_700Bold });
 
+  // The window behind every screen and transition, so nothing ever flashes white (dark mode too).
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(c.bg).catch(() => {});
+  }, [c.bg]);
+
+  // The home screen calls appReady() once its songs are drawn; this is only the safety net.
+  useEffect(() => {
+    const t = setTimeout(appReady, SPLASH_MAX_MS);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     keepWorkingInBackground();
     processQueue();
@@ -70,6 +83,7 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
 
+  // The splash is still showing meanwhile (ui/launch.ts).
   if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: c.bg }} />;
 
   return (

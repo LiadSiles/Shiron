@@ -97,3 +97,16 @@ stacks, at the top:
   naming (can take long, needs nothing from her) = a slim line.
 - **Toast** — `toast(text, kind)`; kind `success` / `info` / `error` sets the icon and border
   colour; 17 pt bold, 3.5 s, `accessibilityLiveRegion` for screen readers.
+
+## Launch and app icon (0.8.0)
+
+- No white frame at launch: `expo-splash-screen` (app.json) draws the app's cream (`#FBF7F1`, dark
+  `#16151A`) with the coral notes logo; `ui/launch.ts` keeps it up (`preventAutoHideAsync` at
+  module scope) until the shell has fonts and the library loaded (`appReady()` from
+  `app/index.tsx`), then fades in 250 ms. A 2.5 s cap in `_layout.tsx` means she never waits on
+  it. `expo-system-ui` sets the window background to `c.bg` (light/dark), so transitions never
+  show white either. The Android 12+ system splash is drawn natively, so check it on a release build.
+- The icon set (icon, adaptive foreground/background/monochrome, splash logo, favicon) is drawn
+  as SVG by `app/assets/source/make-icons.py` (Playwright renders it): white beamed notes on a
+  coral gradient with a small sun. Change the drawing there and re-run; don't hand-edit the PNGs.
+

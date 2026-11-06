@@ -7,6 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "backgroundColor": "#FBF7F1",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.shiron.gan",
@@ -76,7 +77,16 @@
       "./plugins/withKeepRules",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-background-task"
+      "expo-background-task",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FBF7F1",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "dark": { "backgroundColor": "#16151A", "image": "./assets/splash-icon.png" }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
