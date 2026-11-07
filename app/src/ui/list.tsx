@@ -1,3 +1,4 @@
+import { rowLabel } from '../core/a11y';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { T } from './components';
 import { Icon, IconName } from './Icon';
@@ -42,7 +43,7 @@ export function ListItem({ icon, tint, title, subtitle, value, onPress, danger, 
       onPress={onPress}
       disabled={!onPress || disabled}
       accessibilityRole={onPress ? 'button' : undefined}
-      accessibilityLabel={subtitle ? `${title}. ${subtitle}` : title}
+      accessibilityLabel={rowLabel(title, value, subtitle)}
       style={({ pressed }) => [styles.row, { backgroundColor: pressed ? c.surfaceAlt : 'transparent', opacity: disabled ? 0.45 : 1 }]}
     >
       <View style={[styles.tile, { backgroundColor: colour + '22' }]}>
