@@ -72,6 +72,12 @@ can't read becomes `audioState = 'unsupported'`.
 ## File picker fallback
 
 Settings and the empty home state offer `File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] })`.
+On Android the picker returns `content://` files whose JS `name` is the last segment of the
+address ("msf:1000000019"): songs were titled with it and had no extension (format checks,
+playing before conversion). `withItsName` copies each picked file into a cache folder — the
+native copy names it after the provider's DISPLAY_NAME — and that copy is moved, not copied
+again, into the library. `fallbackTitle` also refuses such ids (found by the Android
+end-to-end check, 0.12.2).
 Share sheet and picker go through the same `importFiles()`: one unreadable file is logged and
 counted as unsupported, the rest still import, and a copy whose insert failed is deleted (no
 orphan files in `songs/`). `importFromPicker()` returns the toast text itself.

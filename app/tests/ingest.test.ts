@@ -120,3 +120,14 @@ describe('sharing a song', () => {
     expect(youtubeShareText('שיר הגשם', 'dQw4w9WgXcQ')).toBe('שיר הגשם\nhttps://youtu.be/dQw4w9WgXcQ');
   });
 });
+
+describe('names that are not names', () => {
+  it('never titles a song with an Android content id', () => {
+    for (const n of ['msf:1000000019', 'audio:42', 'document:1234.mp3']) {
+      expect(fallbackTitle(n, NOW), n).toMatch(/^הקלטה מ-/);
+    }
+  });
+  it('keeps real names that happen to have a colon', () => {
+    expect(fallbackTitle('שיר: גשם.mp3', NOW)).toBe('שיר: גשם');
+  });
+});

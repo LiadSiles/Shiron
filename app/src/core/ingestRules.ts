@@ -103,7 +103,9 @@ export function youtubeIdFrom(text: string): string | null {
 export function fallbackTitle(fileName: string | null | undefined, createdAt: number): string {
   const base = (fileName ?? '').replace(/\.[a-z0-9]+$/i, '').trim();
   const wa = /^(?:PTT|AUD|VID)-(\d{4})(\d{2})(\d{2})-WA\d+/i.exec(base);
-  const looksMachine = !base || wa || /^[\da-f-]{16,}$/i.test(base) || /^(audio|voice|recording|file)[\s_-]*\d*$/i.test(base);
+  // Android content ids ("msf:1000000019", "audio:42", "primary:Music/…") are not names either.
+  const androidId = /^[a-z]+:[\w/.-]*\d[\w/.-]*$/i.test(base) && !/\s/.test(base);
+  const looksMachine = !base || wa || androidId || /^[\da-f-]{16,}$/i.test(base) || /^(audio|voice|recording|file)[\s_-]*\d*$/i.test(base);
   if (looksMachine) {
     const d = wa ? new Date(Number(wa[1]), Number(wa[2]) - 1, Number(wa[3])) : new Date(createdAt);
     return `הקלטה מ-${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;

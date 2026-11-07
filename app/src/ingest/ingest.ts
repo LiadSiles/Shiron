@@ -1,5 +1,5 @@
 import * as Crypto from 'expo-crypto';
-import { File } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 import type { ShareIntent } from 'expo-share-intent';
 import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, youtubeIdFrom } from '../core/ingestRules';
@@ -32,12 +32,14 @@ async function importMediaFile(
   fileName: string,
   context: string | null,
   summary: ImportSummary,
+  move = false,
 ): Promise<void> {
   const id = Crypto.randomUUID();
   const ext = extensionOf(fileName) || extensionOf(source.uri) || 'audio';
   const dest = new File(songsDir(), `${id}-original.${ext}`);
   try {
-    await source.copy(dest);
+    if (move) await source.move(dest);
+    else await source.copy(dest);
     diag('import', fileName, `${Math.round((dest.size ?? 0) / 1024)} KB`, `from ${source.uri.slice(0, 60)}`);
     const sha256 = await dest.digest('SHA-256');
     const existing = await findBySha(sha256);
@@ -109,7 +111,7 @@ const setImportState = importStore.set;
 
 /** One file failing (unreadable, full disk) never stops the others. */
 async function importFiles(
-  files: { file: File; name: string; mime: string | null | undefined }[],
+  files: { file: File; name: string; mime: string | null | undefined; move?: boolean }[],
   context: string | null,
   summary: ImportSummary,
 ) {
@@ -121,7 +123,7 @@ async function importFiles(
       continue;
     }
     try {
-      await importMediaFile(f.file, f.name, context, summary);
+      await importMediaFile(f.file, f.name, context, summary, f.move);
     } catch (e) {
       diag('import failed', f.name, e);
       summary.unsupported.push(f.name);
@@ -179,6 +181,26 @@ async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
 }
 
 /**
+ * A picked file with the name she sees in the picker. Android hands over a content address
+ * whose last part is an id ("msf:1000000019"), so songs were titled with it and lost their
+ * extension (format checks, playing before conversion). Copying into a folder of ours names the
+ * copy after the file's real display name; that copy is then moved, not copied again.
+ */
+async function withItsName(f: File, staging: Directory): Promise<{ file: File; name: string; move?: boolean }> {
+  if (!f.uri.startsWith('content://')) return { file: f, name: f.name };
+  try {
+    const dir = new Directory(staging, Crypto.randomUUID());
+    dir.create({ intermediates: true });
+    await f.copy(dir);
+    const copy = dir.list().find((x): x is File => x instanceof File);
+    if (copy) return { file: copy, name: copy.name, move: true };
+  } catch (e) {
+    diag('picked file name unknown', f.uri.slice(0, 60), e);
+  }
+  return { file: f, name: f.name };
+}
+
+/**
  * Pick audio or video files from the Files app (for files already on the phone, and the way in
  * for recordings when sharing can't pass files). Null when she cancelled; throws when the
  * picker fails. Shown with ui/importResult.
@@ -188,7 +210,14 @@ export async function importFromPicker(): Promise<ImportSummary | null> {
     const picked = await File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] });
     if (picked.canceled) return null;
     const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
-    await importFiles(picked.result.map((f) => ({ file: f, name: f.name, mime: f.type })), null, summary);
+    const staging = new Directory(Paths.cache, `picked-${Crypto.randomUUID()}`);
+    try {
+      const files = [];
+      for (const f of picked.result) files.push({ ...(await withItsName(f, staging)), mime: f.type });
+      await importFiles(files, null, summary);
+    } finally {
+      if (staging.exists) staging.delete();
+    }
     if (summary.added.length) processQueue();
     return summary;
   } catch (e) {
