@@ -82,12 +82,22 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
 - One YouTube player for the whole app (`ui/YouTubeHost`, 0.11.0): on the full player it is
   placed over the screen's slot (`youtubeView.frame`, window coordinates, re-measured every
   250 ms while the player is the focused screen — one measurement during the slide-in was wrong
-  on the simulator and the video covered the header's back button; a screen opened on top,
+  on the simulator and the video covered the header's back button; a measurement is used only
+  while the screen is focused and only if it is 16:9 below the header; a screen opened on top,
   e.g. details, blurs it and the video drops to the small window); leaving the screen shrinks it to a small window (224 × 200, YouTube's
   minimum is 200 × 200) above the mini player — still visible, still playing, same WebView so
   the video doesn't restart. ⤢ opens the full player, ✕ (`closeYoutube`) stops it; play in the
   mini player then reopens the full player, which autoplays. The player route is a card
   (`slide_from_bottom`), not a native modal, so the overlay can sit above it.
+- Every way to the full player goes through `showPlayer()` (mini player, ⤢, a YouTube song
+  starting): it counts mounted player screens and, if one is already in the stack (details on
+  top of it), `dismissTo('/player')` instead of pushing a second; a push not yet mounted
+  blocks another for 1.5 s. Before 0.11.1 a boolean flag and plain pushes could stack two
+  players, after which "חזרה" seemed to do nothing (owner, 0.11.0 on the iPhone).
+- The small window is dragged by its bar (a grip between ✕ and ⤢) and snaps to the nearest
+  corner, between the header and the mini player; the corner is kept while the app runs. The
+  host is laid out `direction: 'ltr'` so the slot frame and corners are physical coordinates.
+  The WebView doesn't scroll or bounce (it looked like a scrollable box).
 - If the run ends while the app is in the background, the YouTube song starts when she
   returns (iOS/Android don't run an embedded player in the background — by design here).
 - The old `youtube/[id]` screen is gone; "פתיחה באפליקציית יוטיוב" is on the full player.

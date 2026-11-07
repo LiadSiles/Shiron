@@ -239,7 +239,7 @@ async function startAt(index: number) {
       player.clearLockScreenControls(); // the notification would show the previous song
     }
     diag('play youtube', song.title, `${index + 1}/${state().queue.length}`);
-    openPlayerScreen();
+    showPlayer();
     return;
   }
 
@@ -270,18 +270,43 @@ async function startAt(index: number) {
 export interface YoutubeViewState {
   frame: { x: number; y: number; width: number; height: number } | null;
   closed: boolean;
+  /** Where she dragged the small window (it snaps to a corner); kept while the app runs. */
+  corner: PipCorner;
 }
-export const youtubeView = createStore<YoutubeViewState>({ frame: null, closed: false });
+export type PipCorner = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+export const youtubeView = createStore<YoutubeViewState>({ frame: null, closed: false, corner: 'bottom-end' });
 
-let playerScreenOpen = false;
+/**
+ * How many full-player screens are mounted (normally 0 or 1). A count, not a flag: with two
+ * mounted, the first to close used to mark the player as closed while the other was still in
+ * the stack, and every later song pushed one more player — back then seemed to do nothing.
+ */
+let playerScreens = 0;
+/** A push that hasn't mounted yet (two taps or a song change in the same moment). */
+let pushedAt = 0;
+const PUSH_GRACE_MS = 1500;
+
 export function setPlayerScreenOpen(open: boolean) {
-  playerScreenOpen = open;
+  playerScreens = Math.max(0, playerScreens + (open ? 1 : -1));
+  if (open) pushedAt = 0;
   // Leaving the full player doesn't stop YouTube: it carries on in the small window.
   if (!open) youtubeView.set({ frame: null });
 }
-function openPlayerScreen() {
+
+/**
+ * Show the full player — the one way every button gets there (mini player, the small window's
+ * ⤢, a YouTube song starting). If it is already in the stack (details opened on top of it),
+ * go back to it instead of stacking a second one.
+ */
+export function showPlayer() {
   youtubeView.set({ closed: false });
-  if (!playerScreenOpen) router.push('/player');
+  if (playerScreens > 0) {
+    if (router.canDismiss()) router.dismissTo('/player');
+    return;
+  }
+  if (Date.now() - pushedAt < PUSH_GRACE_MS) return;
+  pushedAt = Date.now();
+  router.push('/player');
 }
 
 /** The small YouTube window's ✕: stops the video and hides the window. */
@@ -383,7 +408,7 @@ export function togglePlay(): Promise<void> {
   if (!state().song) return Promise.resolve();
   if (isYoutube(state().song)) {
     if (!youtube) {
-      openPlayerScreen(); // it starts playing when it appears
+      showPlayer(); // it starts playing when it appears
       set({ playing: true });
     } else if (state().playing) {
       youtube.pause();

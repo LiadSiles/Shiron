@@ -34,3 +34,37 @@ appId: app.shiron.gan
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-4f-youtube-details-over-player
+# Back out of details and the player, then in and out of the player twice more through the
+# mini player: "חזרה" must work every time (owner: it stopped working on the second visit).
+- tapOn:
+    text: "חזרה"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "חזרה"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "מתנגן: .*"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "חזרה"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "מתנגן: .*"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "חזרה"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4g-youtube-third-back
+# Drag the small window by its bar to the top of the screen.
+- swipe:
+    start: "27%, 79%"
+    end: "70%, 25%"
+    duration: 800
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4h-youtube-pip-dragged

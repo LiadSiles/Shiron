@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, View, ViewInstance } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCategory, primaryCategoryId } from '../core/categories';
 import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer, youtubeView } from '../player/player';
 import { Button, CategoryBadge, T } from '../ui/components';
@@ -125,26 +126,36 @@ export default function PlayerScreen() {
 /** How often the slot is measured while the player is on screen. */
 const MEASURE_MS = 250;
 
+/** Below the status bar and the header ("חזרה" must stay tappable). */
+const HEADER_MIN = 44;
+
 /**
  * Where the app's one YouTube player sits on this screen. Measured again and again while the
- * player is the screen in front: a single measurement taken while the screen slides in can be
- * wrong (the video then covered the header and its back button on the simulator). When another
- * screen opens on top (details), the video goes back to the small window.
+ * player is the screen in front: a measurement taken while the screen slides in can be wrong
+ * (on the simulator the video then covered the header and its back button). A measurement is
+ * used only while the screen is still in front (one arriving after "חזרה" put the video back
+ * over the next screen) and only if it looks like the slot: 16:9, below the header. When
+ * another screen opens on top (details), the video goes to the small window.
  */
 function YouTubeSlot() {
   const ref = useRef<ViewInstance>(null);
+  const focused = useRef(false);
+  const insets = useSafeAreaInsets();
   const measure = () =>
     ref.current?.measureInWindow((x, y, width, height) => {
-      if (width <= 0 || height <= 0) return;
+      if (!focused.current || width <= 0 || height <= 0) return;
+      if (Math.abs(height - (width * 9) / 16) > 3 || y < insets.top + HEADER_MIN) return;
       const f = youtubeView.get().frame;
       if (f && f.x === x && f.y === y && f.width === width && f.height === height) return;
       youtubeView.set({ frame: { x, y, width, height }, closed: false });
     });
   useFocusEffect(
     useCallback(() => {
+      focused.current = true;
       measure();
       const timer = setInterval(measure, MEASURE_MS);
       return () => {
+        focused.current = false;
         clearInterval(timer);
         youtubeView.set({ frame: null });
       };

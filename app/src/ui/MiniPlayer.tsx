@@ -1,7 +1,6 @@
-import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { getCategory, primaryCategoryId } from '../core/categories';
-import { next, previous, togglePlay, usePlayer } from '../player/player';
+import { next, previous, showPlayer, togglePlay, usePlayer } from '../player/player';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from './icons';
 import { CategoryBadge, T } from './components';
 import { radius, space, TOUCH, useTheme } from './theme';
@@ -16,7 +15,7 @@ export function MiniPlayer() {
 
   return (
     <Pressable
-      onPress={() => router.push('/player')}
+      onPress={showPlayer}
       accessibilityRole="button"
       accessibilityLabel={`מתנגן: ${p.song.title}. פתיחת הנגן`}
       style={[styles.wrap, { backgroundColor: c.surface, borderColor: c.line }]}

@@ -96,6 +96,12 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
         mediaPlaybackRequiresUserAction={false}
         allowsFullscreenVideo
         javaScriptEnabled
+        // A player, not a page: nothing to scroll (in the small window it looked like one).
+        scrollEnabled={false}
+        bounces={false}
+        overScrollMode="never"
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       />
       {phase !== 'ready' ? (
         <View style={[StyleSheet.absoluteFill, styles.overlay]}>
@@ -128,8 +134,8 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
 
 function page(videoId: string): string {
   const id = JSON.stringify(videoId);
-  return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>html,body{margin:0;background:#000;height:100%}#p{width:100%;height:100%}</style></head>
+  return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>html,body{margin:0;background:#000;height:100%;overflow:hidden}#p{width:100%;height:100%}</style></head>
 <body><div id="p"></div>
 <script>
 function post(m){window.ReactNativeWebView.postMessage(JSON.stringify(m));}
