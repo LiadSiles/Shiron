@@ -1,5 +1,5 @@
 diff --git a/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift b/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
-index e52b6d0..a40e82b 100644
+index e52b6d0..b05fcda 100644
 --- a/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
 +++ b/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
 @@ -161,19 +161,33 @@ public class ExpoShareIntentModule: Module {
@@ -47,6 +47,34 @@ index e52b6d0..a40e82b 100644
      }
  
      private func getAbsolutePath(for identifier: String) -> String? {
+@@ -203,13 +217,23 @@ public class ExpoShareIntentModule: Module {
+         return url
+     }
+ 
++    // Shared data that doesn't decode (another version of the extension, a damaged entry) is
++    // dropped and logged; it used to be force-unwrapped and closed the app (PlayGan, 0.12.2).
+     private func decodeMedia(data: Data) -> [SharedMediaFile] {
+-        let encodedData = try? JSONDecoder().decode([SharedMediaFile].self, from: data)
+-        return encodedData!
++        do {
++            return try JSONDecoder().decode([SharedMediaFile].self, from: data)
++        } catch {
++            NSLog("[PlayGan] shared files unreadable: \(error)")
++            return []
++        }
+     }
+     private func decodeWebUrl(data: Data) -> [WebUrl] {
+-        let encodedData = try? JSONDecoder().decode([WebUrl].self, from: data)
+-        return encodedData!
++        do {
++            return try JSONDecoder().decode([WebUrl].self, from: data)
++        } catch {
++            NSLog("[PlayGan] shared links unreadable: \(error)")
++            return []
++        }
+     }
+ 
+     private func toJson(data: [SharedMediaFile]?) -> String? {
 diff --git a/node_modules/expo-share-intent/plugin/build/ios/ShareExtensionViewController.swift b/node_modules/expo-share-intent/plugin/build/ios/ShareExtensionViewController.swift
 index f1f4b72..57e7819 100644
 --- a/node_modules/expo-share-intent/plugin/build/ios/ShareExtensionViewController.swift
