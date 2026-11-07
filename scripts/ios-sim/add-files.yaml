@@ -18,12 +18,18 @@ appId: app.shiron.gan
 - waitForAnimationToEnd
 - tapOn:
     text: ${FILE}.*
-# The picker allows several files: a tap selects, "Open" (top end) imports.
-- retry:
-    maxRetries: 2
+# The picker allows several files: a tap selects, "Open" (top end) imports. The picker is
+# another process whose buttons Maestro can't always see: by text, then by position.
+- tapOn:
+    text: Open
+    optional: true
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: Deselect All
     commands:
       - tapOn:
-          text: Open
+          point: "92%,8%"
 - waitForAnimationToEnd:
     timeout: 6000
 - takeScreenshot: ${VARIANT}-result
