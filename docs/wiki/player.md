@@ -79,8 +79,13 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   embedding forbidden) skip after 3 s, **in the direction she was going** (`direction`, set by
   next/previous/end). "Previous" on a failed YouTube song goes to the previous song at once.
   `playing` stays false for a YouTube song until YouTube reports it really plays.
-- Closing the full player removes the WebView, which stops YouTube: the state becomes paused;
-  play in the mini player reopens the full player, which autoplays.
+- One YouTube player for the whole app (`ui/YouTubeHost`, 0.11.0): on the full player it is
+  placed over the screen's slot (`youtubeView.frame`, measured in window coordinates after the
+  screen slides in); leaving the screen shrinks it to a small window (224 × 200, YouTube's
+  minimum is 200 × 200) above the mini player — still visible, still playing, same WebView so
+  the video doesn't restart. ⤢ opens the full player, ✕ (`closeYoutube`) stops it; play in the
+  mini player then reopens the full player, which autoplays. The player route is a card
+  (`slide_from_bottom`), not a native modal, so the overlay can sit above it.
 - If the run ends while the app is in the background, the YouTube song starts when she
   returns (iOS/Android don't run an embedded player in the background — by design here).
 - The old `youtube/[id]` screen is gone; "פתיחה באפליקציית יוטיוב" is on the full player.

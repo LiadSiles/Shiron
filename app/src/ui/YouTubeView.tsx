@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { attachYoutube, youtubeEvent } from '../player/player';
 import { T } from './components';
@@ -10,12 +10,13 @@ import { radius, space, useTheme } from './theme';
 const LOAD_TIMEOUT_MS = 15_000;
 
 /**
- * YouTube's own player, visible on the full player screen — YouTube's terms allow playing only
- * in a visible embedded player (no download, no background). The IFrame API reports play state,
- * time and the end of the video, so a YouTube song sits in the queue like any other: the player
- * moves on when it ends, and play/pause/seek work from the app's controls.
+ * YouTube's own player — YouTube's terms allow playing only in a visible embedded player (no
+ * download, no background). Mounted once for the whole app by ui/YouTubeHost, so it keeps
+ * playing between screens. The IFrame API reports play state, time and the end of the video,
+ * so a YouTube song sits in the queue like any other: the player moves on when it ends, and
+ * play/pause/seek work from the app's controls.
  */
-export function YouTubeView({ videoId }: { videoId: string }) {
+export function YouTubeView({ videoId, style, compact }: { videoId: string; style?: StyleProp<ViewStyle>; compact?: boolean }) {
   const c = useTheme();
   // loading → ready, or offline (no network / never loaded) with a retry; `attempt` reloads it.
   const [phase, setPhase] = useState<'loading' | 'ready' | 'offline'>('loading');
@@ -84,7 +85,7 @@ export function YouTubeView({ videoId }: { videoId: string }) {
   };
 
   return (
-    <View style={{ aspectRatio: 16 / 9, backgroundColor: '#000', borderRadius: 12, overflow: 'hidden' }}>
+    <View style={[{ backgroundColor: '#000', borderRadius: 12, overflow: 'hidden' }, style]}>
       <WebView
         ref={web as never}
         key={`${videoId}-${attempt}`}
@@ -101,12 +102,14 @@ export function YouTubeView({ videoId }: { videoId: string }) {
           {phase === 'loading' ? (
             <>
               <ActivityIndicator color="#fff" size="large" />
-              <T weight="medium" style={styles.overlayText}>טוען מיוטיוב…</T>
+              {compact ? null : <T weight="medium" style={styles.overlayText}>טוען מיוטיוב…</T>}
             </>
           ) : (
             <>
               <Icon name="cloud-offline-outline" size={40} color="#fff" />
-              <T weight="medium" style={styles.overlayText}>אין חיבור לאינטרנט. שירי יוטיוב צריכים רשת.</T>
+              <T weight="medium" size={compact ? 13 : undefined} style={styles.overlayText}>
+                {compact ? 'אין אינטרנט' : 'אין חיבור לאינטרנט. שירי יוטיוב צריכים רשת.'}
+              </T>
               <Pressable
                 onPress={() => setAttempt((a) => a + 1)}
                 accessibilityRole="button"

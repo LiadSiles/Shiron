@@ -261,18 +261,36 @@ async function startAt(index: number) {
   p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
 }
 
-/** YouTube must play visibly: bring up the full player (unless it is showing). */
+/**
+ * Where YouTube's player shows (ui/YouTubeHost keeps one player for the whole app, so a video
+ * keeps playing while she browses): in the full player's slot (`frame`, window coordinates), or
+ * as a small picture-in-picture window — always visible, as YouTube's terms require. `closed`:
+ * she closed the small window, which stops the video.
+ */
+export interface YoutubeViewState {
+  frame: { x: number; y: number; width: number; height: number } | null;
+  closed: boolean;
+}
+export const youtubeView = createStore<YoutubeViewState>({ frame: null, closed: false });
+
 let playerScreenOpen = false;
 export function setPlayerScreenOpen(open: boolean) {
   playerScreenOpen = open;
-  if (!open && isYoutube(state().song) && state().playing) {
-    // Closing the screen removes YouTube's player, which stops it.
-    void finishSession();
-    set({ playing: false });
-  }
+  // Leaving the full player doesn't stop YouTube: it carries on in the small window.
+  if (!open) youtubeView.set({ frame: null });
 }
 function openPlayerScreen() {
+  youtubeView.set({ closed: false });
   if (!playerScreenOpen) router.push('/player');
+}
+
+/** The small YouTube window's ✕: stops the video and hides the window. */
+export function closeYoutube() {
+  if (!isYoutube(state().song)) return;
+  youtube?.pause();
+  if (state().playing) void finishSession();
+  set({ playing: false });
+  youtubeView.set({ closed: true });
 }
 
 // ---------------------------------------------------------------- YouTube

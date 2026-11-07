@@ -1,4 +1,5 @@
 import { Rubik_400Regular, Rubik_500Medium, Rubik_700Bold, useFonts } from '@expo-google-fonts/rubik';
+import Constants from 'expo-constants';
 import { useLinkingURL } from 'expo-linking';
 import { router, Stack } from 'expo-router';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
@@ -14,8 +15,9 @@ import { getSetting, setSetting } from '../db/repo';
 import { sharedTextFromUrl } from '../core/incoming';
 import { enqueueShare, ImportSummary } from '../ingest/ingest';
 import { showImportResult } from '../ui/importResult';
+import { YouTubeHost } from '../ui/YouTubeHost';
 import { keepWorkingInBackground, registerBackgroundProcessing } from '../ingest/background';
-import { processQueue } from '../ingest/processor';
+import { processQueue, retryUnconvertedAfterUpdate } from '../ingest/processor';
 import { appReady, SPLASH_MAX_MS } from '../ui/launch';
 import { font, useTheme } from '../ui/theme';
 import { StatusHost, toast } from '../ui/toast';
@@ -104,6 +106,7 @@ export default function RootLayout() {
     }
     keepWorkingInBackground();
     processQueue();
+    retryUnconvertedAfterUpdate(Constants.expoConfig?.version ?? '').catch((e) => diag('retry after update failed', e));
     void registerBackgroundProcessing();
     const sub = AppState.addEventListener('change', (s) => {
       if (s === 'active') processQueue();
@@ -136,11 +139,14 @@ export default function RootLayout() {
           <Stack.Screen name="playlist/[id]" options={{ title: '' }} />
           <Stack.Screen name="playlist/pick" options={{ presentation: 'modal', title: 'בחירת שירים' }} />
           <Stack.Screen name="playlist/add" options={{ presentation: 'modal', title: 'הוספה לרשימה' }} />
-          <Stack.Screen name="player" options={{ presentation: 'modal', title: 'מתנגן עכשיו' }} />
+          {/* A card, not a native modal: YouTube's app-wide player (YouTubeHost) must be able to sit
+              above it — native modals cover every view of the root. */}
+          <Stack.Screen name="player" options={{ animation: 'slide_from_bottom', title: 'מתנגן עכשיו' }} />
           <Stack.Screen name="settings" options={{ title: 'הגדרות' }} />
           <Stack.Screen name="connect" options={{ presentation: 'modal', title: 'חיבור שירות AI' }} />
           <Stack.Screen name="log" options={{ title: 'יומן טכני' }} />
         </Stack>
+        <YouTubeHost />
         <StatusHost />
       </SafeAreaProvider>
     </ShareIntentProvider>

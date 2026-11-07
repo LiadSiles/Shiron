@@ -1,13 +1,12 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Linking, Pressable, ScrollView, StyleSheet, View, ViewInstance } from 'react-native';
 import { getCategory, primaryCategoryId } from '../core/categories';
-import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer } from '../player/player';
+import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer, youtubeView } from '../player/player';
 import { Button, CategoryBadge, T } from '../ui/components';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from '../ui/icons';
 import { Scrubber } from '../ui/Scrubber';
 import { ActionBar } from '../ui/list';
-import { YouTubeView } from '../ui/YouTubeView';
 import { cardShadow, space, useTheme } from '../ui/theme';
 
 /** Short enough for an action tile: off → the whole list → this song. */
@@ -19,7 +18,9 @@ const REPEAT_LABEL = {
 
 /**
  * Full player: one huge play/pause button, a bar to drag through the song, repeat, lyrics.
- * A YouTube song shows YouTube's own player here (it may only play visibly).
+ * A YouTube song shows YouTube's own player at the top (it may only play visibly): the app-wide
+ * player (ui/YouTubeHost) is placed over this screen's slot, and shrinks to a small window when
+ * she leaves, so the video keeps playing while she browses.
  */
 export default function PlayerScreen() {
   const c = useTheme();
@@ -42,13 +43,12 @@ export default function PlayerScreen() {
   const atEnd = p.index >= p.queue.length - 1 && p.repeat !== 'all';
   const cat = getCategory(catId);
 
+  const isYoutube = p.song.kind === 'youtube' && !!p.song.youtubeId;
   return (
+    <View style={{ flex: 1 }}>
+    {isYoutube ? <YouTubeSlot /> : null}
     <ScrollView contentContainerStyle={styles.content}>
-      {p.song.kind === 'youtube' && p.song.youtubeId ? (
-        <View style={{ marginBottom: space.l }}>
-          <YouTubeView videoId={p.song.youtubeId} />
-        </View>
-      ) : (
+      {isYoutube ? null : (
         <View style={[styles.art, { backgroundColor: cat.color + '26' }]}>
           <CategoryBadge id={catId} size={120} />
         </View>
@@ -114,6 +114,31 @@ export default function PlayerScreen() {
       ) : null}
 
     </ScrollView>
+    </View>
+  );
+}
+
+/**
+ * Where YouTube's player shows on this screen: it reports its place on the window, and
+ * ui/YouTubeHost puts the app's one player there (measured again after the screen slides in).
+ */
+function YouTubeSlot() {
+  const ref = useRef<ViewInstance>(null);
+  const measure = () =>
+    ref.current?.measureInWindow((x, y, width, height) => {
+      if (width > 0 && height > 0) youtubeView.set({ frame: { x, y, width, height }, closed: false });
+    });
+  useEffect(() => {
+    const timers = [150, 450, 900].map((ms) => setTimeout(measure, ms));
+    return () => {
+      timers.forEach(clearTimeout);
+      youtubeView.set({ frame: null });
+    };
+  }, []);
+  return (
+    <View style={{ paddingHorizontal: space.l, paddingTop: space.l }}>
+      <View ref={ref} onLayout={measure} collapsable={false} style={{ aspectRatio: 16 / 9, borderRadius: 12, backgroundColor: '#000' }} />
+    </View>
   );
 }
 
