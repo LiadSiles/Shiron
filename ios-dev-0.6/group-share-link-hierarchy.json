@@ -338,7 +338,7 @@
                                       "value" : "",
                                       "text" : "",
                                       "hintText" : "",
-                                      "resource-id" : "YouTube",
+                                      "resource-id" : "Me at the zoo - YouTube",
                                       "bounds" : "[0,410][402,525]",
                                       "enabled" : "true",
                                       "focused" : "false",
@@ -624,4 +624,4 @@
                                                       "resource-id" : "",
                                                       "bounds" : "[6,612][84,625]",
                                                       "enabled" : "true",
-                            
+            
