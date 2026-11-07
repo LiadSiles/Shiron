@@ -125,7 +125,7 @@ export function YouTubeHost() {
             >
               <Icon name="close" size={22} color={c.ink} />
             </Pressable>
-            <View style={styles.grip}>
+            <View style={styles.grip} accessible accessibilityLabel="הזזת החלון">
               <View style={[styles.gripLine, { backgroundColor: c.line }]} />
               <View style={[styles.gripLine, { backgroundColor: c.line }]} />
             </View>

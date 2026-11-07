@@ -1,11 +1,14 @@
 name: iPhone share check
 
-# Builds the app for the iPhone simulator and drives it with Maestro: a YouTube link shared
-# from Safari, a WhatsApp voice note (.opus) shared from Files, adding files with the home
-# screen's "+" (an mp3, a WMA), WMA and MPG shared from Files (FFmpeg fallback), YouTube's small
-# window after leaving the full player, then a walk through the player,
-# library, search and settings. Twice: with the App Group (AltStore / a paid account) and
-# without any entitlements, the way Sideloadly with a free Apple ID installs it. With the
+# Builds the app for the iPhone simulator and drives it with Maestro (scripts/ios-sim/run.sh).
+# Checks that must pass (e2e-*.yaml, with assertions): the empty first launch; YouTube — full
+# player, the small window, ⤢, dragging, ✕, "חזרה" again and again; Settings; and with the App
+# Group, files handed over the way the share extension does (mp3, voice note, WMA, MPG, a
+# duplicate, a broken file, a text file) → convert, play, the player's controls and back
+# button, renaming (kept after a restart), pinning, deleting, lists, search. Then the real share
+# sheet and file picker, best effort (the simulator taps them unreliably). Two jobs in
+# parallel: with the App Group (AltStore / a paid account) and without any entitlements, the
+# way Sideloadly with a free Apple ID installs it. With the
 # GEMINI_API_KEY secret it also sends Gemini a Hebrew recording (tests/gemini.live.test.ts).
 # Screenshots go to the `screenshots` branch under ios-<dev branch>; the extension's log lines
 # become annotations. WhatsApp itself can't run on a simulator.
@@ -27,8 +30,12 @@ permissions:
 
 jobs:
   share:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [group, nogroup]
     runs-on: macos-15
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
@@ -57,7 +64,7 @@ jobs:
           npx expo prebuild --platform ios --clean
 
       - name: Gemini, live (only with the GEMINI_API_KEY secret)
-        if: env.GEMINI_API_KEY != ''
+        if: env.GEMINI_API_KEY != '' && matrix.variant == 'group'
         continue-on-error: true
         working-directory: app
         run: |
@@ -66,27 +73,23 @@ jobs:
           LIVE_AUDIO="$RUNNER_TEMP/speech.m4a" npx vitest run tests/gemini.live.test.ts 2>&1 | tee gemini.log
           grep -E 'gemini-|✓|×|FAIL|Error' gemini.log | head -20 | tr '\n' '|' | sed 's/^/::notice::gemini live: /'; echo
 
-      - name: Build for the simulator (with and without entitlements)
+      - name: Build for the simulator (${{ matrix.variant }})
         working-directory: app/ios
+        env:
+          VARIANT: ${{ matrix.variant }}
         run: |
           set -o pipefail
-          build() { # extra settings…
-            if ! xcodebuild -workspace app.xcworkspace -scheme app -configuration Release \
-                -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-                -derivedDataPath "$RUNNER_TEMP/dd" ARCHS=arm64 ONLY_ACTIVE_ARCH=YES "$@" build \
-                2>&1 | tee -a build.log | grep -E '^\*\*|error:'; then
-              grep -E 'error:' -A2 build.log | head -40 | while IFS= read -r line; do echo "::error::${line}"; done
-              exit 1
-            fi
-          }
-          OUT="$RUNNER_TEMP/dd/Build/Products/Release-iphonesimulator/app.app"
-          build
-          cp -R "$OUT" "$RUNNER_TEMP/group.app"
-          build CODE_SIGN_ENTITLEMENTS= CODE_SIGNING_ALLOWED=NO
-          cp -R "$OUT" "$RUNNER_TEMP/nogroup.app"
-          for v in group nogroup; do
-            echo "::notice::$v: $(codesign -d --entitlements - "$RUNNER_TEMP/$v.app/PlugIns/PlayGan.appex" 2>/dev/null | grep -o 'group\.[a-z.]*' | head -1 || true)"
-          done
+          extra=()
+          [ "$VARIANT" = nogroup ] && extra=(CODE_SIGN_ENTITLEMENTS= CODE_SIGNING_ALLOWED=NO)
+          if ! xcodebuild -workspace app.xcworkspace -scheme app -configuration Release \
+              -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+              -derivedDataPath "$RUNNER_TEMP/dd" ARCHS=arm64 ONLY_ACTIVE_ARCH=YES "${extra[@]}" build \
+              2>&1 | tee -a build.log | grep -E '^\*\*|error:'; then
+            grep -E 'error:' -A2 build.log | head -40 | while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
+          cp -R "$RUNNER_TEMP/dd/Build/Products/Release-iphonesimulator/app.app" "$RUNNER_TEMP/$VARIANT.app"
+          echo "::notice::$VARIANT: $(codesign -d --entitlements - "$RUNNER_TEMP/$VARIANT.app/PlugIns/PlayGan.appex" 2>/dev/null | grep -o 'group\.[a-z.]*' | head -1 || true)"
 
       - name: Boot a simulator and install Maestro
         run: |
@@ -97,16 +100,15 @@ jobs:
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
-      - name: Share flows — with App Group
-        run: bash scripts/ios-sim/run.sh "$RUNNER_TEMP/group.app" group
-      - name: Share flows — without entitlements (Sideloadly-like)
-        run: bash scripts/ios-sim/run.sh "$RUNNER_TEMP/nogroup.app" nogroup
+      - name: Checks and share flows (${{ matrix.variant }})
+        run: bash scripts/ios-sim/run.sh "$RUNNER_TEMP/${{ matrix.variant }}.app" ${{ matrix.variant }}
 
       - name: Report
         if: always()
         run: |
-          for v in group nogroup; do
+          for v in ${{ matrix.variant }}; do
             [ -f "sim-$v.log" ] || continue
+            [ -f "shots/results-$v.txt" ] && tr '\n' '|' < "shots/results-$v.txt" | sed "s/^/::notice::$v results: /"; echo
             grep -h '\[PlayGan\]' "sim-$v.log" | head -20 | tr '\n' '|' | cut -c1-6000 | sed "s/^/::notice::$v extension: /"; echo
             grep -hiE 'crash|terminat|exception|fatal' "sim-$v.log" | head -20 | tr '\n' '|' | cut -c1-6000 | sed "s/^/::warning::$v problems: /"; echo
           done
@@ -117,11 +119,11 @@ jobs:
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
-          dir="ios-${BRANCH//\//-}"
+          dir="ios-${BRANCH//\//-}-${{ matrix.variant }}"
           git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
           git fetch origin screenshots && git worktree add ../shots-branch origin/screenshots
           cd ../shots-branch
           rm -rf "$dir"; mkdir -p "$dir"
           cp "$GITHUB_WORKSPACE"/shots/*.png "$GITHUB_WORKSPACE"/shots/*.json "$dir/" 2>/dev/null || true; cp "$GITHUB_WORKSPACE"/sim-*.log "$dir/" 2>/dev/null || true
-          git add -A "$dir" && git commit -qm "iPhone share check of $BRANCH at ${GITHUB_SHA::7}"
+          git add -A "$dir" && git commit -qm "iPhone check (${{ matrix.variant }}) of $BRANCH at ${GITHUB_SHA::7}"
           for i in 1 2 3; do git pull -q --rebase origin screenshots && git push -q origin HEAD:screenshots && break; sleep 5; done

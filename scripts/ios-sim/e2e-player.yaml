@@ -1,0 +1,38 @@
+# The full player: play all, next / previous, the three repeat modes, pause — and "חזרה" works
+# every time, also after coming back to the player again and again (owner, 0.11.0).
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- tapOn: "כל השירים.*"
+- tapOn: "נגני הכול"
+- tapOn: "מתנגן: .*"
+- assertVisible: "מתנגן עכשיו"
+- tapOn: "השיר הבא"
+- tapOn: "שיר קודם / לתחילת השיר"
+- tapOn: "בלי חזרה"
+- assertVisible: "חזרה על הכול"
+- tapOn: "חזרה על הכול"
+- assertVisible: "חזרה על השיר"
+- tapOn: "חזרה על השיר"
+- assertVisible: "בלי חזרה"
+- takeScreenshot: ${VARIANT}-player
+- tapOn: "חזרה"
+- assertNotVisible: "מתנגן עכשיו"
+- repeat:
+    times: 3
+    commands:
+      - tapOn: "מתנגן: .*"
+      - assertVisible: "מתנגן עכשיו"
+      - tapOn: "פרטים"
+      - assertVisible: "פרטי שיר"
+      - tapOn: "חזרה"
+      - assertVisible: "מתנגן עכשיו"
+      - tapOn: "חזרה"
+      - assertNotVisible: "מתנגן עכשיו"
+- takeScreenshot: ${VARIANT}-after-backs
+- tapOn: "מתנגן: .*"
+- tapOn: "השהיה"
+- assertVisible: "ניגון"
+- tapOn: "חזרה"

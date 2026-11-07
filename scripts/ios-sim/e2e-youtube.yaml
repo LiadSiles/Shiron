@@ -1,0 +1,33 @@
+# YouTube: the full player, the small window while she browses (⤢ back, drag, ✕), and
+# "חזרה" again and again. The song came from a shiron://share link.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
+- assertVisible: "מתנגן עכשיו"
+- takeScreenshot: ${VARIANT}-yt-player
+- tapOn: "חזרה"
+- assertVisible: "סגירת הסרטון"
+- assertNotVisible: "מתנגן עכשיו"
+- takeScreenshot: ${VARIANT}-yt-pip-home
+- repeat:
+    times: 3
+    commands:
+      - tapOn: "פתיחת הנגן המלא"
+      - assertVisible: "מתנגן עכשיו"
+      - assertNotVisible: "סגירת הסרטון"
+      - tapOn: "חזרה"
+      - assertVisible: "סגירת הסרטון"
+- tapOn: ספרייה
+- assertVisible: "סגירת הסרטון"
+- swipe:
+    from:
+      text: "הזזת החלון"
+    direction: UP
+- waitForAnimationToEnd
+- assertVisible: "סגירת הסרטון"
+- takeScreenshot: ${VARIANT}-yt-pip-dragged
+- tapOn: "סגירת הסרטון"
+- assertNotVisible: "פתיחת הנגן המלא"
+- takeScreenshot: ${VARIANT}-yt-closed

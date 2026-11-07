@@ -1,0 +1,43 @@
+# Files handed over by the share extension (inject.sh): an mp3, a WhatsApp voice note, a WMA
+# and an MPG (our FFmpeg build), the mp3 again, a broken "mp3" and a text file. Every real
+# audio file converts and plays; the duplicate and the text file add nothing; the broken file
+# says it can't play instead of crashing. 1 YouTube + 5 files = 6 songs.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- extendedWaitUntil:
+    visible: "כל השירים, 6 שירים"
+    timeout: 20000
+- tapOn: "כל השירים.*"
+- extendedWaitUntil:
+    notVisible: "מכינה לניגון.*"
+    timeout: 90000
+- takeScreenshot: ${VARIANT}-all-songs
+- assertNotVisible: ".*notes.*"
+- tapOn: "נגני boker-tov"
+- extendedWaitUntil:
+    visible: "השהיית boker-tov"
+    timeout: 10000
+- tapOn: "נגני voice-whatsapp"
+- extendedWaitUntil:
+    visible: "השהיית voice-whatsapp"
+    timeout: 10000
+- tapOn: "נגני old-song"
+- extendedWaitUntil:
+    visible: "השהיית old-song"
+    timeout: 10000
+- tapOn: "נגני gan-party"
+- extendedWaitUntil:
+    visible: "השהיית gan-party"
+    timeout: 10000
+- assertNotVisible: ".*לא הצלחנו לנגן.*"
+- takeScreenshot: ${VARIANT}-mpg-playing
+- tapOn: "השהיית gan-party"
+- tapOn: "נגני broken"
+- assertVisible: ".*(לא ניתן לנגן|לא הצלחנו לנגן).*"
+- takeScreenshot: ${VARIANT}-broken-explained
+- tapOn:
+    text: "(OK|אישור|הבנתי|סגירה)"
+    optional: true

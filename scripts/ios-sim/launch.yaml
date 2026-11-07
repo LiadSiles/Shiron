@@ -1,4 +1,4 @@
-# Opens PlayGan and photographs the home screen.
+# A fresh install: PlayGan opens on the empty home screen, with the way to add songs.
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
@@ -7,3 +7,4 @@ appId: app.shiron.gan
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-1-home
+- assertVisible: "הוספת שירים מהקבצים"

@@ -1,0 +1,31 @@
+# Her own list: create with two songs, reorder, play it, delete it.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- tapOn: "רשימה חדשה"
+- tapOn: "שם הרשימה"
+- inputText: "מעגל בוקר"
+- hideKeyboard
+- tapOn: "old-song"
+- tapOn: "gan-party"
+- tapOn: "יצירת הרשימה"
+- waitForAnimationToEnd
+- assertVisible: ".*מעגל בוקר.*"
+- assertVisible: ".*old-song.*"
+- assertVisible: ".*gan-party.*"
+- tapOn: "סידור"
+- tapOn: "להזיז את gan-party למעלה"
+- tapOn: "סיום"
+- takeScreenshot: ${VARIANT}-playlist
+- tapOn: "נגני הכול"
+- assertVisible: "השהיית gan-party"
+- tapOn: "השהיית gan-party"
+- scrollUntilVisible:
+    element:
+      text: "מחיקת הרשימה"
+- tapOn: "מחיקת הרשימה"
+- tapOn: "מחיקה"
+- waitForAnimationToEnd
+- assertNotVisible: "רשימה מעגל בוקר.*"

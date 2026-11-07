@@ -123,25 +123,40 @@ keyed by the script and `native/ffmpeg/*`. The podspec only vendors the xcframew
 `lib/arm64-v8a/libshironffmpeg.so` is missing from the APK. Android uses
 `ANDROID_NDK_LATEST_HOME` (preinstalled on GitHub's Ubuntu runners).
 
-## iPhone share check (`ios-sim.yml`)
+## iPhone check (`ios-sim.yml`)
 
-Every push to a dev branch touching the app builds a simulator build twice — with the App Group
-and with no entitlements (like Sideloadly with a free ID) — and drives it with Maestro
-(`scripts/ios-sim/`): a YouTube page shared from Safari, a WhatsApp voice note shared from
-Files, the extension's no-group link sent straight to the app (`simctl openurl`), the home
-screen's "+" picking an mp3 and a WMA, WMA and MPG shared from Files (FFmpeg fallback), YouTube's
-small window after leaving the full player, and a tour (play → mini player →
-full player, library, search, settings with the "שיתוף מוואטסאפ" row). With the
-`GEMINI_API_KEY` secret it also runs the live Gemini test.
-Screenshots and the simulator log go to the `screenshots` branch under `ios-dev-<branch>`; the
-extension's `[PlayGan]` log lines become annotations. Gotchas:
-- The share sheet is another process; Maestro sometimes can't see it, so its taps are retried
-  and can still miss — read the screenshots and the `[PlayGan] share:` lines, not the job
-  status (always green).
+Every push to a dev branch touching the app runs two parallel jobs — a simulator build with the
+App Group and one with no entitlements (like Sideloadly with a free ID) — driven by Maestro
+(`scripts/ios-sim/run.sh`). Since 0.11.1 the job **fails** when a must-pass check fails:
+
+- `check` (must pass, `e2e-*.yaml` + `launch.yaml`, with assertions): the empty first launch;
+  YouTube (from the extension's no-group link, `simctl openurl`) — full player, the small
+  window, ⤢ and "חזרה" three times, dragging, ✕; Settings' "שיתוף מוואטסאפ" row ("הקלטות
+  וקישורים" with the group, "רק קישורים" without). With the group: files handed over the way
+  the extension does (`inject.sh`: copy into the group container, the JSON list under
+  `shironShareKey` in the group's defaults, `shiron://dataUrl=shironShareKey#file`) — mp3,
+  WhatsApp opus, WMA, MPG, the mp3 again (no duplicate), a broken "mp3" (explained, no crash),
+  a text file (ignored) → 6 songs, each real one converts and plays; the player (play all,
+  next/previous, the three repeat modes, pause, details and "חזרה" three times); a song's
+  screen (rename kept after a restart, pin, delete); a list (create, reorder, play, delete);
+  search (Latin, Hebrew, nothing found).
+- `try` (reported in `results-<variant>.txt`, not counted): the real share sheet from Safari
+  and Files, the home screen's "+" with the file picker, the category editor.
+
+Failed checks get a screenshot (`*-FAILED.png`) and the view hierarchy (`*-hierarchy.json`).
+Screenshots, results and the simulator log go to the `screenshots` branch under
+`ios-<branch>-<variant>`; the extension's `[PlayGan]` lines and the results become
+annotations. With the `GEMINI_API_KEY` secret the group job also runs the live Gemini test.
+Gotchas:
+- The share sheet and the file picker are other processes; Maestro sometimes can't see or tap
+  them, which is why they are `try` and the import path is checked through `inject.sh`.
+- Maestro's `back` does nothing on iOS: tap the header's "חזרה" — exactly, since `.*חזרה.*`
+  also matches the repeat button "בלי חזרה".
+- Rows are found by their spoken label ("נגני <title>"), not the title alone.
 - "PlayGan" also labels the status bar's back link: the sheet's icon is `index: 1`.
 - Taps by position break: GitHub picks different iPhone models between runs.
-- Without App Group entitlements, iOS asks "Open in PlayGan?" before the extension opens the
-  app; the flows tap "Open".
+- `simctl openurl` and the no-group extension make iOS ask "Open in PlayGan?" (`dismiss.yaml`).
+- The simulator's network sometimes drops: YouTube then shows "אין אינטרנט".
 - WhatsApp can't run on a simulator; Safari and Files stand in for it.
 
 ## Local builds

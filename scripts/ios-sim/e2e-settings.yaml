@@ -1,0 +1,9 @@
+# Settings tell her what this install can do: SHARE is what the "שיתוף מוואטסאפ" row must say.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: "הגדרות"
+- assertVisible: ".*${SHARE}.*"
+- takeScreenshot: ${VARIANT}-settings
+- tapOn: "חזרה"

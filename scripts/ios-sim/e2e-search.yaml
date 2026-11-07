@@ -1,0 +1,15 @@
+# Search: a Latin title, a Hebrew title (the renamed song), nothing found, clearing.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: "חיפוש.*"
+- inputText: "old"
+- assertVisible: ".*old-song.*"
+- tapOn: "ניקוי החיפוש"
+- inputText: "בוקר טוב"
+- assertVisible: ".*בוקר טוב לגן.*"
+- tapOn: "ניקוי החיפוש"
+- inputText: "zzzz"
+- assertVisible: "לא נמצא שיר"
+- takeScreenshot: ${VARIANT}-search-none

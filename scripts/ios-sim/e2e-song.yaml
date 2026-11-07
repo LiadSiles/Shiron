@@ -1,0 +1,31 @@
+# A song's screen: rename (kept after the app restarts), pin, delete.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- tapOn: "כל השירים.*"
+- longPressOn: "נגני boker-tov"
+- assertVisible: "פרטי שיר"
+- tapOn: "שם השיר"
+- eraseText: 30
+- inputText: "בוקר טוב לגן"
+- pressKey: Enter
+- tapOn: "הצמדה"
+- assertVisible: "מוצמד"
+- takeScreenshot: ${VARIANT}-song-edited
+- stopApp
+- launchApp
+- tapOn: ספרייה
+- tapOn: "כל השירים.*"
+- assertVisible: ".*בוקר טוב לגן.*"
+- assertNotVisible: ".*boker-tov.*"
+- longPressOn: "נגני voice-whatsapp"
+- scrollUntilVisible:
+    element:
+      text: "מחיקת השיר"
+- tapOn: "מחיקת השיר"
+- tapOn: "מחיקה"
+- waitForAnimationToEnd
+- assertNotVisible: ".*voice-whatsapp.*"
+- takeScreenshot: ${VARIANT}-song-deleted
