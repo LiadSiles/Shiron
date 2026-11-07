@@ -1,0 +1,22 @@
+# YouTube keeps playing in a small window while she browses: open the YouTube song (added by
+# the shiron://share link just before), leave the full player, go to the library.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- waitForAnimationToEnd
+- tapOn:
+    text: "שיר מיוטיוב.*"
+- extendedWaitUntil:
+    visible: "Me at the zoo.*|.*YouTube.*"
+    timeout: 10000
+    optional: true
+- takeScreenshot: ${VARIANT}-4b-youtube-player
+- back
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4c-youtube-pip
+- tapOn:
+    text: ספרייה
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4d-youtube-pip-library

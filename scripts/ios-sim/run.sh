@@ -43,6 +43,7 @@ sleep 5; shot "$VARIANT-8-app-after-link"
 xcrun simctl openurl "$UDID" "shiron://share?text=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
 sleep 3; run dismiss.yaml "$VARIANT-url"
 sleep 5; shot "$VARIANT-8b-app-after-url-link"
+run youtube-pip.yaml "$VARIANT"
 run share-file.yaml "$VARIANT" -e FILE=voice-whatsapp
 # Formats the phone can't read itself (our FFmpeg build), through the share extension — only
 # with an App Group can files go that way.
