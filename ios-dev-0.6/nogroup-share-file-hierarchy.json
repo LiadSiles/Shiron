@@ -469,13 +469,13 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "9:05 AM",
+              "accessibilityText" : "10:30 AM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[55,14][92,35]",
+              "bounds" : "[51,14][97,35]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",
