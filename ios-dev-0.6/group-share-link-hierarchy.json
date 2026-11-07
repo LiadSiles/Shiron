@@ -70,88 +70,12 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "dismiss popup",
-              "title" : "",
-              "value" : "",
-              "text" : "",
-              "hintText" : "",
-              "resource-id" : "PopoverDismissRegion",
-              "bounds" : "[-402,-874][804,1748]",
-              "enabled" : "true",
-              "focused" : "false",
-              "selected" : "false",
-              "checked" : "false"
-            },
-            "children" : [ ],
-            "enabled" : true,
-            "focused" : false,
-            "checked" : false,
-            "selected" : false
-          } ],
-          "enabled" : true,
-          "focused" : false,
-          "checked" : false,
-          "selected" : false
-        } ],
-        "enabled" : true,
-        "focused" : false,
-        "checked" : false,
-        "selected" : false
-      }, {
-        "attributes" : {
-          "accessibilityText" : "",
-          "title" : "",
-          "value" : "",
-          "text" : "",
-          "hintText" : "",
-          "resource-id" : "",
-          "bounds" : "[0,0][402,874]",
-          "enabled" : "true",
-          "focused" : "false",
-          "selected" : "false",
-          "checked" : "false"
-        },
-        "children" : [ {
-          "attributes" : {
-            "accessibilityText" : "dismiss popup",
-            "title" : "",
-            "value" : "",
-            "text" : "",
-            "hintText" : "",
-            "resource-id" : "PopoverDismissRegion",
-            "bounds" : "[-402,-874][804,1748]",
-            "enabled" : "true",
-            "focused" : "false",
-            "selected" : "false",
-            "checked" : "false"
-          },
-          "children" : [ ],
-          "enabled" : true,
-          "focused" : false,
-          "checked" : false,
-          "selected" : false
-        }, {
-          "attributes" : {
-            "accessibilityText" : "",
-            "title" : "",
-            "value" : "",
-            "text" : "",
-            "hintText" : "",
-            "resource-id" : "",
-            "bounds" : "[0,0][402,874]",
-            "enabled" : "true",
-            "focused" : "false",
-            "selected" : "false",
-            "checked" : "false"
-          },
-          "children" : [ {
-            "attributes" : {
               "accessibilityText" : "",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
-              "resource-id" : "",
+              "resource-id" : "SafariWindow?View=Narrow&BarsKeptMinimized=false&UUID=3BBFF3DB-38DF-4190-8951-0263C5F1A4EA&UsingLoweredBar=true&IsSecure=true",
               "bounds" : "[0,0][402,874]",
               "enabled" : "true",
               "focused" : "false",
@@ -179,7 +103,7 @@
                   "value" : "",
                   "text" : "",
                   "hintText" : "",
-                  "resource-id" : "ActivityListView",
+                  "resource-id" : "",
                   "bounds" : "[0,0][402,874]",
                   "enabled" : "true",
                   "focused" : "false",
@@ -193,8 +117,8 @@
                     "value" : "",
                     "text" : "",
                     "hintText" : "",
-                    "resource-id" : "ShareSheet.RemoteContainerView",
-                    "bounds" : "[0,0][402,874]",
+                    "resource-id" : "",
+                    "bounds" : "[0,0][402,62]",
                     "enabled" : "true",
                     "focused" : "false",
                     "selected" : "false",
@@ -208,7 +132,7 @@
                       "text" : "",
                       "hintText" : "",
                       "resource-id" : "",
-                      "bounds" : "[0,0][402,874]",
+                      "bounds" : "[0,0][402,62]",
                       "enabled" : "true",
                       "focused" : "false",
                       "selected" : "false",
@@ -222,6 +146,82 @@
                         "text" : "",
                         "hintText" : "",
                         "resource-id" : "",
+                        "bounds" : "[0,0][402,62]",
+                        "enabled" : "true",
+                        "focused" : "false",
+                        "selected" : "false",
+                        "checked" : "false"
+                      },
+                      "children" : [ ],
+                      "enabled" : true,
+                      "focused" : false,
+                      "checked" : false,
+                      "selected" : false
+                    } ],
+                    "enabled" : true,
+                    "focused" : false,
+                    "checked" : false,
+                    "selected" : false
+                  } ],
+                  "enabled" : true,
+                  "focused" : false,
+                  "checked" : false,
+                  "selected" : false
+                }, {
+                  "attributes" : {
+                    "accessibilityText" : "",
+                    "title" : "",
+                    "value" : "",
+                    "text" : "",
+                    "hintText" : "",
+                    "resource-id" : "",
+                    "bounds" : "[0,0][402,62]",
+                    "enabled" : "true",
+                    "focused" : "false",
+                    "selected" : "false",
+                    "checked" : "false"
+                  },
+                  "children" : [ ],
+                  "enabled" : true,
+                  "focused" : false,
+                  "checked" : false,
+                  "selected" : false
+                }, {
+                  "attributes" : {
+                    "accessibilityText" : "",
+                    "title" : "",
+                    "value" : "",
+                    "text" : "",
+                    "hintText" : "",
+                    "resource-id" : "",
+                    "bounds" : "[0,0][402,874]",
+                    "enabled" : "true",
+                    "focused" : "false",
+                    "selected" : "false",
+                    "checked" : "false"
+                  },
+                  "children" : [ {
+                    "attributes" : {
+                      "accessibilityText" : "",
+                      "title" : "",
+                      "value" : "",
+                      "text" : "",
+                      "hintText" : "",
+                      "resource-id" : "TabDocument?IsLoadedUsingDesktopUserAgent=false&InReaderMode=false&UUID=A90A6D46-EBB6-412B-B86C-F70D786028EB&IsPrivate=false&IsPageLoaded=true&WebViewProcessID=35399",
+                      "bounds" : "[0,0][402,874]",
+                      "enabled" : "true",
+                      "focused" : "false",
+                      "selected" : "false",
+                      "checked" : "false"
+                    },
+                    "children" : [ {
+                      "attributes" : {
+                        "accessibilityText" : "",
+                        "title" : "",
+                        "value" : "",
+                        "text" : "",
+                        "hintText" : "",
+                        "resource-id" : "WebView",
                         "bounds" : "[0,0][402,874]",
                         "enabled" : "true",
                         "focused" : "false",
@@ -264,7 +264,7 @@
                               "text" : "",
                               "hintText" : "",
                               "resource-id" : "",
-                              "bounds" : "[0,410][402,874]",
+                              "bounds" : "[0,0][402,874]",
                               "enabled" : "true",
                               "focused" : "false",
                               "selected" : "false",
@@ -278,26 +278,7 @@
                                 "text" : "",
                                 "hintText" : "",
                                 "resource-id" : "",
-                                "bounds" : "[-150,260][552,1024]",
-                                "enabled" : "true",
-                                "focused" : "false",
-                                "selected" : "false",
-                                "checked" : "false"
-                              },
-                              "children" : [ ],
-                              "enabled" : true,
-                              "focused" : false,
-                              "checked" : false,
-                              "selected" : false
-                            }, {
-                              "attributes" : {
-                                "accessibilityText" : "",
-                                "title" : "",
-                                "value" : "",
-                                "text" : "",
-                                "hintText" : "",
-                                "resource-id" : "",
-                                "bounds" : "[0,410][402,874]",
+                                "bounds" : "[0,0][402,874]",
                                 "enabled" : "true",
                                 "focused" : "false",
                                 "selected" : "false",
@@ -311,7 +292,7 @@
                                   "text" : "",
                                   "hintText" : "",
                                   "resource-id" : "",
-                                  "bounds" : "[0,410][402,874]",
+                                  "bounds" : "[0,62][402,936]",
                                   "enabled" : "true",
                                   "focused" : "false",
                                   "selected" : "false",
@@ -319,13 +300,13 @@
                                 },
                                 "children" : [ {
                                   "attributes" : {
-                                    "accessibilityText" : "",
+                                    "accessibilityText" : "Me at the zoo - YouTube",
                                     "title" : "",
                                     "value" : "",
                                     "text" : "",
                                     "hintText" : "",
                                     "resource-id" : "",
-                                    "bounds" : "[0,410][402,874]",
+                                    "bounds" : "[0,62][402,4412]",
                                     "enabled" : "true",
                                     "focused" : "false",
                                     "selected" : "false",
@@ -333,13 +314,13 @@
                                   },
                                   "children" : [ {
                                     "attributes" : {
-                                      "accessibilityText" : "",
+                                      "accessibilityText" : "banner",
                                       "title" : "",
                                       "value" : "",
                                       "text" : "",
                                       "hintText" : "",
-                                      "resource-id" : "Me at the zoo - YouTube",
-                                      "bounds" : "[0,410][402,525]",
+                                      "resource-id" : "",
+                                      "bounds" : "[0,61][402,111]",
                                       "enabled" : "true",
                                       "focused" : "false",
                                       "selected" : "false",
@@ -347,13 +328,13 @@
                                     },
                                     "children" : [ {
                                       "attributes" : {
-                                        "accessibilityText" : "jawed",
+                                        "accessibilityText" : "YouTube Home",
                                         "title" : "",
                                         "value" : "",
                                         "text" : "",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[92,426][327,444]",
+                                        "bounds" : "[0,62][117,110]",
                                         "enabled" : "true",
                                         "focused" : "false",
                                         "selected" : "false",
@@ -366,51 +347,13 @@
                                       "selected" : false
                                     }, {
                                       "attributes" : {
-                                        "accessibilityText" : "Close",
-                                        "title" : "",
-                                        "value" : "",
-                                        "text" : "",
-                                        "hintText" : "",
-                                        "resource-id" : "header.closeButton",
-                                        "bounds" : "[351,416][394,460]",
-                                        "enabled" : "true",
-                                        "focused" : "false",
-                                        "selected" : "false",
-                                        "checked" : "false"
-                                      },
-                                      "children" : [ {
-                                        "attributes" : {
-                                          "accessibilityText" : "",
-                                          "title" : "",
-                                          "value" : "",
-                                          "text" : "",
-                                          "hintText" : "",
-                                          "resource-id" : "UICloseButtonBackground",
-                                          "bounds" : "[359,423][389,453]",
-                                          "enabled" : "true",
-                                          "focused" : "false",
-                                          "selected" : "false",
-                                          "checked" : "false"
-                                        },
-                                        "children" : [ ],
-                                        "enabled" : true,
-                                        "focused" : false,
-                                        "checked" : false,
-                                        "selected" : false
-                                      } ],
-                                      "enabled" : true,
-                                      "focused" : false,
-                                      "checked" : false,
-                                      "selected" : false
-                                    }, {
-                                      "attributes" : {
-                                        "accessibilityText" : "youtube.com",
+                                        "accessibilityText" : "Search YouTube",
                                         "title" : "",
                                         "value" : "",
                                         "text" : "",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[92,444][327,462]",
+                                        "bounds" : "[174,62][223,110]",
                                         "enabled" : "true",
                                         "focused" : "false",
                                         "selected" : "false",
@@ -423,13 +366,32 @@
                                       "selected" : false
                                     }, {
                                       "attributes" : {
-                                        "accessibilityText" : "Options ",
+                                        "accessibilityText" : "More options",
                                         "title" : "",
                                         "value" : "",
                                         "text" : "",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[92,473][183,509]",
+                                        "bounds" : "[222,62][271,110]",
+                                        "enabled" : "true",
+                                        "focused" : "false",
+                                        "selected" : "false",
+                                        "checked" : "false"
+                                      },
+                                      "children" : [ ],
+                                      "enabled" : true,
+                                      "focused" : false,
+                                      "checked" : false,
+                                      "selected" : false
+                                    }, {
+                                      "attributes" : {
+                                        "accessibilityText" : "Open App",
+                                        "title" : "",
+                                        "value" : "",
+                                        "text" : "",
+                                        "hintText" : "",
+                                        "resource-id" : "",
+                                        "bounds" : "[316,77][379,94]",
                                         "enabled" : "true",
                                         "focused" : "false",
                                         "selected" : "false",
@@ -437,19 +399,38 @@
                                       },
                                       "children" : [ {
                                         "attributes" : {
-                                          "accessibilityText" : "Options ",
+                                          "accessibilityText" : "Open App",
                                           "title" : "",
                                           "value" : "",
                                           "text" : "",
                                           "hintText" : "",
                                           "resource-id" : "",
-                                          "bounds" : "[104,480][171,501]",
+                                          "bounds" : "[316,77][379,94]",
                                           "enabled" : "true",
                                           "focused" : "false",
                                           "selected" : "false",
                                           "checked" : "false"
                                         },
-                                        "children" : [ ],
+                                        "children" : [ {
+                                          "attributes" : {
+                                            "accessibilityText" : "Open App",
+                                            "title" : "",
+                                            "value" : "Open App",
+                                            "text" : "Open App",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[316,77][379,94]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        } ],
                                         "enabled" : true,
                                         "focused" : false,
                                         "checked" : false,
@@ -466,15 +447,15 @@
                                     "selected" : false
                                   }, {
                                     "attributes" : {
-                                      "accessibilityText" : "",
+                                      "accessibilityText" : "Sign in to confirm you’re not a bot, web dialog",
                                       "title" : "",
                                       "value" : "",
                                       "text" : "",
                                       "hintText" : "",
                                       "resource-id" : "",
-                                      "bounds" : "[0,410][402,874]",
+                                      "bounds" : "[0,110][402,336]",
                                       "enabled" : "true",
-                                      "focused" : "false",
+                                      "focused" : "true",
                                       "selected" : "false",
                                       "checked" : "false"
                                     },
@@ -486,142 +467,152 @@
                                         "text" : "",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[0,410][402,874]",
+                                        "bounds" : "[48,145][318,202]",
                                         "enabled" : "true",
-                                        "focused" : "false",
+                                        "focused" : "true",
                                         "selected" : "false",
                                         "checked" : "false"
                                       },
                                       "children" : [ {
                                         "attributes" : {
-                                          "accessibilityText" : "",
+                                          "accessibilityText" : "Sign in to confirm you’re not a bot",
+                                          "title" : "",
+                                          "value" : "Sign in to confirm you’re not a bot",
+                                          "text" : "Sign in to confirm you’re not a bot",
+                                          "hintText" : "",
+                                          "resource-id" : "",
+                                          "bounds" : "[48,147][307,200]",
+                                          "enabled" : "true",
+                                          "focused" : "true",
+                                          "selected" : "false",
+                                          "checked" : "false"
+                                        },
+                                        "children" : [ ],
+                                        "enabled" : true,
+                                        "focused" : true,
+                                        "checked" : false,
+                                        "selected" : false
+                                      } ],
+                                      "enabled" : true,
+                                      "focused" : true,
+                                      "checked" : false,
+                                      "selected" : false
+                                    }, {
+                                      "attributes" : {
+                                        "accessibilityText" : "",
+                                        "title" : "",
+                                        "value" : "",
+                                        "text" : "",
+                                        "hintText" : "",
+                                        "resource-id" : "",
+                                        "bounds" : "[48,217][318,238]",
+                                        "enabled" : "true",
+                                        "focused" : "true",
+                                        "selected" : "false",
+                                        "checked" : "false"
+                                      },
+                                      "children" : [ {
+                                        "attributes" : {
+                                          "accessibilityText" : "This helps protect our community",
+                                          "title" : "",
+                                          "value" : "This helps protect our community",
+                                          "text" : "This helps protect our community",
+                                          "hintText" : "",
+                                          "resource-id" : "",
+                                          "bounds" : "[48,218][258,236]",
+                                          "enabled" : "true",
+                                          "focused" : "true",
+                                          "selected" : "false",
+                                          "checked" : "false"
+                                        },
+                                        "children" : [ ],
+                                        "enabled" : true,
+                                        "focused" : true,
+                                        "checked" : false,
+                                        "selected" : false
+                                      } ],
+                                      "enabled" : true,
+                                      "focused" : true,
+                                      "checked" : false,
+                                      "selected" : false
+                                    }, {
+                                      "attributes" : {
+                                        "accessibilityText" : "Sign in",
+                                        "title" : "",
+                                        "value" : "",
+                                        "text" : "",
+                                        "hintText" : "",
+                                        "resource-id" : "",
+                                        "bounds" : "[68,266][123,289]",
+                                        "enabled" : "true",
+                                        "focused" : "true",
+                                        "selected" : "false",
+                                        "checked" : "false"
+                                      },
+                                      "children" : [ {
+                                        "attributes" : {
+                                          "accessibilityText" : "Sign in",
                                           "title" : "",
                                           "value" : "",
                                           "text" : "",
                                           "hintText" : "",
-                                          "resource-id" : "shareSheet.activity.contentView",
-                                          "bounds" : "[0,410][402,874]",
+                                          "resource-id" : "",
+                                          "bounds" : "[68,266][123,289]",
                                           "enabled" : "true",
-                                          "focused" : "false",
+                                          "focused" : "true",
                                           "selected" : "false",
                                           "checked" : "false"
                                         },
                                         "children" : [ {
                                           "attributes" : {
-                                            "accessibilityText" : "",
+                                            "accessibilityText" : "Sign in",
                                             "title" : "",
-                                            "value" : "",
-                                            "text" : "",
+                                            "value" : "Sign in",
+                                            "text" : "Sign in",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[0,410][402,874]",
+                                            "bounds" : "[68,266][123,289]",
                                             "enabled" : "true",
-                                            "focused" : "false",
+                                            "focused" : "true",
                                             "selected" : "false",
                                             "checked" : "false"
                                           },
-                                          "children" : [ {
-                                            "attributes" : {
-                                              "accessibilityText" : "",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[0,410][402,874]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          } ],
+                                          "children" : [ ],
                                           "enabled" : true,
-                                          "focused" : false,
+                                          "focused" : true,
                                           "checked" : false,
                                           "selected" : false
-                                        }, {
-                                          "attributes" : {
-                                            "accessibilityText" : "",
-                                            "title" : "",
-                                            "value" : "",
-                                            "text" : "",
-                                            "hintText" : "",
-                                            "resource-id" : "activityCollectionView",
-                                            "bounds" : "[0,410][402,874]",
-                                            "enabled" : "true",
-                                            "focused" : "false",
-                                            "selected" : "false",
-                                            "checked" : "false"
-                                          },
-                                          "children" : [ {
-                                            "attributes" : {
-                                              "accessibilityText" : "",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[6,525][396,653]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ {
-                                              "attributes" : {
-                                                "accessibilityText" : "News",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "shareCell",
-                                                "bounds" : "[6,525][84,653]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[6,525][84,653]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "",
-                                                    "bounds" : "[6,612][84,625]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ {
-                                                    "attributes" : {
-                                                      "accessibilityText" : "",
-                                                      "title" : "",
-                                                      "value" : "",
-                                                      "text" : "",
-                                                      "hintText" : "",
-                                                      "resource-id" : "",
-                                                      "bounds" : "[6,612][84,625]",
-                                                      "enabled" : "true",
-            
+                                        } ],
+                                        "enabled" : true,
+                                        "focused" : true,
+                                        "checked" : false,
+                                        "selected" : false
+                                      } ],
+                                      "enabled" : true,
+                                      "focused" : true,
+                                      "checked" : false,
+                                      "selected" : false
+                                    }, {
+                                      "attributes" : {
+                                        "accessibilityText" : "Learn more",
+                                        "title" : "",
+                                        "value" : "",
+                                        "text" : "",
+                                        "hintText" : "",
+                                        "resource-id" : "",
+                                        "bounds" : "[167,264][239,282]",
+                                        "enabled" : "true",
+                                        "focused" : "true",
+                                        "selected" : "false",
+                                        "checked" : "false"
+                                      },
+                                      "children" : [ {
+                                        "attributes" : {
+                                          "accessibilityText" : "Learn more",
+                                          "title" : "",
+                                          "value" : "",
+                                          "text" : "",
+                                          "hintText" : "",
+                                          "resource-id" : "",
+                                          "bounds" : "[167,264][239,282]",
+    

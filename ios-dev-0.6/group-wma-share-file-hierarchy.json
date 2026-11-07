@@ -442,7 +442,7 @@
                                     },
                                     "children" : [ {
                                       "attributes" : {
-                                        "accessibilityText" : "boker-tov, mp3, 11:03 AM, 32 KB",
+                                        "accessibilityText" : "boker-tov, mp3, 12:30 PM, 32 KB",
                                         "title" : "",
                                         "value" : "",
                                         "text" : "",
@@ -560,7 +560,7 @@
                                             "selected" : false
                                           }, {
                                             "attributes" : {
-                                              "accessibilityText" : "11:03 AM",
+                                              "accessibilityText" : "12:30 PM",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
@@ -613,7 +613,7 @@
                                       "selected" : false
                                     }, {
                                       "attributes" : {
-                                        "accessibilityText" : "gan-party, mpg, 11:03 AM, 70 KB",
+                                        "accessibilityText" : "gan-party, mpg, 12:30 PM, 70 KB",
                                         "title" : "",
                                         "value" : "",
                                         "text" : "",
