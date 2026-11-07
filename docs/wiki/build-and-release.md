@@ -127,13 +127,13 @@ keyed by the script and `native/ffmpeg/*`. The podspec only vendors the xcframew
 
 Every push to a dev branch touching the app runs two parallel jobs — a simulator build with the
 App Group and one with no entitlements (like Sideloadly with a free ID) — driven by Maestro
-(`scripts/ios-sim/run.sh`). Since 0.11.1 the job **fails** when a must-pass check fails:
+(`scripts/e2e/ios.sh`). Since 0.11.1 the job **fails** when a must-pass check fails:
 
 - `check` (must pass, `e2e-*.yaml` + `launch.yaml`, with assertions): the empty first launch;
   YouTube (from the extension's no-group link, `simctl openurl`) — full player, the small
   window, ⤢ and "חזרה" three times, dragging, ✕; Settings' "שיתוף מוואטסאפ" row ("הקלטות
   וקישורים" with the group, "רק קישורים" without). With the group: files handed over the way
-  the extension does (`inject.sh`: copy into the group container, the JSON list under
+  the extension does (`inject-ios.sh`: copy into the group container, the JSON list under
   `shironShareKey` in the group's defaults, `shiron://dataUrl=shironShareKey#file`) — mp3,
   WhatsApp opus, WMA, MPG, the mp3 again (no duplicate), a broken "mp3" (explained, no crash),
   a text file (ignored) → 6 songs, each real one converts and plays; the player (play all,
@@ -149,7 +149,7 @@ Screenshots, results and the simulator log go to the `screenshots` branch under
 annotations. With the `GEMINI_API_KEY` secret the group job also runs the live Gemini test.
 Gotchas:
 - The share sheet and the file picker are other processes; Maestro sometimes can't see or tap
-  them, which is why they are `try` and the import path is checked through `inject.sh`.
+  them, which is why they are `try` and the import path is checked through `inject-ios.sh`.
 - Maestro's `back` does nothing on iOS: tap the header's "חזרה" — exactly, since `.*חזרה.*`
   also matches the repeat button "בלי חזרה".
 - Rows are found by their spoken label ("נגני <title>"), not the title alone.
@@ -158,6 +158,19 @@ Gotchas:
 - `simctl openurl` and the no-group extension make iOS ask "Open in PlayGan?" (`dismiss.yaml`).
 - The simulator's network sometimes drops: YouTube then shows "אין אינטרנט".
 - WhatsApp can't run on a simulator; Safari and Files stand in for it.
+
+## Android end-to-end check (`smoke.yml` → `e2e`)
+
+Same flows as the iPhone (`scripts/e2e/*.yaml`; `back.yaml` taps "חזרה" on iOS and presses
+the system back on Android; `dismiss.yaml` closes iOS's "Open in" prompt and the one-time "חיבור
+שירות AI" offer) on an API 34 emulator with the release APK (`scripts/e2e/android.sh`). Songs
+come in the way she adds them on Android: a YouTube link shared as text (`am start SEND`), files
+pushed to Downloads and picked with the home screen's "+" (`add-android.yaml`, the system
+picker): mp3, WhatsApp opus, WMA, MPG, a broken "mp3", the mp3 again. Then import → player →
+song → list → search, and sharing out (`share-out-android.yaml`: the system share sheet opens
+for a file and for a YouTube link; the script also checks logcat for the CHOOSER intent). The
+job fails on a failed check or a crash; screenshots, results and errors go to the
+`screenshots` branch under `android-<branch>`.
 
 ## Local builds
 

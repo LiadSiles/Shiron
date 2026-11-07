@@ -4,7 +4,9 @@ name: Android launch check
 # emulator's x86_64), opens it on an emulator and reports whether the app starts or crashes:
 # the crash from logcat as annotations, a screenshot as an artifact. A dev branch should pass
 # this before it is merged — 0.7.0 shipped a release that closed at launch (R8 + WorkManager).
-# Dispatch with a tag to open a published APK instead.
+# Dispatch with a tag to open a published APK instead. The `e2e` job then runs the end-to-end
+# checks on the emulator (scripts/e2e/android.sh — the same flows as the iPhone check) and
+# fails when one fails.
 on:
   push:
     branches: ["dev/**"]
@@ -12,6 +14,7 @@ on:
       - "app/**"
       - ".github/workflows/smoke.yml"
       - "scripts/ci-android-smoke.sh"
+      - "scripts/e2e/**"
   workflow_dispatch:
     inputs:
       tag:
@@ -155,3 +158,46 @@ jobs:
             smoke.log
             smoke.png
             shots/
+
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: End-to-end checks on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          emulator-boot-timeout: 1200
+          script: bash scripts/e2e/android.sh app.apk
+      - name: Report
+        if: always()
+        run: |
+          [ -f shots/results-android.txt ] && tr '\n' '|' < shots/results-android.txt | sed 's/^/::notice::android results: /'; echo
+          [ -f shots/crash.txt ] && head -40 shots/crash.txt | tr '\n' '|' | cut -c1-6000 | sed 's/^/::error::crash: /'; echo
+          [ -f shots/errors-android.txt ] && tail -30 shots/errors-android.txt | tr '\n' '|' | cut -c1-6000 | sed 's/^/::warning::errors: /'; echo
+      - name: Publish screenshots
+        if: always() && hashFiles('shots/*.png') != ''
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          dir="android-${BRANCH//\//-}"
+          git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
+          git fetch origin screenshots && git worktree add ../shots-branch origin/screenshots
+          cd ../shots-branch
+          rm -rf "$dir"; mkdir -p "$dir"
+          cp "$GITHUB_WORKSPACE"/shots/*.png "$GITHUB_WORKSPACE"/shots/*.json "$GITHUB_WORKSPACE"/shots/*.txt "$dir/" 2>/dev/null || true
+          git add -A "$dir" && git commit -qm "Android check of $BRANCH at ${GITHUB_SHA::7}"
+          for i in 1 2 3; do git pull -q --rebase origin screenshots && git push -q origin HEAD:screenshots && break; sleep 5; done

@@ -3,7 +3,7 @@
 # copy into the group container, a JSON list under "shironShareKey" in the group's defaults,
 # then open shiron://dataUrl=shironShareKey#file. Skips the share sheet itself, whose tap is
 # flaky on the simulator, so the import → convert → play path can be checked every run.
-# usage: inject.sh <simulator udid> <file> <name she would see> [mime]
+# usage: inject-ios.sh <simulator udid> <file> <name she would see> [mime]
 set -euo pipefail
 UDID=$1 SRC=$2 NAME=$3 MIME=${4:-application/octet-stream}
 GROUP_ID=group.app.shiron.gan

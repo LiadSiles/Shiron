@@ -21,7 +21,7 @@ _Last verified: 2026-10-26 (0.2.0; share flow not yet tested on a device)_
   both to `/` so expo-router doesn't show "unmatched route".
 - `ShareHandler` in `_layout.tsx` imports, toasts a summary, then `resetShareIntent()`; it also
   watches the app's incoming link (`useLinkingURL`) for `shiron://share?text=…`.
-- Checked on the iPhone simulator by `.github/workflows/ios-sim.yml` (see build-and-release.md).
+- Checked on the iPhone simulator (`.github/workflows/ios-sim.yml`) and an Android emulator (`smoke.yml` → `e2e`), see build-and-release.md.
 - Expo Go cannot test this (native code). Needs a dev or release build.
 
 ## What a share contains

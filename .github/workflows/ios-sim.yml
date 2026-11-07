@@ -1,6 +1,6 @@
 name: iPhone share check
 
-# Builds the app for the iPhone simulator and drives it with Maestro (scripts/ios-sim/run.sh).
+# Builds the app for the iPhone simulator and drives it with Maestro (scripts/e2e/ios.sh).
 # Checks that must pass (e2e-*.yaml, with assertions): the empty first launch; YouTube — full
 # player, the small window, ⤢, dragging, ✕, "חזרה" again and again; Settings; and with the App
 # Group, files handed over the way the share extension does (mp3, voice note, WMA, MPG, a
@@ -18,7 +18,7 @@ on:
     paths:
       - "app/**"
       - ".github/workflows/ios-sim.yml"
-      - "scripts/ios-sim/**"
+      - "scripts/e2e/**"
   workflow_dispatch:
 
 concurrency:
@@ -101,7 +101,7 @@ jobs:
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Checks and share flows (${{ matrix.variant }})
-        run: bash scripts/ios-sim/run.sh "$RUNNER_TEMP/${{ matrix.variant }}.app" ${{ matrix.variant }}
+        run: bash scripts/e2e/ios.sh "$RUNNER_TEMP/${{ matrix.variant }}.app" ${{ matrix.variant }}
 
       - name: Report
         if: always()
@@ -124,6 +124,6 @@ jobs:
           git fetch origin screenshots && git worktree add ../shots-branch origin/screenshots
           cd ../shots-branch
           rm -rf "$dir"; mkdir -p "$dir"
-          cp "$GITHUB_WORKSPACE"/shots/*.png "$GITHUB_WORKSPACE"/shots/*.json "$dir/" 2>/dev/null || true; cp "$GITHUB_WORKSPACE"/sim-*.log "$dir/" 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE"/shots/*.png "$GITHUB_WORKSPACE"/shots/*.json "$GITHUB_WORKSPACE"/shots/*.txt "$dir/" 2>/dev/null || true; cp "$GITHUB_WORKSPACE"/sim-*.log "$dir/" 2>/dev/null || true
           git add -A "$dir" && git commit -qm "iPhone check (${{ matrix.variant }}) of $BRANCH at ${GITHUB_SHA::7}"
           for i in 1 2 3; do git pull -q --rebase origin screenshots && git push -q origin HEAD:screenshots && break; sleep 5; done

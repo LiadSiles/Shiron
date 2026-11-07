@@ -1,0 +1,22 @@
+# Android: a file from Downloads through the home screen's "+" (the system file picker).
+# FILE is the file name; the files were pushed to /sdcard/Download by android.sh.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: "הוספת שירים מהקבצים"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      notVisible: "${FILE}"
+    commands:
+      - tapOn: "Show roots"
+      - tapOn: "Downloads"
+      - waitForAnimationToEnd
+- tapOn: "${FILE}"
+# With several files allowed, a tap may only select: then confirm.
+- tapOn:
+    text: "(Select|SELECT|Open|OPEN|Done|DONE)"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-added

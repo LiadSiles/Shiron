@@ -18,7 +18,7 @@ appId: app.shiron.gan
 - tapOn: "חזרה על השיר"
 - assertVisible: "בלי חזרה"
 - takeScreenshot: ${VARIANT}-player
-- tapOn: "חזרה"
+- runFlow: back.yaml
 - assertNotVisible: "מתנגן עכשיו"
 - repeat:
     times: 3
@@ -27,12 +27,12 @@ appId: app.shiron.gan
       - assertVisible: "מתנגן עכשיו"
       - tapOn: "פרטים"
       - assertVisible: "פרטי שיר"
-      - tapOn: "חזרה"
+      - runFlow: back.yaml
       - assertVisible: "מתנגן עכשיו"
-      - tapOn: "חזרה"
+      - runFlow: back.yaml
       - assertNotVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-after-backs
 - tapOn: "מתנגן: .*"
 - tapOn: "השהיה"
 - assertVisible: "ניגון"
-- tapOn: "חזרה"
+- runFlow: back.yaml

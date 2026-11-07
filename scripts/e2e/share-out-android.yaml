@@ -1,0 +1,20 @@
+# Android: a song's "שיתוף" opens the system share sheet with the song's file.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- tapOn: "כל השירים.*"
+- longPressOn: "נגני בוקר טוב לגן"
+- tapOn: "שיתוף"
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-share-sheet
+- assertNotVisible: ".*לא הצלחנו לשתף.*"
+- assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive|שיתוף).*"
+- back
+- longPressOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
+- tapOn: "שיתוף"
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-share-link
+- assertNotVisible: ".*לא הצלחנו לשתף.*"
+- back

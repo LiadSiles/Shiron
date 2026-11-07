@@ -10,3 +10,20 @@ appId: app.shiron.gan
     text: Open
     optional: true
 - waitForAnimationToEnd
+# After the first song, the app offers to connect an AI service once (a modal): close it.
+- runFlow:
+    when:
+      visible: "חיבור שירות AI"
+      platform: iOS
+    commands:
+      - swipe:
+          start: "50%, 12%"
+          end: "50%, 92%"
+          duration: 400
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "חיבור שירות AI"
+      platform: Android
+    commands:
+      - back

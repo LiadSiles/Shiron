@@ -1,0 +1,14 @@
+# Back one screen: the header's "חזרה" on iOS (Maestro's `back` does nothing there; exact text,
+# since ".*חזרה.*" also matches the repeat button "בלי חזרה"), the system back on Android.
+appId: app.shiron.gan
+---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "חזרה"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back

@@ -1,4 +1,4 @@
-# Files handed over by the share extension (inject.sh): an mp3, a WhatsApp voice note, a WMA
+# Files handed over by the share extension (inject-ios.sh / the picker on Android): an mp3, a WhatsApp voice note, a WMA
 # and an MPG (our FFmpeg build), the mp3 again, a broken "mp3" and a text file. Every real
 # audio file converts and plays; the duplicate and the text file add nothing; the broken file
 # says it can't play instead of crashing. 1 YouTube + 5 files = 6 songs.

@@ -7,7 +7,7 @@ appId: app.shiron.gan
 - tapOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
 - assertVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-yt-player
-- tapOn: "חזרה"
+- runFlow: back.yaml
 - assertVisible: "סגירת הסרטון"
 - assertNotVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-yt-pip-home
@@ -17,7 +17,7 @@ appId: app.shiron.gan
       - tapOn: "פתיחת הנגן המלא"
       - assertVisible: "מתנגן עכשיו"
       - assertNotVisible: "סגירת הסרטון"
-      - tapOn: "חזרה"
+      - runFlow: back.yaml
       - assertVisible: "סגירת הסרטון"
 - tapOn: ספרייה
 - assertVisible: "סגירת הסרטון"

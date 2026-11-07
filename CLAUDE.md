@@ -104,7 +104,8 @@ app/                         Expo app (React Native, TypeScript, expo-router)
                              controller + App Group lookup); expo-audio notification (must also
                              be in package.json → expo.autolinking.android.buildFromSource)
   tests/                     vitest — one file per core module, fixtures.ts
-scripts/                     version bump, CI build-number stamp
+scripts/                     version bump, CI build-number stamp; e2e/ Maestro flows for the iPhone
+                             simulator and the Android emulator (ios.sh, android.sh)
 docs/wiki/                   engineering knowledge (this is for you)
 ```
 

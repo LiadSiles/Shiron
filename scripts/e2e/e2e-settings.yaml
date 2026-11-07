@@ -6,4 +6,4 @@ appId: app.shiron.gan
 - tapOn: "הגדרות"
 - assertVisible: ".*${SHARE}.*"
 - takeScreenshot: ${VARIANT}-settings
-- tapOn: "חזרה"
+- runFlow: back.yaml

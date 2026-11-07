@@ -1,0 +1,13 @@
+# After `simctl openurl` iOS asks "Open in “PlayGan”?": answer it and make sure it is gone (a
+# prompt left open blocks every later check). ios.sh repeats this until it passes.
+appId: app.shiron.gan
+---
+- extendedWaitUntil:
+    visible: Open
+    timeout: 6000
+    optional: true
+- tapOn:
+    text: Open
+    optional: true
+- waitForAnimationToEnd
+- assertNotVisible: Open
