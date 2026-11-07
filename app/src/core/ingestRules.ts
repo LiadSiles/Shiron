@@ -1,14 +1,15 @@
 /** Pure helpers for turning shared content into songs. */
+import type { Song } from './types';
 
 const SUGGEST_CONFIDENCE = 0.5;
 
 /** Audio formats a teacher may receive. Decoded on the phone (see docs/wiki/audio-processing.md). */
 const AUDIO_EXT = [
   'mp3', 'mpga', 'm4a', 'aac', 'wav', 'aif', 'aiff', 'caf', 'flac', 'ogg', 'oga', 'opus', 'amr', 'awb',
-  'wma', // Windows Media: no phone decodes it; our FFmpeg build does (native/wma)
+  'wma', // Windows Media: no phone decodes it; our FFmpeg build does (native/ffmpeg)
 ];
 /** Videos: the sound track is extracted (a song filmed in another kindergarten, a clip). */
-const VIDEO_EXT = ['mp4', 'm4v', 'mov', '3gp', '3g2', 'mpeg', 'mpg', 'webm', 'mkv', 'avi', 'wmv', 'asf'];
+const VIDEO_EXT = ['mp4', 'm4v', 'mov', '3gp', '3g2', 'mpeg', 'mpg', 'webm', 'mkv', 'avi', 'wmv', 'asf', 'vob', 'flv'];
 
 const MEDIA_MIME = /^(audio|video)\//;
 const MEDIA_MIME_EXTRA = new Set(['application/ogg', 'application/x-ogg']);
@@ -18,7 +19,15 @@ export function extensionOf(name: string): string {
   return m ? m[1].toLowerCase() : '';
 }
 
-/** Windows Media (WMA/WMV/ASF): converted by our own decoder, not the phone's. Null for anything else. */
+/**
+ * A song that didn't make it and can be tried again: a file the phone couldn't convert (its
+ * original is kept), or one the AI step failed on (the error shows on its screen).
+ */
+export function isFailed(song: Pick<Song, 'kind' | 'audioState' | 'originalUri' | 'error'>): boolean {
+  return (song.kind === 'audio' && song.audioState === 'unsupported' && !!song.originalUri) || !!song.error;
+}
+
+/** Windows Media (WMA/WMV/ASF): converted by our FFmpeg build, not the phone's. Null for anything else. */
 export function windowsMediaFormat(fileName: string, mimeType?: string | null): 'WMA' | 'WMV' | null {
   const ext = extensionOf(fileName);
   const mime = (mimeType ?? '').toLowerCase();

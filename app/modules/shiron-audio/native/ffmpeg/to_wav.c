@@ -1,7 +1,8 @@
 /*
- * Windows Media (WMA, or the sound of a WMV) → 16-bit PCM WAV, with a minimal FFmpeg build
- * (ASF demuxer + WMA decoders only; see scripts/build-wma-decoder.sh). Neither iOS nor Android
- * decodes WMA; the app turns it into a WAV here and then converts that like any other file
+ * Any sound the phone itself can't read → 16-bit PCM WAV, with a small FFmpeg build (a few
+ * containers and audio decoders; see scripts/build-ffmpeg.sh): Windows Media (WMA, a WMV's
+ * sound), MPEG program streams (.mpg/.vob: MP2/AC-3 audio), AVI, MKV, FLV… The converter tries
+ * the platform first and falls back to this; the WAV is then converted like any other file
  * (AudioProcessor on each platform). Plain C, shared by both platforms.
  *
  * Returns 0 on success, or a negative code: -1 can't open/read, -2 no audio stream,
@@ -49,6 +50,10 @@ static double sample_at(const AVFrame *f, int c, int i, int channels) {
     case AV_SAMPLE_FMT_S16: return ((const int16_t *)f->extended_data[0])[i * channels + c] / 32768.0;
     case AV_SAMPLE_FMT_S32P: return ((const int32_t *)f->extended_data[c])[i] / 2147483648.0;
     case AV_SAMPLE_FMT_S32: return ((const int32_t *)f->extended_data[0])[i * channels + c] / 2147483648.0;
+    case AV_SAMPLE_FMT_DBLP: return ((const double *)f->extended_data[c])[i];
+    case AV_SAMPLE_FMT_DBL: return ((const double *)f->extended_data[0])[i * channels + c];
+    case AV_SAMPLE_FMT_U8P: return (((const uint8_t *)f->extended_data[c])[i] - 128) / 128.0;
+    case AV_SAMPLE_FMT_U8: return (((const uint8_t *)f->extended_data[0])[i * channels + c] - 128) / 128.0;
     default: return 0;
   }
 }
@@ -83,7 +88,7 @@ static int drain(AVCodecContext *ctx, AVFrame *frame, FILE *out, int channels, u
   }
 }
 
-int shiron_wma_to_wav(const char *input, const char *output) {
+int shiron_ffmpeg_to_wav(const char *input, const char *output) {
   AVFormatContext *fmt = NULL;
   AVCodecContext *ctx = NULL;
   AVPacket *pkt = NULL;

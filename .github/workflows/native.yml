@@ -60,13 +60,13 @@ jobs:
       - name: Install dependencies
         working-directory: app
         run: npm ci
-      - name: Cache the WMA decoder build
+      - name: Cache the FFmpeg build
         uses: actions/cache@v4
         with:
-          path: build/wma
-          key: wma-android-x86_64-${{ hashFiles('scripts/build-wma-decoder.sh', 'app/modules/shiron-audio/native/wma/*') }}
-      - name: Build the WMA decoder (FFmpeg, LGPL)
-        run: scripts/build-wma-decoder.sh android x86_64
+          path: build/ffmpeg
+          key: ffmpeg-android-x86_64-${{ hashFiles('scripts/build-ffmpeg.sh', 'app/modules/shiron-audio/native/ffmpeg/*') }}
+      - name: Build FFmpeg for what the phone can't read (LGPL)
+        run: scripts/build-ffmpeg.sh android x86_64
       - name: Generate Android project
         working-directory: app
         run: npx expo prebuild --platform android --no-install --clean

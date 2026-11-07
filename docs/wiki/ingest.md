@@ -31,7 +31,7 @@ _Last verified: 2026-10-26 (0.2.0; share flow not yet tested on a device)_
 | WhatsApp voice note | `files[]` with `.opus`/`.ogg`, mime `audio/ogg` | copied; playable on iOS after conversion (seconds) |
 | mp3 (`audio/mpeg`) / m4a / wav | `files[]` | playable immediately, then converted |
 | flac, amr, aiff, caf | `files[]` | converted on the phone |
-| wma, wmv, asf | `files[]` | decoded to WAV by our FFmpeg build (`native/wma`, see audio-processing.md), then converted like any file |
+| wma, wmv, asf (and mpg/vob, avi, mkv, flv when the platform fails) | `files[]` | decoded to WAV by our FFmpeg build (`native/ffmpeg`, see audio-processing.md), then converted like any file |
 | Video (mp4, mov, m4v, 3gp, mpeg, webm, mkv, avi) | `files[]`, `video/*` | the sound track is extracted; webm/mkv only on Android |
 | YouTube app / link | `webUrl` and/or `text` | `youtubeIdFrom()`; title from `meta.title` if present |
 | Text with a link | `text` | the rest of the text is kept as `context_text` |

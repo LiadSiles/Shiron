@@ -46,13 +46,28 @@ object AudioProcessor {
   /** A codec that stops producing output after end of input (~10 s of empty polls) is broken. */
   private const val MAX_IDLE_POLLS = 1_000
 
-  fun process(input: File, output: File): ProcessResult {
+  /**
+   * Android's own decoders first; what they can't read (WMA/WMV, MPG, AVI…) goes through our
+   * FFmpeg build (FfmpegDecoder) to a temporary WAV, which is then converted as usual.
+   */
+  fun process(input: File, output: File): ProcessResult =
+    try {
+      processWithPlatform(input, output)
+    } catch (e: Exception) {
+      if (e is AudioProcessingException && e.code == "TOO_LONG") throw e
+      val wav = FfmpegDecoder.decode(input, output.parentFile!!) ?: throw e
+      try {
+        processWithPlatform(wav, output)
+      } finally {
+        wav.delete()
+      }
+    }
+
+  private fun processWithPlatform(input: File, output: File): ProcessResult {
     val tmp = File(output.parentFile, ".${System.nanoTime()}.f32")
-    // Windows Media: decoded to WAV first by our FFmpeg build (WmaDecoder).
-    val source = if (WmaDecoder.handles(input)) WmaDecoder.decode(input, output.parentFile!!) else input
     try {
       val sink = PcmSink(tmp)
-      sink.use { decode(source, it) }
+      sink.use { decode(input, it) }
       if (sink.totalFrames == 0) throw AudioProcessingException("NO_AUDIO", "The file has no audio")
       val plan = LoudnessPlan.make(sink.blockPower(), sink.blockPeak(), sink.totalFrames)
       val written = encode(tmp, plan, output)
@@ -65,7 +80,6 @@ object AudioProcessor {
       )
     } finally {
       tmp.delete()
-      if (source != input) source.delete()
     }
   }
 

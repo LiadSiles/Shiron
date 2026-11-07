@@ -67,16 +67,22 @@ sourceDurationSec, gainDb, trimStartSec, trimEndSec }`; errors carry codes `ERR_
 - iOS: each `CMSampleBuffer` is read inside its own `autoreleasepool`, so memory stays flat on
   long recordings.
 
-## Windows Media (WMA/WMV, 0.10.0)
+## What the phone can't read: FFmpeg fallback (WMA 0.10.0, general 0.11.0)
 
-Neither platform decodes it. `native/wma/wma2wav.c` (FFmpeg: ASF demuxer + wmav1/wmav2/wmapro/
-wmalossless/wmavoice) writes a 16-bit WAV at the source rate; then the normal pipeline runs on the
-WAV. iOS: `ShironAudioModule.decodedIfWindowsMedia` (module layer, `#if SHIRON_WMA`; Core and its
-Swift package tests don't see FFmpeg). Android: `AudioProcessor.process` → `WmaDecoder` (JNI), so
-the instrumented tests cover `tone.wma` and `video.wmv`. Build: `scripts/build-wma-decoder.sh
-ios|android|host` (`host` builds a command-line `wma2wav` to try on a Linux/Mac machine); outputs
-are git-ignored; every workflow that builds the app runs it first (cached by the script's and the
-C file's hash). Codes: -1 open, -2 no audio, -3 no decoder, -4 decode, -5 write, -6 over an hour.
+The platform converter runs first; if it fails (anything but TOO_LONG), `native/ffmpeg/to_wav.c`
+tries with a small FFmpeg build and writes a 16-bit WAV at the source rate, which the normal
+pipeline then converts. If FFmpeg can't read it either, the platform's error stands. Covered:
+WMA (v1/v2/Pro/Lossless/Voice) and a WMV's sound (ASF), MPEG program/transport streams (.mpg,
+.vob, .ts: MP1/MP2/MP3, AC-3/E-AC-3, AAC, LPCM-DVD), AVI, MKV, FLV, plus WAV/AIFF/MP3/AAC/AC-3
+files and FLAC/Vorbis/PCM/ADPCM tracks inside those containers. iOS couldn't read .mpg at all
+(owner, 0.10.0) — AVFoundation has no MPEG-PS demuxer. iOS: `ShironAudioModule.process` (module
+layer, `#if SHIRON_FFMPEG`; Core and its Swift package tests don't see FFmpeg). Android:
+`AudioProcessor.process` → `FfmpegDecoder` (JNI), so the instrumented tests cover `tone.wma`,
+`video.wmv` and `video.mpg`. Build: `scripts/build-ffmpeg.sh ios|android|host` (`host` builds a
+command-line `to-wav` to try on a Linux/Mac machine); outputs are git-ignored; every workflow
+that builds the app runs it first (cached by the script's and the C files' hash). Codes: -1
+open, -2 no audio, -3 no decoder, -4 decode, -5 write, -6 over an hour. Static libs ≈ 2.7 MB
+before linking; what reaches the app is smaller (unused code is dropped).
 
 ## Parts for transcription (`AudioSplitter`, 0.10.0)
 

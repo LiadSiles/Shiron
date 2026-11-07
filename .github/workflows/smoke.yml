@@ -50,15 +50,15 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v5
         if: ${{ !inputs.tag }}
-      - name: Cache the WMA decoder build
+      - name: Cache the FFmpeg build
         if: ${{ !inputs.tag }}
         uses: actions/cache@v4
         with:
-          path: build/wma
-          key: wma-android-x86_64-${{ hashFiles('scripts/build-wma-decoder.sh', 'app/modules/shiron-audio/native/wma/*') }}
-      - name: Build the WMA decoder (FFmpeg, LGPL)
+          path: build/ffmpeg
+          key: ffmpeg-android-x86_64-${{ hashFiles('scripts/build-ffmpeg.sh', 'app/modules/shiron-audio/native/ffmpeg/*') }}
+      - name: Build FFmpeg for what the phone can't read (LGPL)
         if: ${{ !inputs.tag }}
-        run: scripts/build-wma-decoder.sh android x86_64
+        run: scripts/build-ffmpeg.sh android x86_64
       - name: Build the release APK (x86_64 for the emulator)
         if: ${{ !inputs.tag }}
         working-directory: app

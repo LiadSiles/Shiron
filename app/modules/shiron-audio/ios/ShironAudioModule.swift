@@ -1,7 +1,7 @@
 import ExpoModulesCore
 import UIKit
-#if SHIRON_WMA
-import WmaDecoder
+#if SHIRON_FFMPEG
+import ShironFFmpeg
 #endif
 
 public class ShironAudioModule: Module {
@@ -20,9 +20,7 @@ public class ShironAudioModule: Module {
         throw Exception(name: "ShironAudio", description: "Expected file:// URIs", code: "ERR_AUDIO_BAD_URI")
       }
       do {
-        let source = try Self.decodedIfWindowsMedia(input)
-        defer { if source != input { try? FileManager.default.removeItem(at: source) } }
-        return try AudioProcessor.process(input: source, output: output).dictionary
+        return try Self.process(input: input, output: output).dictionary
       } catch {
         // No half-written .m4a left behind, and every failure carries a code the app knows.
         try? FileManager.default.removeItem(at: output)
@@ -74,19 +72,23 @@ public class ShironAudioModule: Module {
     }
   }
 
-  /// WMA, or a WMV's sound, as a temporary WAV (native/wma, FFmpeg): iOS can't decode Windows
-  /// Media itself. Anything else is returned as is.
-  private static func decodedIfWindowsMedia(_ url: URL) throws -> URL {
-    guard ["wma", "wmv", "asf"].contains(url.pathExtension.lowercased()) else { return url }
-    #if SHIRON_WMA
-    let wav = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).wav")
-    let code = shiron_wma_to_wav(url.path, wav.path)
-    if code == -6 { throw AudioProcessingError.tooLong }
-    guard code == 0 else { throw AudioProcessingError.unsupported("Windows Media (decoder \(code))") }
-    return wav
-    #else
-    throw AudioProcessingError.unsupported("Windows Media (decoder not in this build)")
-    #endif
+  /// iOS's own decoders first; what they can't read (WMA/WMV, MPG, AVI, MKV…) goes through our
+  /// FFmpeg build (native/ffmpeg) to a temporary WAV, which is then converted as usual.
+  private static func process(input: URL, output: URL) throws -> ProcessResult {
+    do {
+      return try AudioProcessor.process(input: input, output: output)
+    } catch let error as AudioProcessingError where error.code != "TOO_LONG" {
+      #if SHIRON_FFMPEG
+      let wav = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).wav")
+      defer { try? FileManager.default.removeItem(at: wav) }
+      let code = shiron_ffmpeg_to_wav(input.path, wav.path)
+      if code == -6 { throw AudioProcessingError.tooLong }
+      guard code == 0 else { throw error } // FFmpeg can't either: the platform's reason stands
+      return try AudioProcessor.process(input: wav, output: output)
+      #else
+      throw error
+      #endif
+    }
   }
 
   /// The groups in the app's embedded.mobileprovision (a signed plist); none on the simulator.

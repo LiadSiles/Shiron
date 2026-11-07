@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Builds the WMA decoder: a minimal FFmpeg (ASF demuxer + WMA decoders, LGPL, unmodified source)
-# plus our native/wma C files, for the platform asked. Outputs are git-ignored and cached in CI:
-#   ios      → app/modules/shiron-audio/ios/WmaDecoder.xcframework (device arm64 + simulator arm64)
-#   android  → app/modules/shiron-audio/android/src/main/jniLibs/<abi>/libshironwma.so
-#   host     → build/wma/host/wma2wav (a command-line check on this machine)
-# usage: scripts/build-wma-decoder.sh ios|android|host [android ABIs…]
+# Builds the fallback decoder: a small FFmpeg (a few containers and audio decoders, LGPL,
+# unmodified source) plus our native/ffmpeg C files, for the platform asked. It reads what the
+# phone can't (WMA/WMV, MPEG program streams, AVI, MKV…). Outputs are git-ignored, cached in CI:
+#   ios      → app/modules/shiron-audio/ios/ShironFFmpeg.xcframework (device + simulator arm64)
+#   android  → app/modules/shiron-audio/android/src/main/jniLibs/<abi>/libshironffmpeg.so
+#   host     → build/ffmpeg/host/to-wav (a command-line check on this machine)
+# usage: scripts/build-ffmpeg.sh ios|android|host [android ABIs…]
 # Needs: git, make, clang; ios: Xcode; android: ANDROID_NDK_HOME (or ANDROID_NDK_LATEST_HOME).
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-SRC_C="$ROOT/app/modules/shiron-audio/native/wma"
-WORK="$ROOT/build/wma"
+SRC_C="$ROOT/app/modules/shiron-audio/native/ffmpeg"
+WORK="$ROOT/build/ffmpeg"
 FFMPEG_TAG=n7.1.1
 IOS_MIN=16.4  # = ShironAudio.podspec
 ANDROID_API=24
@@ -23,8 +24,12 @@ COMMON=(
   --disable-everything --disable-programs --disable-doc --disable-network --disable-autodetect
   --disable-avdevice --disable-swscale --disable-swresample --disable-avfilter --disable-asm
   --disable-debug --enable-small --enable-pic --enable-static --disable-shared
-  --enable-protocol=file --enable-demuxer=asf
-  --enable-decoder=wmav1,wmav2,wmapro,wmalossless,wmavoice
+  --enable-protocol=file
+  --enable-demuxer=asf,mpegps,mpegts,avi,matroska,flv,wav,aiff,mp3,aac,ac3
+  --enable-parser=mpegaudio,ac3,aac,aac_latm,mpegvideo
+  --enable-decoder=wmav1,wmav2,wmapro,wmalossless,wmavoice,mp1,mp2,mp3,mp1float,mp2float,mp3float
+  --enable-decoder=ac3,eac3,aac,aac_latm,flac,vorbis
+  --enable-decoder=pcm_s16le,pcm_s16be,pcm_s24le,pcm_u8,pcm_f32le,pcm_alaw,pcm_mulaw,pcm_dvd,adpcm_ima_wav,adpcm_ms
 )
 
 # configure + make + install one FFmpeg build into $WORK/<name>/prefix
@@ -45,16 +50,16 @@ case "${1:-}" in
     mkdir -p "$WORK/host"
     cat > "$WORK/host/main.c" <<'C'
 #include <stdio.h>
-int shiron_wma_to_wav(const char *, const char *);
-int main(int argc, char **argv) { int r = argc == 3 ? shiron_wma_to_wav(argv[1], argv[2]) : -1; printf("%d\n", r); return r != 0; }
+int shiron_ffmpeg_to_wav(const char *, const char *);
+int main(int argc, char **argv) { int r = argc == 3 ? shiron_ffmpeg_to_wav(argv[1], argv[2]) : -1; printf("%d\n", r); return r != 0; }
 C
     # shellcheck disable=SC2046
-    cc -O2 -I"$WORK/host/prefix/include" "$SRC_C/wma2wav.c" "$WORK/host/main.c" $(libs host) -lm -lpthread -o "$WORK/host/wma2wav"
-    echo "$WORK/host/wma2wav"
+    cc -O2 -I"$WORK/host/prefix/include" "$SRC_C/to_wav.c" "$WORK/host/main.c" $(libs host) -lm -lpthread -o "$WORK/host/to-wav"
+    echo "$WORK/host/to-wav"
     ;;
 
   ios)
-    OUT="$ROOT/app/modules/shiron-audio/ios/WmaDecoder.xcframework"
+    OUT="$ROOT/app/modules/shiron-audio/ios/ShironFFmpeg.xcframework"
     args=()
     for sdk in iphoneos iphonesimulator; do
       target=arm64-apple-ios$IOS_MIN; [ $sdk = iphonesimulator ] && target=$target-simulator
@@ -62,13 +67,13 @@ C
       ffmpeg_build "ios-$sdk" --enable-cross-compile --target-os=darwin --arch=arm64 \
         --cc="$cc" --extra-cflags="-target $target" --extra-ldflags="-target $target"
       dir="$WORK/ios-$sdk"
-      $cc -O2 -fPIC -I"$dir/prefix/include" -c "$SRC_C/wma2wav.c" -o "$dir/wma2wav.o"
+      $cc -O2 -fPIC -I"$dir/prefix/include" -c "$SRC_C/to_wav.c" -o "$dir/to_wav.o"
       # shellcheck disable=SC2046
-      libtool -static -no_warning_for_no_symbols -o "$dir/libwmadecoder.a" "$dir/wma2wav.o" $(libs "ios-$sdk")
+      libtool -static -no_warning_for_no_symbols -o "$dir/libshironffmpeg.a" "$dir/to_wav.o" $(libs "ios-$sdk")
       mkdir -p "$dir/headers"
-      echo 'int shiron_wma_to_wav(const char *input, const char *output);' > "$dir/headers/wma2wav.h"
-      printf 'module WmaDecoder {\n  header "wma2wav.h"\n  export *\n}\n' > "$dir/headers/module.modulemap"
-      args+=(-library "$dir/libwmadecoder.a" -headers "$dir/headers")
+      echo 'int shiron_ffmpeg_to_wav(const char *input, const char *output);' > "$dir/headers/shiron_ffmpeg.h"
+      printf 'module ShironFFmpeg {\n  header "shiron_ffmpeg.h"\n  export *\n}\n' > "$dir/headers/module.modulemap"
+      args+=(-library "$dir/libshironffmpeg.a" -headers "$dir/headers")
     done
     rm -rf "$OUT"
     xcodebuild -create-xcframework "${args[@]}" -output "$OUT" >/dev/null
@@ -97,11 +102,11 @@ C
       mkdir -p "$out"
       # 16 KB pages (Android 15+). -Wl,--exclude-libs keeps FFmpeg's symbols private.
       # shellcheck disable=SC2046
-      "$cc" -shared -fPIC -O2 -I"$WORK/android-$abi/prefix/include" "$SRC_C/wma2wav.c" "$SRC_C/wma_jni.c" \
-        $(libs "android-$abi") -lm -Wl,-z,max-page-size=16384 -Wl,--exclude-libs,ALL -Wl,-soname,libshironwma.so \
-        -o "$out/libshironwma.so"
-      "$TC/bin/llvm-strip" --strip-unneeded "$out/libshironwma.so"
-      echo "$out/libshironwma.so ($(wc -c < "$out/libshironwma.so") bytes)"
+      "$cc" -shared -fPIC -O2 -I"$WORK/android-$abi/prefix/include" "$SRC_C/to_wav.c" "$SRC_C/jni.c" \
+        $(libs "android-$abi") -lm -Wl,-z,max-page-size=16384 -Wl,--exclude-libs,ALL -Wl,-soname,libshironffmpeg.so \
+        -o "$out/libshironffmpeg.so"
+      "$TC/bin/llvm-strip" --strip-unneeded "$out/libshironffmpeg.so"
+      echo "$out/libshironffmpeg.so ($(wc -c < "$out/libshironffmpeg.so") bytes)"
     done
     ;;
 

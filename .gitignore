@@ -33,6 +33,6 @@ build/
 !.vscode/extensions.json
 *.log
 
-# WMA decoder, built by scripts/build-wma-decoder.sh (FFmpeg, LGPL)
-app/modules/shiron-audio/ios/WmaDecoder.xcframework/
+# FFmpeg fallback decoder, built by scripts/build-ffmpeg.sh (LGPL)
+app/modules/shiron-audio/ios/ShironFFmpeg.xcframework/
 app/modules/shiron-audio/android/src/main/jniLibs/

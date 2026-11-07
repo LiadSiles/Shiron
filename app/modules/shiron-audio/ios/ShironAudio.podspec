@@ -17,13 +17,13 @@ Pod::Spec.new do |s|
   s.source_files = 'ShironAudioModule.swift', 'Core/**/*.swift'
   s.frameworks = 'AVFoundation', 'AudioToolbox', 'CoreMedia', 'UIKit'
 
-  # WMA/WMV: a minimal FFmpeg built by scripts/build-wma-decoder.sh ios (git-ignored). Without it
-  # the app still builds; Windows Media files are then reported as unsupported.
-  wma = File.exist?(File.join(__dir__, 'WmaDecoder.xcframework'))
-  s.vendored_frameworks = 'WmaDecoder.xcframework' if wma
+  # What iOS can't read (WMA/WMV, MPG…): a small FFmpeg built by scripts/build-ffmpeg.sh ios
+  # (git-ignored). Without it the app still builds; such files are then reported as unsupported.
+  ffmpeg = File.exist?(File.join(__dir__, 'ShironFFmpeg.xcframework'))
+  s.vendored_frameworks = 'ShironFFmpeg.xcframework' if ffmpeg
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
     'SWIFT_COMPILATION_MODE' => 'wholemodule',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => wma ? '$(inherited) SHIRON_WMA' : '$(inherited)'
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => ffmpeg ? '$(inherited) SHIRON_FFMPEG' : '$(inherited)'
   }
 end

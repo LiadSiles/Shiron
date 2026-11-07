@@ -114,13 +114,13 @@ Apple ID; free IDs expire after 7 days and need Developer Mode on iOS 16+. Sidel
 free ID grants no App Group, so the share extension can pass links but not files (files: save to
 Files, then the in-app picker). AltStore/SideStore (free) or a paid account give the full share.
 
-## WMA decoder in CI
+## FFmpeg fallback decoder in CI
 
-`scripts/build-wma-decoder.sh` runs before `expo prebuild` in release.yml (android: 4 ABIs; ios),
-ios-sim.yml (ios), native.yml and smoke.yml (android x86_64), with `actions/cache` on `build/wma`
-keyed by the script and `native/wma/*`. The podspec only vendors the xcframework if it exists at
+`scripts/build-ffmpeg.sh` runs before `expo prebuild` in release.yml (android: 4 ABIs; ios),
+ios-sim.yml (ios), native.yml and smoke.yml (android x86_64), with `actions/cache` on `build/ffmpeg`
+keyed by the script and `native/ffmpeg/*`. The podspec only vendors the xcframework if it exists at
 `pod install` time — so the script must run before prebuild. Release fails if
-`lib/arm64-v8a/libshironwma.so` is missing from the APK. Android uses
+`lib/arm64-v8a/libshironffmpeg.so` is missing from the APK. Android uses
 `ANDROID_NDK_LATEST_HOME` (preinstalled on GitHub's Ubuntu runners).
 
 ## iPhone share check (`ios-sim.yml`)
@@ -129,7 +129,8 @@ Every push to a dev branch touching the app builds a simulator build twice — w
 and with no entitlements (like Sideloadly with a free ID) — and drives it with Maestro
 (`scripts/ios-sim/`): a YouTube page shared from Safari, a WhatsApp voice note shared from
 Files, the extension's no-group link sent straight to the app (`simctl openurl`), the home
-screen's "+" picking an mp3 and a WMA (explanation alert), and a tour (play → mini player →
+screen's "+" picking an mp3 and a WMA, WMA and MPG shared from Files (FFmpeg fallback), YouTube's
+small window after leaving the full player, and a tour (play → mini player →
 full player, library, search, settings with the "שיתוף מוואטסאפ" row). With the
 `GEMINI_API_KEY` secret it also runs the live Gemini test.
 Screenshots and the simulator log go to the `screenshots` branch under `ios-dev-<branch>`; the
