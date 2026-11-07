@@ -117,3 +117,22 @@ export function keepCategories<T extends { id: string; confidence: number }>(cat
   const kept = sorted.filter((c) => c.confidence >= SUGGEST_CONFIDENCE).slice(0, 3);
   return kept.length ? kept : sorted.slice(0, 1);
 }
+
+/**
+ * The file name a shared song travels under (WhatsApp shows it): her title, without characters
+ * that file systems refuse, never empty and not absurdly long.
+ */
+export function shareFileName(title: string, ext: string): string {
+  const clean = title
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/^[.\s]+|[.\s]+$/g, '')
+    .slice(0, 80)
+    .trim();
+  return `${clean || 'שיר'}.${ext.replace(/^\./, '') || 'm4a'}`;
+}
+
+/** What she sends for a YouTube song: its title and a short link. */
+export function youtubeShareText(title: string, youtubeId: string): string {
+  return `${title}\nhttps://youtu.be/${youtubeId}`;
+}

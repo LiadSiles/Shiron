@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { connectedProviders } from '../../api/keys';
 import { allCategories } from '../../core/categories';
 import { canTranscribe } from '../../core/ingestRules';
@@ -13,6 +13,7 @@ import { clearIfCurrent } from '../../player/player';
 import { CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
 import { ActionBar, ListGroup, ListItem } from '../../ui/list';
 import { Icon } from '../../ui/Icon';
+import { shareSong } from '../../ui/share';
 import { toast } from '../../ui/toast';
 import { font, radius, space, useTheme } from '../../ui/theme';
 
@@ -131,6 +132,7 @@ export default function SongScreen() {
             { icon: 'play', label: 'ניגון', primary: true, onPress: () => playOrOpen(song, [song]) },
             { icon: song.pinnedAt ? 'pin' : 'pin-outline', label: song.pinnedAt ? 'מוצמד' : 'הצמדה', active: !!song.pinnedAt, onPress: togglePin },
             { icon: 'list', label: 'לרשימה', onPress: () => router.push({ pathname: '/playlist/add', params: { song: song.id } }) },
+            { icon: Platform.OS === 'ios' ? 'share-outline' : 'share-social-outline', label: 'שיתוף', onPress: () => shareSong(song) },
           ]}
         />
       </View>

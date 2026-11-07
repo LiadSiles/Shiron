@@ -74,6 +74,7 @@ if [ "$VARIANT" = group ]; then
   check e2e-song.yaml "$VARIANT"
   check e2e-playlist.yaml "$VARIANT"
   check e2e-search.yaml "$VARIANT"
+  try share-out.yaml "$VARIANT"
 fi
 
 # Through the real share sheet and file picker (flaky taps on the simulator).

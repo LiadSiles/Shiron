@@ -1,0 +1,13 @@
+# Sharing a song out of the app: the song's screen → "שיתוף" opens the phone's share sheet
+# (another process — best effort). The song was renamed by e2e-song.yaml.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- tapOn: "כל השירים.*"
+- longPressOn: "נגני בוקר טוב לגן"
+- tapOn: "שיתוף"
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-share-sheet
+- assertVisible: ".*(Save to Files|Copy|AirDrop|Messages|Mail).*"

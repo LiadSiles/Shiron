@@ -3,6 +3,21 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-07 — Sharing a song out of the app (0.12.0)
+
+- The owner asked to send songs from the app to WhatsApp. The song screen has "שיתוף": the
+  phone's own share sheet (`expo-sharing` for a file, React Native `Share` for text), so the
+  app itself still sends nothing anywhere and needs no service. An audio song goes as its
+  converted .m4a, copied into the cache under her title (`shareFileName`: no characters file
+  systems refuse, ≤ 80 characters, "שיר" if empty) so the other side sees a name; the previous
+  copy is cleared on the next share, not right after, because the receiving app may still be
+  reading it. A YouTube song goes as its title and a youtu.be link (no file — terms of service).
+- `expo-sharing` is installed **without** its config plugin: the plugin can add a receiving
+  share extension, and receiving is expo-share-intent's job (our patched extension). Sending
+  needs no plugin.
+- Untested on a device; the simulator check opens the share sheet (best effort: it is another
+  process).
+
 ### 2026-11-07 — YouTube keeps playing in a small window; MPG; retry failed songs (0.11.0)
 - **YouTube while browsing** (owner): one YouTube player for the whole app (`ui/YouTubeHost`,
   above the navigator). On the full player it sits in the screen's slot; when she leaves, it

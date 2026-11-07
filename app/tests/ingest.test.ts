@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canStart, extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, extensionOf, shareFileName, youtubeShareText, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -100,5 +100,23 @@ describe('file extensions', () => {
     expect(extensionOf('recording')).toBe('');
     expect(extensionOf('')).toBe('');
     expect(extensionOf('.')).toBe('');
+  });
+});
+
+describe('sharing a song', () => {
+  it('sends the file under her title', () => {
+    expect(shareFileName('בוקר טוב לגן', 'm4a')).toBe('בוקר טוב לגן.m4a');
+  });
+  it('drops characters file systems refuse and stray dots', () => {
+    expect(shareFileName('שיר: "גשם" / חורף?', 'm4a')).toBe('שיר גשם חורף.m4a');
+    expect(shareFileName('...שיר...', '.mp3')).toBe('שיר.mp3');
+  });
+  it('never sends a nameless or endless file name', () => {
+    expect(shareFileName('  ', 'm4a')).toBe('שיר.m4a');
+    expect(shareFileName('א'.repeat(200), 'm4a')).toBe('א'.repeat(80) + '.m4a');
+    expect(shareFileName('שיר', '')).toBe('שיר.m4a');
+  });
+  it('sends a YouTube song as its title and a short link', () => {
+    expect(youtubeShareText('שיר הגשם', 'dQw4w9WgXcQ')).toBe('שיר הגשם\nhttps://youtu.be/dQw4w9WgXcQ');
   });
 });
