@@ -7,7 +7,12 @@ appId: app.shiron.gan
 - tapOn: ספרייה
 - tapOn: "כל השירים.*"
 - tapOn: "נגני הכול"
-- tapOn: "מתנגן: .*"
+# A YouTube song at the top opens the full player by itself; an audio song plays in the mini player.
+- runFlow:
+    when:
+      notVisible: "מתנגן עכשיו"
+    commands:
+      - tapOn: "מתנגן: .*"
 - assertVisible: "מתנגן עכשיו"
 - tapOn: "השיר הבא"
 - tapOn: "שיר קודם / לתחילת השיר"

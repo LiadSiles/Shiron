@@ -43,7 +43,7 @@ flow() { # must|soft, flow, screenshot prefix, extra maestro args…
     echo "== $tag: $flow FAILED"
     echo "FAIL($kind) $tag $flow" >> "$RESULTS"
     [ "$kind" = must ] && FAILED+=("$tag/$flow")
-    maestro hierarchy 2>/dev/null | head -c 30000 > "shots/$tag-${flow%.yaml}-hierarchy.json"
+    maestro hierarchy 2>/dev/null > "shots/$tag-${flow%.yaml}-hierarchy.json"
     adb exec-out screencap -p > "shots/$tag-${flow%.yaml}-FAILED.png" 2>/dev/null
   fi
 }
@@ -60,11 +60,11 @@ check e2e-youtube.yaml "$VARIANT"
 check e2e-settings.yaml "$VARIANT" -e SHARE="בחירת קבצי שמע או וידאו"
 
 # Files through the system picker: mp3, WhatsApp voice note, WMA and MPG (our FFmpeg build),
-# a broken "mp3", and the mp3 again (must not double).
-for f in boker-tov.mp3 voice-whatsapp.opus old-song.wma gan-party.mpg broken.mp3 boker-tov.mp3; do
+# and the mp3 again (must not double). The broken "mp3" is pushed too: the picker hides it.
+for f in boker-tov.mp3 voice-whatsapp.opus old-song.wma gan-party.mpg boker-tov.mp3; do
   check add-android.yaml "$VARIANT-add-${f%%.*}" -e FILE="$f"
 done
-check e2e-import.yaml "$VARIANT"
+check e2e-import.yaml "$VARIANT" -e COUNT=5
 check e2e-player.yaml "$VARIANT"
 check e2e-song.yaml "$VARIANT"
 check e2e-playlist.yaml "$VARIANT"

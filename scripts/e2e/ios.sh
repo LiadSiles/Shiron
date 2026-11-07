@@ -47,7 +47,7 @@ flow() { # must|soft, flow, screenshot prefix, extra maestro args…
     echo "== $tag: $flow FAILED"
     echo "FAIL($kind) $tag $flow" >> "shots/results-$VARIANT.txt"
     [ "$kind" = must ] && FAILED+=("$tag/$flow")
-    maestro --device "$UDID" hierarchy 2>/dev/null | head -c 30000 > "shots/$tag-${flow%.yaml}-hierarchy.json"
+    maestro --device "$UDID" hierarchy 2>/dev/null > "shots/$tag-${flow%.yaml}-hierarchy.json"
     xcrun simctl io "$UDID" screenshot "shots/$tag-${flow%.yaml}-FAILED.png" >/dev/null 2>&1
   fi
 }
@@ -82,7 +82,7 @@ if [ "$VARIANT" = group ]; then
   inject song.mp3 boker-tov.mp3 audio/mpeg            # the same song again: must not double
   inject not-audio.mp3 broken.mp3 audio/mpeg           # not really audio: explained, no crash
   inject README.md notes.txt text/plain                # not a song: must not crash or be added
-  check e2e-import.yaml "$VARIANT"
+  check e2e-import.yaml "$VARIANT" -e COUNT=6
   check e2e-player.yaml "$VARIANT"
   check e2e-song.yaml "$VARIANT"
   check e2e-playlist.yaml "$VARIANT"

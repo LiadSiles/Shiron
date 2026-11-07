@@ -2,6 +2,8 @@
 # since ".*חזרה.*" also matches the repeat button "בלי חזרה"), the system back on Android.
 appId: app.shiron.gan
 ---
+# Not mid-transition: UIKit ignores a back tap while a screen is still sliding in.
+- waitForAnimationToEnd
 - runFlow:
     when:
       platform: iOS

@@ -12,8 +12,9 @@ EXT=${NAME##*.}
 DEST="$GROUP/$(uuidgen).$EXT"
 cp "$SRC" "$DEST"
 SIZE=$(stat -f%z "$DEST")
+# type 2 = SharedMediaType.file — an Int in the module's Codable enum (a string crashed it).
 JSON=$(jq -cn --arg path "file://$DEST" --arg name "$NAME" --arg mime "$MIME" --argjson size "$SIZE" \
-  '[{path:$path, thumbnail:null, fileName:$name, fileSize:$size, width:null, height:null, duration:null, mimeType:$mime, type:"file"}]')
+  '[{path:$path, thumbnail:null, fileName:$name, fileSize:$size, width:null, height:null, duration:null, mimeType:$mime, type:2}]')
 HEX=$(printf '%s' "$JSON" | xxd -p | tr -d '\n')
 xcrun simctl spawn "$UDID" defaults write "$GROUP/Library/Preferences/$GROUP_ID" shironShareKey -data "$HEX"
 xcrun simctl openurl "$UDID" "shiron://dataUrl=shironShareKey?nonce=$(uuidgen)#file"

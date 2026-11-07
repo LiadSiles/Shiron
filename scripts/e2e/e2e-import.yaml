@@ -1,14 +1,15 @@
 # Files handed over by the share extension (inject-ios.sh / the picker on Android): an mp3, a WhatsApp voice note, a WMA
 # and an MPG (our FFmpeg build), the mp3 again, a broken "mp3" and a text file. Every real
 # audio file converts and plays; the duplicate and the text file add nothing; the broken file
-# says it can't play instead of crashing. 1 YouTube + 5 files = 6 songs.
+# says it can't play instead of crashing. COUNT songs in all: 1 YouTube + 5 files on the
+# iPhone; on Android the picker itself hides the broken file (not audio), so 1 + 4.
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
 - launchApp
 - tapOn: ספרייה
 - extendedWaitUntil:
-    visible: "כל השירים, 6 שירים"
+    visible: "כל השירים, ${COUNT} שירים"
     timeout: 20000
 - tapOn: "כל השירים.*"
 - extendedWaitUntil:
@@ -35,9 +36,13 @@ appId: app.shiron.gan
 - assertNotVisible: ".*לא הצלחנו לנגן.*"
 - takeScreenshot: ${VARIANT}-mpg-playing
 - tapOn: "השהיית gan-party"
-- tapOn: "נגני broken"
-- assertVisible: ".*(לא ניתן לנגן|לא הצלחנו לנגן).*"
-- takeScreenshot: ${VARIANT}-broken-explained
-- tapOn:
-    text: "(OK|אישור|הבנתי|סגירה)"
-    optional: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "נגני broken"
+      - assertVisible: ".*(לא ניתן לנגן|לא הצלחנו לנגן).*"
+      - takeScreenshot: ${VARIANT}-broken-explained
+      - tapOn:
+          text: "(OK|אישור|הבנתי|סגירה)"
+          optional: true
