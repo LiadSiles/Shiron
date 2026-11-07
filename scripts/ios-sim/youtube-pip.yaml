@@ -6,7 +6,7 @@ appId: app.shiron.gan
 - launchApp
 - waitForAnimationToEnd
 - tapOn:
-    text: "שיר מיוטיוב.*"
+    text: ".*שיר מיוטיוב.*"
 - extendedWaitUntil:
     visible: "Me at the zoo.*|.*YouTube.*"
     timeout: 10000
