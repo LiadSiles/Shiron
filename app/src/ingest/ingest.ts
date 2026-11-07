@@ -8,13 +8,9 @@ import type { Song } from '../core/types';
 import { findBySha, findByYoutube, insertSong } from '../db/repo';
 import { processQueue } from './processor';
 import { diag } from '../diag/log';
+import type { ImportSummary } from '../core/importSummary';
 import { songsDir, toStoredPath } from './storage';
 
-export interface ImportSummary {
-  added: string[];
-  duplicates: { title: string }[];
-  unsupported: string[];
-}
 
 function toFileUri(path: string): string {
   return path.startsWith('/') ? `file://${path}` : path;
@@ -201,13 +197,4 @@ export async function importFromPicker(): Promise<ImportSummary | null> {
   } finally {
     if (!waiting) setImportState({ saving: false, done: 0, total: 0 });
   }
-}
-
-export function describeSummary(s: ImportSummary): string {
-  const parts: string[] = [];
-  if (s.added.length) parts.push(s.added.length === 1 ? 'שיר אחד נשמר' : `${s.added.length} שירים נשמרו`);
-  if (s.duplicates.length)
-    parts.push(s.duplicates.length === 1 ? `כבר קיים: ${s.duplicates[0].title}` : `${s.duplicates.length} כבר קיימים`);
-  if (s.unsupported.length) parts.push(`${s.unsupported.length} לא נתמכו`);
-  return parts.join(' · ') || 'לא נמצא שיר לשמירה';
 }

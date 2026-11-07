@@ -1,4 +1,5 @@
-import { describeSummary, importFromPicker, ImportSummary } from '../ingest/ingest';
+import { describeSummary, ImportSummary } from '../core/importSummary';
+import { importFromPicker } from '../ingest/ingest';
 import { toast } from './toast';
 
 /** What was saved, as a toast. */
