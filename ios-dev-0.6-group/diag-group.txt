@@ -1,0 +1,13 @@
+07/11 23:12:42 background task unavailable · 1
+07/11 23:14:21 share received · type text · 0 files · 
+07/11 23:15:25 background task unavailable · 1
+07/11 23:15:27 play youtube · שיר מיוטיוב · 1/1
+07/11 23:20:34 background task unavailable · 1
+07/11 23:29:01 background task unavailable · 1
+07/11 23:30:47 background task unavailable · 1
+07/11 23:32:19 background task unavailable · 1
+07/11 23:34:00 background task unavailable · 1
+07/11 23:35:49 background task unavailable · 1
+07/11 23:37:40 background task unavailable · 1
+07/11 23:50:11 background task unavailable · 1
+07/11 23:52:28 app group · group.app.shiron.gan · declared group.app.shiron.gan · provisioned - · alt -
