@@ -22,3 +22,15 @@ appId: app.shiron.gan
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-4d-youtube-pip-library
+# Back to the full player from the small window, then details on top of it: the video must
+# follow (slot, then small window) and never cover the header.
+- tapOn:
+    text: "פתיחת הנגן המלא"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4e-youtube-back-to-player
+- tapOn:
+    text: "פרטים"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4f-youtube-details-over-player

@@ -80,8 +80,10 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   next/previous/end). "Previous" on a failed YouTube song goes to the previous song at once.
   `playing` stays false for a YouTube song until YouTube reports it really plays.
 - One YouTube player for the whole app (`ui/YouTubeHost`, 0.11.0): on the full player it is
-  placed over the screen's slot (`youtubeView.frame`, measured in window coordinates after the
-  screen slides in); leaving the screen shrinks it to a small window (224 × 200, YouTube's
+  placed over the screen's slot (`youtubeView.frame`, window coordinates, re-measured every
+  250 ms while the player is the focused screen — one measurement during the slide-in was wrong
+  on the simulator and the video covered the header's back button; a screen opened on top,
+  e.g. details, blurs it and the video drops to the small window); leaving the screen shrinks it to a small window (224 × 200, YouTube's
   minimum is 200 × 200) above the mini player — still visible, still playing, same WebView so
   the video doesn't restart. ⤢ opens the full player, ✕ (`closeYoutube`) stops it; play in the
   mini player then reopens the full player, which autoplays. The player route is a card

@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, View, ViewInstance } from 'react-native';
 import { getCategory, primaryCategoryId } from '../core/categories';
 import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer, youtubeView } from '../player/player';
@@ -122,19 +122,34 @@ export default function PlayerScreen() {
  * Where YouTube's player shows on this screen: it reports its place on the window, and
  * ui/YouTubeHost puts the app's one player there (measured again after the screen slides in).
  */
+/** How often the slot is measured while the player is on screen. */
+const MEASURE_MS = 250;
+
+/**
+ * Where the app's one YouTube player sits on this screen. Measured again and again while the
+ * player is the screen in front: a single measurement taken while the screen slides in can be
+ * wrong (the video then covered the header and its back button on the simulator). When another
+ * screen opens on top (details), the video goes back to the small window.
+ */
 function YouTubeSlot() {
   const ref = useRef<ViewInstance>(null);
   const measure = () =>
     ref.current?.measureInWindow((x, y, width, height) => {
-      if (width > 0 && height > 0) youtubeView.set({ frame: { x, y, width, height }, closed: false });
+      if (width <= 0 || height <= 0) return;
+      const f = youtubeView.get().frame;
+      if (f && f.x === x && f.y === y && f.width === width && f.height === height) return;
+      youtubeView.set({ frame: { x, y, width, height }, closed: false });
     });
-  useEffect(() => {
-    const timers = [150, 450, 900].map((ms) => setTimeout(measure, ms));
-    return () => {
-      timers.forEach(clearTimeout);
-      youtubeView.set({ frame: null });
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      measure();
+      const timer = setInterval(measure, MEASURE_MS);
+      return () => {
+        clearInterval(timer);
+        youtubeView.set({ frame: null });
+      };
+    }, []),
+  );
   return (
     <View style={{ paddingHorizontal: space.l, paddingTop: space.l }}>
       <View ref={ref} onLayout={measure} collapsable={false} style={{ aspectRatio: 16 / 9, borderRadius: 12, backgroundColor: '#000' }} />
