@@ -89,6 +89,11 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   the video doesn't restart. ⤢ opens the full player, ✕ (`closeYoutube`) stops it; play in the
   mini player then reopens the full player, which autoplays. The player route is a card
   (`slide_from_bottom`), not a native modal, so the overlay can sit above it.
+- The status banner and toasts (`ui/toast.tsx → StatusHost`, root layout) sit **below** the
+  header and take no touches (`pointerEvents="none"`). Until 0.12.0 they sat over the header:
+  while songs were being named or converted the banner covered "חזרה" on every screen and
+  swallowed its taps — the owner's "back stops working after the second visit" (0.11.0 and
+  0.11.1), not navigation.
 - Every way to the full player goes through `showPlayer()` (mini player, ⤢, a YouTube song
   starting): it counts mounted player screens and, if one is already in the stack (details on
   top of it), `dismissTo('/player')` instead of pushing a second; a push not yet mounted

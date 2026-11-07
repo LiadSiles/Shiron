@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActivityBanner } from './ActivityBanner';
 import { T } from './components';
@@ -15,11 +15,15 @@ export function toast(msg: string, kind: ToastKind = 'info') {
   listeners.forEach((l) => l(msg, kind));
 }
 
+/** The navigation header's height (iOS 44, Android 56): the banner starts below it. */
+const HEADER_H = Platform.OS === 'ios' ? 44 : 56;
+
 const ICON: Record<ToastKind, IconName> = { success: 'checkmark-circle', info: 'information-circle', error: 'alert-circle' };
 
 /**
- * Top of every screen (it sits in the root layout, above the navigator): the status banner
- * while songs are being saved or processed, and below it the latest toast. Large and high
+ * Top of every screen, just below the header (it sits in the root layout, above the
+ * navigator): the status banner while songs are being saved or processed, and below it the
+ * latest toast. Nothing in it takes a tap. Large and high
  * contrast on purpose — the owner found the old one-line toast too easy to miss.
  */
 export function StatusHost() {
@@ -50,7 +54,9 @@ export function StatusHost() {
   const tint = msg?.kind === 'success' ? c.good : msg?.kind === 'error' ? c.bad : c.primary;
 
   return (
-    <View pointerEvents="box-none" style={[styles.host, { top: insets.top + space.s }]}>
+    // Below the header and never in the way of a tap: it used to sit over "חזרה" and swallow it
+    // for as long as songs were being named — back seemed broken on every screen (owner, 0.11).
+    <View pointerEvents="none" style={[styles.host, { top: insets.top + HEADER_H + space.s }]}>
       <ActivityBanner />
       {msg ? (
         <Animated.View
