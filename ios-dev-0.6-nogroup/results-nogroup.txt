@@ -1,0 +1,7 @@
+PASS nogroup launch.yaml
+FAIL(must) nogroup e2e-youtube.yaml
+PASS nogroup e2e-settings.yaml
+FAIL(soft) nogroup share-link.yaml
+FAIL(soft) nogroup share-file.yaml
+PASS nogroup-add-mp3 add-files.yaml
+PASS nogroup-cats categories.yaml
