@@ -1,3 +1,4 @@
+import { playerRoute } from '../core/playerNav';
 import {
   AudioLockScreenOptions,
   AudioPlaylist,
@@ -282,9 +283,8 @@ export const youtubeView = createStore<YoutubeViewState>({ frame: null, closed: 
  * the stack, and every later song pushed one more player — back then seemed to do nothing.
  */
 let playerScreens = 0;
-/** A push that hasn't mounted yet (two taps or a song change in the same moment). */
+/** When the last push that hasn't mounted yet happened (two taps or a song change at once). */
 let pushedAt = 0;
-const PUSH_GRACE_MS = 1500;
 
 export function setPlayerScreenOpen(open: boolean) {
   playerScreens = Math.max(0, playerScreens + (open ? 1 : -1));
@@ -300,13 +300,12 @@ export function setPlayerScreenOpen(open: boolean) {
  */
 export function showPlayer() {
   youtubeView.set({ closed: false });
-  if (playerScreens > 0) {
-    if (router.canDismiss()) router.dismissTo('/player');
-    return;
+  const route = playerRoute(playerScreens, pushedAt, Date.now(), router.canDismiss());
+  if (route === 'back-to-it') router.dismissTo('/player');
+  else if (route === 'push') {
+    pushedAt = Date.now();
+    router.push('/player');
   }
-  if (Date.now() - pushedAt < PUSH_GRACE_MS) return;
-  pushedAt = Date.now();
-  router.push('/player');
 }
 
 /** The small YouTube window's ✕: stops the video and hides the window. */

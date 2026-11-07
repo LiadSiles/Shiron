@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalize, skeleton, stems, tokenMatch } from '../src/core/hebrew';
+import { normalize, skeleton, stems, tokenize, tokenMatch } from '../src/core/hebrew';
 
 describe('hebrew normalization', () => {
   it('strips niqqud, unifies final letters and punctuation', () => {
@@ -17,5 +17,16 @@ describe('hebrew normalization', () => {
   it('matches while typing (prefix)', () => {
     expect(tokenMatch('פרפ', 'פרפרימ')).toBe(2);
     expect(tokenMatch('פ', 'פרפר')).toBe(0);
+  });
+});
+
+describe('tokenize', () => {
+  it('splits normalized words and drops nothing else', () => {
+    expect(tokenize('  בוקר   טוב, ילדים!  ')).toEqual(tokenize('בוקר טוב ילדים'));
+    expect(tokenize('בוקר טוב ילדים')).toHaveLength(3);
+  });
+  it('gives no tokens for empty or punctuation-only text', () => {
+    expect(tokenize('')).toEqual([]);
+    expect(tokenize(' ... ')).toEqual([]);
   });
 });

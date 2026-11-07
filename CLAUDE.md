@@ -77,6 +77,7 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     transcript.ts            dropping Whisper's invented lines ("תודה רבה", loops)
     incoming.ts              the share extension's link without an App Group (shiron://share?text=)
     sorting.ts               sort songs / categories, rows or tiles (choices in ui/viewPrefs.ts)
+    playerNav.ts             when to push the full player or go back to the open one
   src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
   src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts

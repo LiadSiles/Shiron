@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { allCategories, applyCategoryCustomizations, getCategory, mergeCategories, UNSORTED_ID } from '../src/core/categories';
+import { allCategories, applyCategoryCustomizations, getCategory, isBuiltinCategory, mergeCategories, UNSORTED_ID } from '../src/core/categories';
 import { sanitize, understandingSchema } from '../src/core/understand';
 
 const row = (id: string, patch: Partial<{ name: string; icon: string; color: string; hidden: boolean; createdAt: number }> = {}) => ({
@@ -37,5 +37,13 @@ describe('her categories', () => {
     expect(allCategories().some((c) => c.id === 'animals')).toBe(false);
     const u = sanitize({ title: 'x', categories: [{ id: 'animals', confidence: 0.9 }, { id: 'u-1', confidence: 0.8 }] });
     expect(u.categories.map((c) => c.id)).toEqual(['u-1']);
+  });
+});
+
+describe('built-in or hers', () => {
+  it('knows the built-in ids and nothing else', () => {
+    expect(isBuiltinCategory(allCategories()[0].id)).toBe(true);
+    expect(isBuiltinCategory('custom-123')).toBe(false);
+    expect(isBuiltinCategory('')).toBe(false);
   });
 });

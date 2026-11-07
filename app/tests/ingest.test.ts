@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canStart, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -87,5 +87,18 @@ describe('formats', () => {
     expect(canStart({ kind: 'youtube', playableUri: null })).toBe(true);
     expect(canStart({ kind: 'audio', playableUri: 'songs/a.m4a' })).toBe(true);
     expect(canStart({ kind: 'audio', playableUri: null })).toBe(false);
+  });
+});
+
+describe('file extensions', () => {
+  it('reads the last extension, any case, ignoring a query string', () => {
+    expect(extensionOf('Song.MP3')).toBe('mp3');
+    expect(extensionOf('archive.tar.gz')).toBe('gz');
+    expect(extensionOf('https://x.example/a.m4a?token=1')).toBe('m4a');
+  });
+  it('is empty when there is none', () => {
+    expect(extensionOf('recording')).toBe('');
+    expect(extensionOf('')).toBe('');
+    expect(extensionOf('.')).toBe('');
   });
 });
