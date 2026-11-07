@@ -5,7 +5,7 @@ import { getCategory } from '../core/categories';
 import { textOn } from '../core/color';
 import { songCount } from '../core/playlists';
 import { CATEGORY_SORTS, sortCategories } from '../core/sorting';
-import { ALL_ID, categoryTiles, LibraryState, RECENT_ID, recentlyAdded } from '../db/useLibrary';
+import { ALL_ID, categoryTiles, LibraryState, RECENT_ID, recentlyAdded } from '../core/library';
 import { CategoryBadge, EmptyState, SectionTitle, T } from '../ui/components';
 import { ListGroup, ListItem } from '../ui/list';
 import { useStore } from '../ui/useStore';

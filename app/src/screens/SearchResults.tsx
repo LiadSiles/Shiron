@@ -7,7 +7,7 @@ import { getCategory } from '../core/categories';
 import { normalize } from '../core/hebrew';
 import { matchCategories, pushRecent, searchSongs, SearchHit } from '../core/search';
 import { getSetting, setSetting } from '../db/repo';
-import { LibraryState } from '../db/useLibrary';
+import { LibraryState } from '../core/library';
 import { diag } from '../diag/log';
 import { CategoryBadge, EmptyState, Highlighted, SongRow, T } from '../ui/components';
 import { radius, space, useTheme } from '../ui/theme';

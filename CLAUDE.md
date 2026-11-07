@@ -78,7 +78,10 @@ app/                         Expo app (React Native, TypeScript, expo-router)
     incoming.ts              the share extension's link without an App Group (shiron://share?text=)
     sorting.ts               sort songs / categories, rows or tiles (choices in ui/viewPrefs.ts)
     playerNav.ts             when to push the full player or go back to the open one
-  src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook
+    library.ts               what the screens show: home sections, library tiles, a category's list
+    importSummary.ts         the line she reads after a share ("2 שירים נשמרו · כבר קיים: …")
+    a11y.ts                  what VoiceOver / TalkBack reads for a row
+  src/db/                    SQLite (expo-sqlite): schema + migrations, repo, useLibrary hook (loads core/library)
   src/ingest/                share-sheet import, dedupe, 2-step processing queue, file storage
   src/api/                   ai.ts picks the service (order, quota fallback); groq.ts, gemini.ts
                              the calls; keys.ts keys in expo-secure-store; http.ts timeouts;

@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { processorStore } from '../ingest/processor';
-import { homeSections, LibraryState } from '../db/useLibrary';
+import { homeSections, LibraryState } from '../core/library';
 import { WorkStatus } from '../ui/ActivityBanner';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
 import { Icon } from '../ui/Icon';
