@@ -14,7 +14,7 @@ appId: app.shiron.gan
 - takeScreenshot: ${VARIANT}-4b-youtube-player
 # Maestro's back is Android-only; the header's back button says "חזרה".
 - tapOn:
-    text: ".*חזרה.*"
+    text: "חזרה"
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-4c-youtube-pip
 - tapOn:
