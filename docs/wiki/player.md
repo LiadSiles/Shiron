@@ -94,6 +94,9 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   while songs were being named or converted the banner covered "חזרה" on every screen and
   swallowed its taps — the owner's "back stops working after the second visit" (0.11.0 and
   0.11.1), not navigation.
+  Since 0.12.1 only the short "saving a share" banner floats there; preparing and naming /
+  transcribing (minutes) show as a line in the home screen's content (`WorkStatus`) and in each
+  song's row — the floating line hid the top of every screen while a transcription ran.
 - Every way to the full player goes through `showPlayer()` (mini player, ⤢, a YouTube song
   starting): it counts mounted player screens and, if one is already in the stack (details on
   top of it), `dismissTo('/player')` instead of pushing a second; a push not yet mounted

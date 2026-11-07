@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { processorStore } from '../ingest/processor';
 import { homeSections, LibraryState } from '../db/useLibrary';
+import { WorkStatus } from '../ui/ActivityBanner';
 import { Button, EmptyState, SectionTitle, SongRow, T } from '../ui/components';
 import { Icon } from '../ui/Icon';
 import { PlaylistStrip } from '../ui/playlists';
@@ -43,6 +44,8 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
           <Icon name="add" size={28} color={c.primary} />
         </Pressable>
       </View>
+
+      <WorkStatus />
 
       {proc?.needsKey && pendingCount > 0 ? (
         <Pressable

@@ -7,15 +7,12 @@ import { cardShadow, radius, space, useTheme } from './theme';
 import { useStore } from './useStore';
 
 /**
- * What the app is doing with new songs, on every screen: saving a share (with "3 מתוך 10" and
- * a bar), preparing a song to play, or getting its name and lyrics. Saving and preparing are
- * shown large — she is waiting for them; naming, which can take a while and needs nothing from
- * her, is a slim line.
+ * Saving a share ("3 מתוך 10" and a bar), floating below the header on every screen: she just
+ * shared and waits for it, and it lasts seconds. Everything slower is `WorkStatus`.
  */
-export function ActivityBanner() {
+export function SavingBanner() {
   const c = useTheme();
   const imp = useStore(importStore);
-  const proc = useStore(processorStore);
 
   if (imp?.saving) {
     const fraction = imp.total ? Math.min(1, imp.done / imp.total) : 0;
@@ -39,11 +36,22 @@ export function ActivityBanner() {
       </View>
     );
   }
+  return null;
+}
 
+/**
+ * Work on songs that goes on in the background — preparing a song to play, giving it a name
+ * and lyrics (minutes, for a long song). A line in the home screen's content, not a layer over
+ * every screen: as a floating banner it hid the top of each screen and the back button for as
+ * long as a transcription ran (owner, 0.11). Each song's row also says it ("מכינה לניגון…").
+ */
+export function WorkStatus() {
+  const c = useTheme();
+  const proc = useStore(processorStore);
   const step = proc?.step;
   if (step?.kind === 'convert') {
     return (
-      <View accessibilityLiveRegion="polite" style={[styles.big, { backgroundColor: c.surface, borderColor: c.primary }]}>
+      <View accessibilityLiveRegion="polite" style={[styles.big, styles.inline, { backgroundColor: c.surface, borderColor: c.primary }]}>
         <View style={styles.row}>
           <Icon name="musical-notes" size={26} color={c.primary} />
           <View style={{ flex: 1 }}>
@@ -73,6 +81,7 @@ export function ActivityBanner() {
 
 const styles = StyleSheet.create({
   big: { padding: space.l, borderRadius: radius.m, borderWidth: 2, borderColor: 'transparent', gap: space.m, ...cardShadow },
+  inline: { shadowOpacity: 0, elevation: 0 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.m },
   track: { height: 6, borderRadius: 3, overflow: 'hidden', direction: 'ltr' },
   fill: { height: 6 },
