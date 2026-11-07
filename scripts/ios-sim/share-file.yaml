@@ -1,4 +1,5 @@
-# Shares a WhatsApp voice note (.opus) from the Files app through PlayGan in the share sheet.
+# Shares a file (FILE: a WhatsApp voice note, a WMA, an MPG) from the Files app through PlayGan
+# in the share sheet.
 appId: com.apple.DocumentsApp
 ---
 - runFlow: dismiss.yaml
@@ -19,7 +20,7 @@ appId: com.apple.DocumentsApp
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-5-files
 - longPressOn:
-    text: voice-whatsapp.*
+    text: ${FILE}.*
 - waitForAnimationToEnd
 - tapOn:
     text: Share

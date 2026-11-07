@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canStart, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -52,6 +52,14 @@ describe('formats', () => {
     }
     expect(isMediaFile('notes.pdf', 'application/pdf')).toBe(false);
     expect(isMediaFile('photo.jpg', 'image/jpeg')).toBe(false);
+  });
+
+  it('knows which songs can be tried again', () => {
+    const base = { kind: 'audio' as const, audioState: 'done' as const, originalUri: null, error: null };
+    expect(isFailed(base)).toBe(false);
+    expect(isFailed({ ...base, audioState: 'unsupported', originalUri: 'songs/a.mpg' })).toBe(true);
+    expect(isFailed({ ...base, audioState: 'unsupported' })).toBe(false); // nothing left to convert
+    expect(isFailed({ ...base, error: 'Gemini gave no answer' })).toBe(true);
   });
 
   it('accepts Windows Media (our own decoder) and knows it as such', () => {

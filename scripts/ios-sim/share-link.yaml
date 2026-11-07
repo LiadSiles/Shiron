@@ -41,3 +41,14 @@ appId: com.apple.mobilesafari
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: ${VARIANT}-4b-app
+# Leave the full player: YouTube carries on in the small window while she browses.
+- waitForAnimationToEnd:
+    timeout: 8000
+- back
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4c-youtube-pip
+- tapOn:
+    text: ספרייה
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: ${VARIANT}-4d-youtube-pip-library

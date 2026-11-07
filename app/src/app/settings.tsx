@@ -4,7 +4,9 @@ import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { appGroupStatus } from '../../modules/shiron-audio';
 import { connectedProviders, getPreferred, onKeysChange, removeKey, setPreferred } from '../api/keys';
 import { PROVIDER_IDS, PROVIDERS, ProviderId } from '../core/ai';
-import { processorStore } from '../ingest/processor';
+import { processorStore, retryFailed } from '../ingest/processor';
+import { isFailed } from '../core/ingestRules';
+import { useLibrary } from '../db/useLibrary';
 import { isBuiltinCategory } from '../core/categories';
 import { listCategoryCustomizations, onLibraryChange, restoreBuiltinCategories } from '../db/repo';
 import Constants from 'expo-constants';
@@ -24,6 +26,8 @@ export default function SettingsScreen() {
   const [connected, setConnected] = useState<ProviderId[] | null>(null);
   const [preferred, setPreferredState] = useState<ProviderId>('groq');
   const proc = useStore(processorStore);
+  const lib = useLibrary();
+  const failed = lib.songs.filter(isFailed).length;
   const [removed, setRemoved] = useState(0);
 
   useEffect(() => {
@@ -132,8 +136,21 @@ export default function SettingsScreen() {
           title="בחירת קבצי שמע או וידאו"
           subtitle="מאפליקציית הקבצים בטלפון"
           onPress={pickAndImport}
-          last
+          last={!failed}
         />
+        {failed ? (
+          <ListItem
+            icon="refresh-circle-outline"
+            tint={c.warn}
+            title="ניסיון חוזר לשירים שנכשלו"
+            subtitle={`${failed === 1 ? 'שיר אחד' : `${failed} שירים`} שלא הומרו או שהתמלול שלהם נכשל: המרה, שם ותמלול מחדש`}
+            onPress={async () => {
+              const n = await retryFailed();
+              toast(n ? `${n === 1 ? 'שיר אחד חזר' : `${n} שירים חזרו`} לעיבוד` : 'אין שירים לניסיון חוזר', 'success');
+            }}
+            last
+          />
+        ) : null}
       </ListGroup>
 
       {removed ? (

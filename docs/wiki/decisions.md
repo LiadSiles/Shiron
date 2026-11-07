@@ -3,15 +3,29 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-07 — YouTube keeps playing in a small window; MPG; retry failed songs (0.11.0)
+- **YouTube while browsing** (owner): one YouTube player for the whole app (`ui/YouTubeHost`,
+  above the navigator). On the full player it sits in the screen's slot; when she leaves, it
+  shrinks to a 224 × 200 window in the corner (YouTube's minimum is 200 × 200) with ⤢ (full
+  player) and ✕ (stop). It stays **visible** — the terms forbid hidden/background playback, not
+  a smaller player — and never plays when the app is in the background. The player screen is now
+  a card sliding up, not a native modal: a native modal would cover the overlay.
+- **MPG on iPhone** (owner): the FFmpeg build became a general fallback (MPEG-PS/TS, AVI, MKV,
+  FLV; MP2, AC-3, AAC…), tried whenever the platform can't convert a file. Renamed from the
+  WMA-only decoder (`build-ffmpeg.sh`, `native/ffmpeg`, `ShironFFmpeg`, `libshironffmpeg.so`).
+- **Retry failed songs**: Settings → "ניסיון חוזר לשירים שנכשלו" (unconverted files and failed
+  AI steps), and once per app version the app retries unconverted files by itself, since a new
+  version may read their format — the teacher needn't know.
+
 ### 2026-11-06 — WMA through our own FFmpeg build (0.10.0)
 Owner wants WMA played. No platform decoder exists, ffmpeg-kit was retired (Jan 2025, binaries
 removed), community builds are tens of MB (some GPL), and Hermes has no WebAssembly
-(ffmpeg.wasm). So `scripts/build-wma-decoder.sh` builds FFmpeg (tag pinned, unmodified, LGPL
+(ffmpeg.wasm). So `scripts/build-ffmpeg.sh` (then `build-wma-decoder.sh`) builds FFmpeg (tag pinned, unmodified, LGPL
 2.1, `--disable-everything` + ASF demuxer + WMA decoders, no asm) and one C file,
-`native/wma/wma2wav.c`, that writes a 16-bit WAV; the existing converter then handles it as any
-WAV. iOS: a static `WmaDecoder.xcframework` (device + simulator arm64, module map) vendored by
-the podspec when present (`SHIRON_WMA`); Android: `libshironwma.so` per ABI in `jniLibs`
-(16 KB pages, FFmpeg symbols hidden) + `WmaDecoder.kt` (JNI). Built in CI with a cache, never
+`native/ffmpeg/to_wav.c` (then `native/wma/wma2wav.c`), that writes a 16-bit WAV; the existing converter then handles it as any
+WAV. iOS: a static `ShironFFmpeg.xcframework` (device + simulator arm64, module map) vendored by
+the podspec when present (`SHIRON_FFMPEG`); Android: `libshironffmpeg.so` per ABI in `jniLibs`
+(16 KB pages, FFmpeg symbols hidden) + `FfmpegDecoder.kt` (JNI). Built in CI with a cache, never
 committed. Cost: ~1–2 MB per platform. A WMV's sound comes the same way. LGPL: the source is
 FFmpeg's own tag and the build script is in this repo; review again before an App Store release.
 

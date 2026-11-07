@@ -18,6 +18,7 @@ if [ -n "$FILES" ]; then
   cp app/modules/shiron-audio/fixtures/voice-whatsapp.opus "$FILES/File Provider Storage/"
   cp app/modules/shiron-audio/fixtures/song.mp3 "$FILES/File Provider Storage/boker-tov.mp3"
   cp app/modules/shiron-audio/fixtures/tone.wma "$FILES/File Provider Storage/old-song.wma"
+  cp app/modules/shiron-audio/fixtures/video.mpg "$FILES/File Provider Storage/gan-party.mpg"
 else
   echo "== no Files local storage container"
 fi
@@ -42,7 +43,14 @@ sleep 5; shot "$VARIANT-8-app-after-link"
 xcrun simctl openurl "$UDID" "shiron://share?text=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
 sleep 3; run dismiss.yaml "$VARIANT-url"
 sleep 5; shot "$VARIANT-8b-app-after-url-link"
-run share-file.yaml "$VARIANT"
+run share-file.yaml "$VARIANT" -e FILE=voice-whatsapp
+# Formats the phone can't read itself (our FFmpeg build), through the share extension — only
+# with an App Group can files go that way.
+if [ "$VARIANT" = group ]; then
+  run share-file.yaml "$VARIANT-wma" -e FILE=old-song
+  run share-file.yaml "$VARIANT-mpg" -e FILE=gan-party
+  sleep 20; run launch.yaml "$VARIANT-after-formats"
+fi
 sleep 5; shot "$VARIANT-9-after-file"
 run add-files.yaml "$VARIANT-add-mp3" -e FILE=boker-tov
 run add-files.yaml "$VARIANT-add-wma" -e FILE=old-song

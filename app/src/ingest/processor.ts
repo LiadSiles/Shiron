@@ -4,12 +4,12 @@ import { nameSong, resumeAllProviders } from '../api/ai';
 import { connectedProviders } from '../api/keys';
 import { youtubeMeta } from '../api/youtube';
 import { AiError, describeAiError } from '../core/ai';
-import { keepCategories, mimeOf, windowsMediaFormat } from '../core/ingestRules';
+import { isFailed, keepCategories, mimeOf, windowsMediaFormat } from '../core/ingestRules';
 import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
 import { applyCategoryCustomizations } from '../core/categories';
-import { getSong, listCategoryCustomizations, listSongs, setCategories, updateSong } from '../db/repo';
+import { getSetting, getSong, listCategoryCustomizations, listSongs, setCategories, setSetting, updateSong } from '../db/repo';
 import { diag } from '../diag/log';
 import { isQueued } from '../player/player';
 import { deleteStored, resolveStored, songsDir, toStoredPath } from './storage';
@@ -242,6 +242,38 @@ async function applyUnderstanding(song: Song, u: Understanding, error: string | 
     await setCategories(song.id, cats.map((c) => ({ id: c.id, confidence: c.confidence, confirmed: false })));
   }
   await updateSong(song.id, patch);
+}
+
+/**
+ * Every failed song back in the queue: conversion again (a newer app may read the format now —
+ * WMA, MPG…), then the name and the words. Returns how many.
+ */
+export async function retryFailed({ unconvertedOnly = false } = {}): Promise<number> {
+  const failed = (await listSongs()).filter((s) => (unconvertedOnly ? s.audioState === 'unsupported' && !!s.originalUri : isFailed(s)));
+  for (const song of failed) {
+    await updateSong(song.id, {
+      status: 'pending',
+      error: null,
+      audioState: song.audioState === 'unsupported' && song.originalUri ? 'raw' : song.audioState,
+    });
+  }
+  if (failed.length) {
+    diag('retry failed songs', `${failed.length} songs`);
+    setState({ pausedUntil: 0 });
+    resumeAllProviders();
+    void processQueue();
+  }
+  return failed.length;
+}
+
+/**
+ * Once per app version: files the previous version couldn't convert are tried again, since a
+ * new version may read their format (zero maintenance — she doesn't have to know).
+ */
+export async function retryUnconvertedAfterUpdate(version: string) {
+  if ((await getSetting('unconvertedRetriedFor')) === version) return;
+  await setSetting('unconvertedRetriedFor', version);
+  await retryFailed({ unconvertedOnly: true });
 }
 
 /** Put a song back in the queue (both steps if its audio wasn't converted). */

@@ -2,7 +2,8 @@ name: iPhone share check
 
 # Builds the app for the iPhone simulator and drives it with Maestro: a YouTube link shared
 # from Safari, a WhatsApp voice note (.opus) shared from Files, adding files with the home
-# screen's "+" (an mp3, and a WMA that must be explained), then a walk through the player,
+# screen's "+" (an mp3, a WMA), WMA and MPG shared from Files (FFmpeg fallback), YouTube's small
+# window after leaving the full player, then a walk through the player,
 # library, search and settings. Twice: with the App Group (AltStore / a paid account) and
 # without any entitlements, the way Sideloadly with a free Apple ID installs it. With the
 # GEMINI_API_KEY secret it also sends Gemini a Hebrew recording (tests/gemini.live.test.ts).
@@ -40,13 +41,13 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: app/package-lock.json
-      - name: Cache the WMA decoder build
+      - name: Cache the FFmpeg build
         uses: actions/cache@v4
         with:
-          path: build/wma
-          key: wma-ios-${{ hashFiles('scripts/build-wma-decoder.sh', 'app/modules/shiron-audio/native/wma/*') }}
-      - name: Build the WMA decoder (FFmpeg, LGPL)
-        run: scripts/build-wma-decoder.sh ios
+          path: build/ffmpeg
+          key: ffmpeg-ios-${{ hashFiles('scripts/build-ffmpeg.sh', 'app/modules/shiron-audio/native/ffmpeg/*') }}
+      - name: Build FFmpeg for what the phone can't read (LGPL)
+        run: scripts/build-ffmpeg.sh ios
       - name: Generate iOS project
         working-directory: app
         env:
