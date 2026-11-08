@@ -64,7 +64,8 @@ export default function PickSongs() {
       <View style={styles.top}>
         {!id ? (
           <>
-            <T soft size={13}>שם הרשימה</T>
+            {/* The field says its own name to VoiceOver / TalkBack; the caption is only for the eye. */}
+            <T soft size={13} accessible={false} importantForAccessibility="no" accessibilityElementsHidden>שם הרשימה</T>
             <TextInput
               value={name}
               onChangeText={setName}
