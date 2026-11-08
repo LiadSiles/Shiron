@@ -1,2 +1,0 @@
-title|kind|audio_state|status|error
-שיר מיוטיוב|youtube|done|pending|
