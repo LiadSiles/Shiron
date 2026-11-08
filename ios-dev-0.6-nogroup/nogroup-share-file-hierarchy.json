@@ -469,13 +469,13 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "",
+              "accessibilityText" : "10:27 AM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[55,7][92,43]",
+              "bounds" : "[52,14][96,35]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",
@@ -488,13 +488,13 @@
             "selected" : false
           }, {
             "attributes" : {
-              "accessibilityText" : "9:14 AM",
+              "accessibilityText" : "",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[56,14][91,35]",
+              "bounds" : "[55,7][92,43]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",

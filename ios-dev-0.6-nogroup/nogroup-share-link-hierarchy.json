@@ -2312,13 +2312,13 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "9:10 AM",
+              "accessibilityText" : "10:22 AM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[56,14][91,35]",
+              "bounds" : "[51,14][96,35]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",
