@@ -3,6 +3,18 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-08 — Sharing a whole list or category (0.13.0)
+
+- Owner: share a whole playlist or category. A share button in the header of a list and of a
+  category ("כל השירים" and "נוספו לאחרונה" too) sends every audio song as its file and all the
+  YouTube songs as one text of titles and youtu.be links, in one system share sheet
+  (`shareBundle`: unique file names "שיר (2).m4a"; songs still being prepared are left out and
+  counted in a toast).
+- Both platforms through our native module (`shareFilesAsync`): Android `ACTION_SEND_MULTIPLE`
+  with every URI in the ClipData; iOS a `UIActivityViewController` with the file URLs and the
+  text (expo-sharing takes one file). One song on iOS still goes through expo-sharing.
+- Whether WhatsApp keeps the text next to many files is up to WhatsApp; untested on a device.
+
 ### 2026-11-08 — YouTube doesn't play in the background; the music goes on without it (0.13.0)
 
 - Owner asked for YouTube to keep playing after leaving the app — without a window if

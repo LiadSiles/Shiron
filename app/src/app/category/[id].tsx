@@ -10,6 +10,8 @@ import { useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from '../../ui/components';
 import { Icon } from '../../ui/Icon';
 import { MiniPlayer } from '../../ui/MiniPlayer';
+import { shareSongs } from '../../ui/share';
+import { ShareButton } from '../../ui/ShareButton';
 import { space, useTheme } from '../../ui/theme';
 import { useStore } from '../../ui/useStore';
 import { setViewPref, viewPrefs } from '../../ui/viewPrefs';
@@ -45,8 +47,15 @@ export default function CategoryScreen() {
       <Stack.Screen
         options={{
           title: isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name,
-          headerRight: editable
-            ? () => (
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {songs.length ? (
+                <ShareButton
+                  label={isList ? `שיתוף ${isAll ? 'כל השירים' : 'השירים שנוספו לאחרונה'}` : 'שיתוף הקטגוריה'}
+                  onPress={() => shareSongs(isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name, songs)}
+                />
+              ) : null}
+              {editable ? (
                 <Pressable
                   onPress={() => router.push({ pathname: '/category/edit', params: { id } })}
                   accessibilityRole="button"
@@ -56,8 +65,9 @@ export default function CategoryScreen() {
                 >
                   <Icon name="create-outline" size={24} color={c.primary} />
                 </Pressable>
-              )
-            : undefined,
+              ) : null}
+            </View>
+          ),
         }}
       />
       <FlatList

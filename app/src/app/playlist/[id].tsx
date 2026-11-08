@@ -13,6 +13,8 @@ import { useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from '../../ui/components';
 import { Icon, IconName } from '../../ui/Icon';
 import { MiniPlayer } from '../../ui/MiniPlayer';
+import { shareSongs } from '../../ui/share';
+import { ShareButton } from '../../ui/ShareButton';
 import { playlistColor } from '../../ui/playlists';
 import { font, radius, space, TOUCH, useTheme } from '../../ui/theme';
 import { useStore } from '../../ui/useStore';
@@ -100,13 +102,17 @@ export default function PlaylistScreen() {
       <Stack.Screen
         options={{
           title: '',
-          headerRight: () =>
-            songs.length > 1 ? (
-              <Pressable onPress={() => setArranging((a) => !a)} hitSlop={12} accessibilityRole="button" accessibilityLabel={arranging ? 'סיום הסידור' : 'סידור הרשימה'} style={styles.headerBtn}>
-                <Icon name={arranging ? 'checkmark' : 'swap-vertical'} size={20} color={c.primary} />
-                <T weight="medium" style={{ color: c.primary }}>{arranging ? 'סיום' : 'סידור'}</T>
-              </Pressable>
-            ) : null,
+          headerRight: () => (
+            <View style={styles.headerRow}>
+              {songs.length && !arranging ? <ShareButton label="שיתוף הרשימה" onPress={() => shareSongs(list.name, songs)} /> : null}
+              {songs.length > 1 ? (
+                <Pressable onPress={() => setArranging((a) => !a)} hitSlop={12} accessibilityRole="button" accessibilityLabel={arranging ? 'סיום הסידור' : 'סידור הרשימה'} style={styles.headerBtn}>
+                  <Icon name={arranging ? 'checkmark' : 'swap-vertical'} size={20} color={c.primary} />
+                  <T weight="medium" style={{ color: c.primary }}>{arranging ? 'סיום' : 'סידור'}</T>
+                </Pressable>
+              ) : null}
+            </View>
+          ),
         }}
       />
       <FlatList
@@ -256,6 +262,7 @@ function RoundButton({ icon, label, onPress, disabled, danger }: {
 
 const styles = StyleSheet.create({
   keep: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: 40, alignSelf: 'flex-start' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   headerBtn: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: TOUCH, paddingHorizontal: space.s },
   hero: { borderRadius: radius.l, padding: space.l, gap: space.xs },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, minHeight: TOUCH },

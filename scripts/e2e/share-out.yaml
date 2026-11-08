@@ -11,3 +11,17 @@ appId: app.shiron.gan
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-share-sheet
 - assertVisible: ".*(Save to Files|Copy|AirDrop|Messages|Mail).*"
+# Closing the sheet: swipe it down.
+- swipe:
+    start: "50%, 45%"
+    end: "50%, 95%"
+    duration: 300
+- waitForAnimationToEnd
+# A whole category: all its songs as files and the YouTube song as a link, in one sheet.
+- runFlow: back.yaml
+- tapOn: "שיתוף כל השירים"
+- extendedWaitUntil:
+    visible: ".*(Save to Files|Copy|AirDrop|Messages|Mail).*"
+    timeout: 15000
+- assertNotVisible: ".*לא הצלחנו לשתף.*"
+- takeScreenshot: ${VARIANT}-share-category

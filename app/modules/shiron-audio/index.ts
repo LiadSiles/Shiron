@@ -19,7 +19,7 @@ interface NativeModule {
   startBackgroundWork(text: string): void;
   stopBackgroundWork(): void;
   appGroupStatus?(): AppGroupStatus;
-  shareFile?(uri: string, mimeType: string, title: string): void;
+  shareFilesAsync(uris: string[], mimeType: string, text: string | null, title: string): Promise<void>;
 }
 
 const native = requireNativeModule<NativeModule>('ShironAudio');
@@ -73,11 +73,9 @@ export function audioErrorCode(e: unknown): AudioErrorCode | null {
 }
 
 /**
- * Android: a file:// URI under cache/share/ to the system share sheet (WhatsApp etc.); returns
- * once the sheet is up. iOS has no such function (expo-sharing serves it): false there.
+ * Songs (file:// URIs under cache/share/) and/or text (YouTube links) to the system share sheet
+ * — WhatsApp and the rest. `mimeType` covers all the files. Resolves once the sheet is up.
  */
-export function shareFile(uri: string, mimeType: string, title: string): boolean {
-  if (!native.shareFile) return false;
-  native.shareFile(uri, mimeType, title);
-  return true;
+export function shareFiles(uris: string[], mimeType: string, text: string | null, title: string): Promise<void> {
+  return native.shareFilesAsync(uris, mimeType, text, title);
 }

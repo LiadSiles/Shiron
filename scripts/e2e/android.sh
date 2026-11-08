@@ -73,12 +73,12 @@ check e2e-playlist.yaml "$VARIANT"
 check e2e-search.yaml "$VARIANT"
 check e2e-background.yaml "$VARIANT"
 check share-out-android.yaml "$VARIANT"
-# The system share sheet really opened each time: the file twice in a row, then the link.
+# The system share sheet really opened each time: the file twice in a row, the link, the category.
 CHOOSERS=$(adb logcat -d | grep -c "act=android.intent.action.CHOOSER")
-if [ "$CHOOSERS" -ge 3 ]; then
+if [ "$CHOOSERS" -ge 4 ]; then
   echo "PASS $VARIANT share sheet opened $CHOOSERS times" >> "$RESULTS"
 else
-  echo "FAIL(must) $VARIANT share sheet opened $CHOOSERS of 3 times" >> "$RESULTS"; FAILED+=("share chooser")
+  echo "FAIL(must) $VARIANT share sheet opened $CHOOSERS of 4 times" >> "$RESULTS"; FAILED+=("share chooser")
 fi
 try categories.yaml "$VARIANT-cats"
 

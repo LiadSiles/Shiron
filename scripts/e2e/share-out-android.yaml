@@ -1,4 +1,5 @@
-# Android: a song's "שיתוף", twice in a row, opens the system share sheet with the song's file.
+# Android: a song's "שיתוף", twice in a row, opens the system share sheet with the song's file;
+# then a YouTube song's link, and a whole category.
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
@@ -28,4 +29,12 @@ appId: app.shiron.gan
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-share-link
 - assertNotVisible: ".*לא הצלחנו לשתף.*"
+- back
+# A whole category: all its songs as files and the YouTube song as a link, in one sheet.
+- runFlow: back.yaml
+- tapOn: "שיתוף כל השירים"
+- waitForAnimationToEnd
+- assertNotVisible: ".*לא הצלחנו לשתף.*"
+- assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive).*"
+- takeScreenshot: ${VARIANT}-share-category
 - back

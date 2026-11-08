@@ -55,6 +55,23 @@ public class ShironAudioModule: Module {
       DispatchQueue.main.async { self.endBackgroundTime() }
     }
 
+    // "שיתוף" of a whole list or category: the songs' copies (cache/share/) and the YouTube
+    // links as text, in one system share sheet. Returns once the sheet is up. (One song goes
+    // through expo-sharing, which takes a single file.)
+    AsyncFunction("shareFilesAsync") { (uris: [String], _: String, text: String?, _: String) in
+      var items: [Any] = uris.compactMap { URL(string: $0) }
+      if let text = text, !text.isEmpty { items.append(text) }
+      guard let screen = self.appContext?.utilities?.currentViewController() else {
+        throw Exception(name: "ShironShare", description: "No screen to show the share sheet on", code: "ERR_SHARE_FAILED")
+      }
+      let sheet = UIActivityViewController(activityItems: items, applicationActivities: nil)
+      if let popover = sheet.popoverPresentationController { // iPad: anchored at the bottom middle
+        popover.sourceView = screen.view
+        popover.sourceRect = CGRect(x: screen.view.bounds.midX, y: screen.view.bounds.maxY, width: 0, height: 0)
+      }
+      screen.present(sheet, animated: true)
+    }.runOnQueue(.main)
+
     // Whether the share extension can hand files to the app on this install: the App Group the
     // signature grants (Sideloadly with a free Apple ID may grant none). Same lookup as the
     // share extension (patches/expo-share-intent); shown in Settings and the technical log.

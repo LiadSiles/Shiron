@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canStart, extensionOf, failedConversion, shareFileName, youtubeShareText, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, extensionOf, failedConversion, shareBundle, shareFileName, shareMimeType, youtubeShareText, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -144,5 +144,39 @@ describe('a file the phone could not convert', () => {
     expect(failedConversion('UNSUPPORTED', 'old.wma').error).toContain('WMA');
     expect(failedConversion('UNSUPPORTED', 'clip.wmv').error).toContain('WMV');
     expect(failedConversion('CORRUPT', 'broken.mp3').error).toBe('הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום');
+  });
+});
+
+describe('sharing a whole list or category', () => {
+  const audio = (id: string, title: string, fileExt: string | null = 'm4a') => ({ id, title, kind: 'audio' as const, youtubeId: null, fileExt });
+  const yt = (id: string, title: string, youtubeId: string | null = 'dQw4w9WgXcQ') => ({ id, title, kind: 'youtube' as const, youtubeId, fileExt: null });
+
+  it('sends audio songs as files and YouTube songs as links', () => {
+    const b = shareBundle([audio('a', 'בוקר טוב'), yt('y', 'שיר מיוטיוב'), audio('b', 'גשם')]);
+    expect(b.files).toEqual([{ songId: 'a', fileName: 'בוקר טוב.m4a' }, { songId: 'b', fileName: 'גשם.m4a' }]);
+    expect(b.text).toBe('שיר מיוטיוב\nhttps://youtu.be/dQw4w9WgXcQ');
+    expect(b.notReady).toBe(0);
+  });
+
+  it('gives two songs with the same name two files', () => {
+    const b = shareBundle([audio('a', 'גשם'), audio('b', 'גשם'), audio('c', 'גשם'), audio('d', 'גשם', 'mp3')]);
+    expect(b.files.map((f) => f.fileName)).toEqual(['גשם.m4a', 'גשם (2).m4a', 'גשם (3).m4a', 'גשם.mp3']);
+  });
+
+  it('counts songs with nothing to send yet, and sends no text without YouTube songs', () => {
+    const b = shareBundle([audio('a', 'א', null), yt('y', 'י', null), audio('b', 'ב')]);
+    expect(b.files).toHaveLength(1);
+    expect(b.text).toBeNull();
+    expect(b.notReady).toBe(2);
+  });
+
+  it('is empty for an empty list', () => {
+    expect(shareBundle([])).toEqual({ files: [], text: null, notReady: 0 });
+  });
+
+  it('labels the files with one type', () => {
+    expect(shareMimeType(['a.m4a', 'b.m4a'])).toBe('audio/mp4');
+    expect(shareMimeType(['a.m4a', 'b.mp3'])).toBe('audio/*');
+    expect(shareMimeType(['a.m4a', 'b.mpg'])).toBe('*/*');
   });
 });

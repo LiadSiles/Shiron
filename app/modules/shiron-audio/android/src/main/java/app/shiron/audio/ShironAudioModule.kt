@@ -48,10 +48,10 @@ class ShironAudioModule : Module() {
       Unit
     }
 
-    // "שיתוף": a copy of the song (cache/share/) to the system share sheet (SongSharer).
-    Function("shareFile") { uri: String, mimeType: String, title: String ->
+    // "שיתוף": copies of songs (cache/share/) and/or text to the system share sheet (SongSharer).
+    AsyncFunction("shareFilesAsync") { uris: List<String>, mimeType: String, text: String?, title: String ->
       try {
-        SongSharer.share(appContext.throwingActivity, fileOf(uri), mimeType, title)
+        SongSharer.share(appContext.throwingActivity, uris.map { fileOf(it) }, mimeType, text, title)
       } catch (e: CodedException) {
         throw e
       } catch (e: Exception) {

@@ -139,6 +139,57 @@ export function youtubeShareText(title: string, youtubeId: string): string {
   return `${title}\nhttps://youtu.be/${youtubeId}`;
 }
 
+/** A song as a whole list or category shares it. */
+export interface ShareableSong {
+  id: string;
+  title: string;
+  kind: 'audio' | 'youtube';
+  youtubeId: string | null;
+  /** The stored file's extension (m4a once converted); null = no file on the phone yet. */
+  fileExt: string | null;
+}
+
+/**
+ * What "שיתוף" of a whole list or category sends: every audio song as a file (names made unique,
+ * a file per name — "שיר (2).m4a"), the YouTube songs as one text of titles and links (no files
+ * — terms of service), and how many songs had nothing to send yet (still being prepared).
+ */
+export function shareBundle(songs: readonly ShareableSong[]): {
+  files: { songId: string; fileName: string }[];
+  text: string | null;
+  notReady: number;
+} {
+  const files: { songId: string; fileName: string }[] = [];
+  const links: string[] = [];
+  const used = new Set<string>();
+  let notReady = 0;
+  for (const s of songs) {
+    if (s.kind === 'youtube') {
+      if (s.youtubeId) links.push(youtubeShareText(s.title, s.youtubeId));
+      else notReady += 1;
+      continue;
+    }
+    if (!s.fileExt) {
+      notReady += 1;
+      continue;
+    }
+    const first = shareFileName(s.title, s.fileExt);
+    const dot = first.lastIndexOf('.');
+    let name = first;
+    for (let n = 2; used.has(name.toLowerCase()); n++) name = `${first.slice(0, dot)} (${n})${first.slice(dot)}`;
+    used.add(name.toLowerCase());
+    files.push({ songId: s.id, fileName: name });
+  }
+  return { files, text: links.length ? links.join('\n\n') : null, notReady };
+}
+
+/** One type for every file in a share (the share sheet filters apps by it). */
+export function shareMimeType(fileNames: readonly string[]): string {
+  const types = [...new Set(fileNames.map((n) => mimeOf(n)))];
+  if (types.length === 1) return types[0];
+  return types.every((t) => t.startsWith('audio/')) ? 'audio/*' : '*/*';
+}
+
 /**
  * After the phone failed to convert a file (both its own decoder and our FFmpeg): what she
  * reads, and whether the original may still be played. Only a recording that is merely too
