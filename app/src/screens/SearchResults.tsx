@@ -97,7 +97,6 @@ export function SearchResults({ lib, query, setQuery, submitted }: {
         : direct,
     [related, direct, lib.songs, deferred, lib.usage],
   );
-  const queue = hits.map((h) => h.song);
   const rows: Row[] = [];
   let headed = false;
   for (const hit of hits) {
@@ -166,7 +165,8 @@ export function SearchResults({ lib, query, setQuery, submitted }: {
           ) : (
             // Opening or playing a result is what makes a search worth remembering.
             <View onTouchStart={() => remember(query)}>
-              <SongRow song={item.hit.song} queue={queue} query={item.hit.related ? undefined : deferred} />
+              {/* A song she searched for plays on its own and stops at its end: search results are not a list to go on through (owner, 0.13.1). */}
+              <SongRow song={item.hit.song} queue={[item.hit.song]} query={item.hit.related ? undefined : deferred} />
               {item.hit.snippet && item.hit.matchedIn !== 'title' ? (
                 <Highlighted
                   soft
