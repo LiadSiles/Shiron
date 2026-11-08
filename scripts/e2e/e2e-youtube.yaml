@@ -7,8 +7,17 @@ appId: app.shiron.gan
 - tapOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
 - assertVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-yt-player
-- runFlow: back.yaml
-- assertVisible: "סגירת הסרטון"
+# The first "חזרה" right after the player opened was once ignored on a CI simulator (the video
+# keeps the screen from settling, so the tap can land mid-transition): one more try, with a
+# screenshot so a repeat is noticed. The three rounds below must then pass outright.
+- retry:
+    maxRetries: 1
+    commands:
+      - runFlow: back.yaml
+      - extendedWaitUntil:
+          visible: "סגירת הסרטון"
+          timeout: 5000
+      - takeScreenshot: ${VARIANT}-yt-after-back
 - assertNotVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-yt-pip-home
 - repeat:

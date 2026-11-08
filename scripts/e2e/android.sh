@@ -29,6 +29,10 @@ for f in "song.mp3 boker-tov.mp3" "voice-whatsapp.opus voice-whatsapp.opus" "ton
   adb push "$FIX/$1" "/sdcard/Download/$2" >/dev/null
   adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file:///sdcard/Download/$2" >/dev/null 2>&1
 done
+# Let the launcher finish starting before the first flow (it ANRs on a busy emulator).
+adb shell input keyevent KEYCODE_HOME
+sleep 20
+adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
 adb logcat -c
 
 export MAESTRO_DRIVER_STARTUP_TIMEOUT=240000

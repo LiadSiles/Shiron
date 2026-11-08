@@ -1,7 +1,15 @@
-# iOS asks "Open in “PlayGan”?" whenever something outside the app opens it by its link (the
+# Whatever stands between a flow and the app. iOS asks "Open in “PlayGan”?" whenever something outside the app opens it by its link (the
 # share extension without an App Group, simctl openurl). Answer it, if it is there.
 appId: app.shiron.gan
 ---
+# A slow CI emulator sometimes shows "Pixel Launcher isn't responding" over everything: wait it out.
+- repeat:
+    while:
+      visible: ".*isn.t responding.*"
+    times: 3
+    commands:
+      - tapOn: "Wait"
+      - waitForAnimationToEnd
 - extendedWaitUntil:
     visible: Open
     timeout: 4000
