@@ -1,10 +1,10 @@
-PASS group launch.yaml
+FAIL(must) group launch.yaml
 PASS group e2e-youtube.yaml
 PASS group e2e-settings.yaml
 PASS group e2e-import.yaml
 PASS group e2e-player.yaml
 PASS group e2e-song.yaml
-FAIL(must) group e2e-playlist.yaml
+PASS group e2e-playlist.yaml
 PASS group e2e-search.yaml
 PASS group e2e-background.yaml
 FAIL(soft) group share-out.yaml
