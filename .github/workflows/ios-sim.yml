@@ -99,6 +99,8 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          # FFmpeg for the ~40 s test songs (scripts/e2e/long-songs.sh); a short song is the fallback.
+          command -v ffmpeg >/dev/null || brew install ffmpeg >/dev/null || true
 
       - name: Checks and share flows (${{ matrix.variant }})
         run: bash scripts/e2e/ios.sh "$RUNNER_TEMP/${{ matrix.variant }}.app" ${{ matrix.variant }}

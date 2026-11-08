@@ -173,6 +173,8 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      - name: FFmpeg for the ~40 s test songs (scripts/e2e/long-songs.sh)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: End-to-end checks on an emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:

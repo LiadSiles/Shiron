@@ -178,6 +178,8 @@ started before the emulator's Maestro looked for "מתנגן: <title>". `share-o
 shares the same file twice in a row, then a link; the script counts the CHOOSER intents in
 logcat (≥ 3), since the sheet itself is another app.
 
+The CI machines have no ffmpeg by default: both workflows install it (apt, brew).
+
 Gotchas: `hide_error_dialogs` does not hide a launcher ANR ("Pixel Launcher isn't responding")
 — in 0.12.1's run it covered every flow. `android.sh` now lets the launcher settle for 20 s
 after install, and `dismiss.yaml` taps "Wait" while such a dialog shows. On the iPhone, the
