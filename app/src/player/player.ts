@@ -625,6 +625,7 @@ async function onBackground() {
     resumeYoutube = state().playing || playingAsSheLeft;
     youtube?.pause();
     set({ playing: false });
+    diag('background: youtube paused', song.title, resumeYoutube ? 'resumes on return' : 'was paused');
     // The lock screen offers the next audio song, paused: play there and it continues from it.
     const ahead = audioAhead(audioFlags(), state().index, state().repeat === 'one' ? 'off' : state().repeat);
     if (!ahead.length) return;
@@ -638,7 +639,7 @@ async function onBackground() {
     p.skipTo(0);
     p.loop = loopFor(state().repeat);
     p.setActiveForLockScreen(true, lockScreenInfo(state().queue[ahead[0]]), LOCK_SCREEN);
-    diag('background: youtube paused', song.title, `next on the lock screen: ${state().queue[ahead[0]].title}`);
+    diag('background: next on the lock screen', state().queue[ahead[0]].title);
     return;
   }
   if (!player || !slots?.length) return;
