@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  audioAhead, audioRun, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, runSlots,
+  withoutQueueIndex, audioAhead, audioRun, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, runSlots,
 } from '../src/core/queue';
 
 describe('play queue', () => {
@@ -74,5 +74,11 @@ describe('play queue', () => {
     expect(foregroundSlots([2, 3, 6, 0], 2, 7)).toEqual([2, 3, 6]);
     expect(foregroundSlots([2, 3, 6, 0], 3, 7)).toEqual([2, 3, 6, 0]);
     expect(foregroundSlots([0, 1, 2], 1, 3)).toEqual([0, 1, 2]);
+  });
+
+  it('takes a deleted song out of the native list and renumbers the rest', () => {
+    expect(withoutQueueIndex([2, 3, 6], 3)).toEqual({ slots: [2, 5], removeSlot: 1 });
+    expect(withoutQueueIndex([2, 3, 6], 4)).toEqual({ slots: [2, 3, 5], removeSlot: -1 });
+    expect(withoutQueueIndex([2, 3], 0)).toEqual({ slots: [1, 2], removeSlot: -1 });
   });
 });

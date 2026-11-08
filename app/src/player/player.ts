@@ -12,7 +12,7 @@ import { AppState, Platform } from 'react-native';
 import { getCategory, primaryCategoryId } from '../core/categories';
 import { createStore } from '../core/store';
 import {
-  audioAhead, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, RepeatMode, runSlots,
+  audioAhead, backgroundSlots, withoutQueueIndex, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, RepeatMode, runSlots,
 } from '../core/queue';
 import type { SongWithCategories } from '../core/types';
 import { getSong, onLibraryChange, recordPlay } from '../db/repo';
@@ -574,8 +574,26 @@ export function isQueued(songId: string): boolean {
   return state().queue.some((s) => s.id === songId);
 }
 
+/**
+ * She deleted a song: out of the queue too. The current one stops; any other is taken out of the
+ * native list before its file goes, or the list would reach a missing file later and stop there.
+ */
+export async function forgetSong(songId: string) {
+  if (state().song?.id === songId) return clearIfCurrent(songId);
+  const at = state().queue.findIndex((s) => s.id === songId);
+  if (at < 0) return;
+  if (slots) {
+    const next = withoutQueueIndex(slots, at);
+    if (next.removeSlot >= 0) player?.remove(next.removeSlot);
+    slots = next.slots;
+  }
+  if (pendingYoutube !== null) pendingYoutube = pendingYoutube === at ? null : pendingYoutube > at ? pendingYoutube - 1 : pendingYoutube;
+  const index = state().index;
+  set({ queue: state().queue.filter((_, i) => i !== at), index: index > at ? index - 1 : index });
+}
+
 /** Stop and forget the current song (e.g. it was deleted). */
-export async function clearIfCurrent(songId: string) {
+async function clearIfCurrent(songId: string) {
   if (state().song?.id !== songId) return;
   youtube?.pause();
   if (player) {

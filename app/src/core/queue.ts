@@ -100,3 +100,12 @@ export function foregroundSlots(slots: readonly number[], currentSlot: number, l
   while (end + 1 < slots.length && slots[end + 1] === slots[end] + 1 && slots[end + 1] < length) end += 1;
   return slots.slice(0, end + 1);
 }
+
+/**
+ * A song left the queue (she deleted it) at queue index `at`: the native slots without it, the
+ * rest renumbered, and which native slot to remove (-1 = it wasn't loaded).
+ */
+export function withoutQueueIndex(slots: readonly number[], at: number): { slots: number[]; removeSlot: number } {
+  const removeSlot = slots.indexOf(at);
+  return { slots: slots.filter((i) => i !== at).map((i) => (i > at ? i - 1 : i)), removeSlot };
+}

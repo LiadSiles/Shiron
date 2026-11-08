@@ -9,7 +9,7 @@ import type { SongWithCategories } from '../../core/types';
 import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
 import { retrySong } from '../../ingest/processor';
 import { deleteStored, resolveStored } from '../../ingest/storage';
-import { clearIfCurrent } from '../../player/player';
+import { forgetSong } from '../../player/player';
 import { CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
 import { ActionBar, ListGroup, ListItem } from '../../ui/list';
 import { Icon } from '../../ui/Icon';
@@ -98,7 +98,7 @@ export default function SongScreen() {
         text: 'מחיקה',
         style: 'destructive',
         onPress: async () => {
-          await clearIfCurrent(song.id);
+          await forgetSong(song.id);
           deleteStored(song.originalUri, song.playableUri);
           await deleteSong(song.id);
           router.back();
