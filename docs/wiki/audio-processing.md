@@ -100,9 +100,11 @@ converted oldest first. On success the `.m4a` becomes `playableUri`, the origina
 (videos can be large; the SHA-256 for dedupe is already stored) and `durationSec` is set. If
 the song is in the player's queue at that moment (Android plays the original before
 conversion; the native playlist holds its path), the original is kept and deleted by a later
-pass once it left the queue (`isQueued`). On failure the original stays
-and is played if the platform reads it (`isNativelyPlayable`), otherwise the song shows
-"הפורמט לא נתמך במכשיר הזה".
+pass once it left the queue (`isQueued`). On failure the original is kept
+but stays playable only when it was merely too long (`failedConversion`): if both the
+platform and FFmpeg failed, the player can't read it either — before 0.12.2 a damaged "mp3"
+stayed "playable" and a tap silently did nothing. The song shows "הפורמט לא נתמך במכשיר
+הזה, או שהקובץ פגום" (or the WMA/WMV or too-long message) and can be retried from Settings.
 
 Songs imported by 0.1 (`audio_state` added by migration v2 with default `raw`) are converted on
 first launch of 0.2.

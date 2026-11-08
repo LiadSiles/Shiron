@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canStart, extensionOf, shareFileName, youtubeShareText, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, extensionOf, failedConversion, shareFileName, youtubeShareText, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -129,5 +129,20 @@ describe('names that are not names', () => {
   });
   it('keeps real names that happen to have a colon', () => {
     expect(fallbackTitle('שיר: גשם.mp3', NOW)).toBe('שיר: גשם');
+  });
+});
+
+describe('a file the phone could not convert', () => {
+  it('stays playable only when it is merely too long', () => {
+    expect(failedConversion('TOO_LONG', 'a.mp3')).toEqual({ error: 'ההקלטה ארוכה משעה', keepOriginalPlayable: true });
+    expect(failedConversion('UNSUPPORTED', 'broken.mp3').keepOriginalPlayable).toBe(false);
+    expect(failedConversion('CORRUPT', 'x.m4a').keepOriginalPlayable).toBe(false);
+    expect(failedConversion(null, 'x.m4a').keepOriginalPlayable).toBe(false);
+  });
+  it('says what went wrong, in her words', () => {
+    expect(failedConversion('NO_AUDIO', 'clip.mp4').error).toBe('אין בקובץ שמע');
+    expect(failedConversion('UNSUPPORTED', 'old.wma').error).toContain('WMA');
+    expect(failedConversion('UNSUPPORTED', 'clip.wmv').error).toContain('WMV');
+    expect(failedConversion('CORRUPT', 'broken.mp3').error).toBe('הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום');
   });
 });

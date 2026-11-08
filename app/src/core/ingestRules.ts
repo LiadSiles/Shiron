@@ -138,3 +138,17 @@ export function shareFileName(title: string, ext: string): string {
 export function youtubeShareText(title: string, youtubeId: string): string {
   return `${title}\nhttps://youtu.be/${youtubeId}`;
 }
+
+/**
+ * After the phone failed to convert a file (both its own decoder and our FFmpeg): what she
+ * reads, and whether the original may still be played. Only a recording that is merely too
+ * long is still readable; anything else the phone couldn't read won't play either — keeping it
+ * "playable" made a tap on a damaged file silently do nothing.
+ */
+export function failedConversion(code: string | null, sourceName: string): { error: string; keepOriginalPlayable: boolean } {
+  if (code === 'TOO_LONG') return { error: 'ההקלטה ארוכה משעה', keepOriginalPlayable: true };
+  if (code === 'NO_AUDIO') return { error: 'אין בקובץ שמע', keepOriginalPlayable: false };
+  const wm = windowsMediaFormat(sourceName);
+  if (wm) return { error: `לא הצלחנו לקרוא את קובץ ה־${wm}. אפשר להמיר אותו ל־MP3 במחשב ולשתף שוב.`, keepOriginalPlayable: false };
+  return { error: 'הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום', keepOriginalPlayable: false };
+}

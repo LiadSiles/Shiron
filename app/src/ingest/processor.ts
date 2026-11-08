@@ -4,7 +4,7 @@ import { nameSong, resumeAllProviders } from '../api/ai';
 import { connectedProviders } from '../api/keys';
 import { youtubeMeta } from '../api/youtube';
 import { AiError, describeAiError } from '../core/ai';
-import { isFailed, keepCategories, mimeOf, windowsMediaFormat } from '../core/ingestRules';
+import { failedConversion, isFailed, keepCategories, mimeOf } from '../core/ingestRules';
 import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { fallbackUnderstanding, SongInput, Understanding } from '../core/understand';
@@ -186,14 +186,12 @@ async function convert(song: Song) {
   } catch (e) {
     const code = audioErrorCode(e);
     diag('convert failed', song.sourceName ?? song.id, e, `${Date.now() - started} ms`);
-    // The original stays; it is still playable when the platform reads its format.
+    // The original stays (a retry may read it later); playable only when merely too long.
+    const failed = failedConversion(code, song.sourceName ?? '');
     await updateSong(song.id, {
       audioState: 'unsupported',
-      error: code === 'TOO_LONG' ? 'ההקלטה ארוכה משעה'
-        : code === 'NO_AUDIO' ? 'אין בקובץ שמע'
-        : windowsMediaFormat(song.sourceName ?? '')
-          ? `לא הצלחנו לקרוא את קובץ ה־${windowsMediaFormat(song.sourceName ?? '')}. אפשר להמיר אותו ל־MP3 במחשב ולשתף שוב.`
-        : 'הפורמט לא נתמך במכשיר הזה',
+      error: failed.error,
+      playableUri: failed.keepOriginalPlayable ? song.playableUri : null,
     });
   }
 }
