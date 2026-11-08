@@ -44,7 +44,11 @@ export default function SongScreen() {
 
   const saveTitle = async () => {
     const t = title.trim();
-    if (!t || t === song.title) return;
+    if (!t) {
+      setTitle(song.title); // an emptied name isn't saved: show the one the song still has
+      return;
+    }
+    if (t === song.title) return;
     await updateSong(song.id, { title: t, titleSource: 'user' });
     toast('השם נשמר', 'success');
   };
@@ -117,6 +121,7 @@ export default function SongScreen() {
               onSubmitEditing={saveTitle}
               returnKeyType="done"
               accessibilityLabel="שם השיר"
+              clearButtonMode="while-editing"
               style={[styles.titleInput, { color: c.ink, fontFamily: font.bold }]}
             />
             <Icon name="pencil" size={16} color={c.inkSoft} />
