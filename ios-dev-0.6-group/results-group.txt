@@ -1,7 +1,8 @@
 PASS group launch.yaml
-FAIL(must) group e2e-youtube.yaml
+PASS group open-link.yaml
+PASS group e2e-youtube.yaml
 PASS group e2e-settings.yaml
-PASS group import-shared.yaml
+PASS group open-link.yaml
 PASS group e2e-import.yaml
 PASS group e2e-player.yaml
 PASS group e2e-song.yaml
