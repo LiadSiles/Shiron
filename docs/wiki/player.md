@@ -133,6 +133,11 @@ it was declined for this reason, and the music goes on with the audio songs inst
 - **The page dropped.** iOS may terminate the WebView's content process in the background, and
   an Android renderer can die (unhandled, that closes the app): `onContentProcessDidTerminate` /
   `onRenderProcessGone` reload the page at the position it had, playing only if it was.
+- Deleting a song takes it out of the queue and the native list (`forgetSong`); before, only
+  the current song was forgotten and the list later stopped on the missing file.
+- Calls and other interruptions, and a Bluetooth speaker or headphones going away, are handled
+  by expo-audio itself (iOS: pause, resume when the system says so; Android: "becoming noisy"
+  pauses) — checked in its source (SDK 58), not on a device.
 - Untested on a device: the lock screen in standby (a paused native playlist with Now Playing
   info) and process termination. The Maestro flow `e2e-background.yaml` covers leaving and
   coming back during a YouTube song.
