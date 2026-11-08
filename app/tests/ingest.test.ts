@@ -180,3 +180,12 @@ describe('sharing a whole list or category', () => {
     expect(shareMimeType(['a.m4a', 'b.mpg'])).toBe('*/*');
   });
 });
+
+describe('a conversion that failed because the phone is full', () => {
+  it('says so and keeps what played before, instead of calling the file damaged', () => {
+    const r = failedConversion('FAILED', 'song.mp3', 'ENOSPC: no space left on device');
+    expect(r.keepOriginalPlayable).toBe(true);
+    expect(r.error).toContain('אין מספיק מקום');
+    expect(failedConversion('FAILED', 'song.mp3', 'decoder error').error).toBe('הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום');
+  });
+});

@@ -1,5 +1,6 @@
 /** Pure helpers for turning shared content into songs. */
 import type { Song } from './types';
+import { isNoSpace } from './importSummary';
 
 const SUGGEST_CONFIDENCE = 0.5;
 
@@ -196,7 +197,9 @@ export function shareMimeType(fileNames: readonly string[]): string {
  * long is still readable; anything else the phone couldn't read won't play either — keeping it
  * "playable" made a tap on a damaged file silently do nothing.
  */
-export function failedConversion(code: string | null, sourceName: string): { error: string; keepOriginalPlayable: boolean } {
+export function failedConversion(code: string | null, sourceName: string, message = ''): { error: string; keepOriginalPlayable: boolean } {
+  // A full phone is not a bad file: say so, and keep what played before.
+  if (isNoSpace(message)) return { error: 'אין מספיק מקום בטלפון כדי להכין את השיר. אחרי שתפני מקום, אפשר לנסות שוב מההגדרות.', keepOriginalPlayable: true };
   if (code === 'TOO_LONG') return { error: 'ההקלטה ארוכה משעה', keepOriginalPlayable: true };
   if (code === 'NO_AUDIO') return { error: 'אין בקובץ שמע', keepOriginalPlayable: false };
   const wm = windowsMediaFormat(sourceName);

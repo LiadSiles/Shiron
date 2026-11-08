@@ -103,7 +103,7 @@ async function nameSongs() {
     return;
   }
   if (!(await connectedProviders()).length) {
-    setState({ needsKey: true });
+    setState({ needsKey: true, notice: null });
     return;
   }
   setState({ needsKey: false });
@@ -187,7 +187,7 @@ async function convert(song: Song) {
     const code = audioErrorCode(e);
     diag('convert failed', song.sourceName ?? song.id, e, `${Date.now() - started} ms`);
     // The original stays (a retry may read it later); playable only when merely too long.
-    const failed = failedConversion(code, song.sourceName ?? '');
+    const failed = failedConversion(code, song.sourceName ?? '', String((e as Error)?.message ?? e));
     await updateSong(song.id, {
       audioState: 'unsupported',
       error: failed.error,

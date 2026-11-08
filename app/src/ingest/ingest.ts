@@ -8,7 +8,7 @@ import type { Song } from '../core/types';
 import { findBySha, findByYoutube, insertSong } from '../db/repo';
 import { processQueue } from './processor';
 import { diag } from '../diag/log';
-import type { ImportSummary } from '../core/importSummary';
+import { isNoSpace, type ImportSummary } from '../core/importSummary';
 import { songsDir, toStoredPath } from './storage';
 
 
@@ -126,7 +126,7 @@ async function importFiles(
       await importMediaFile(f.file, f.name, context, summary, f.move);
     } catch (e) {
       diag('import failed', f.name, e);
-      summary.unsupported.push(f.name);
+      summary.failed.push({ name: f.name, noSpace: isNoSpace(String((e as Error)?.message ?? e)) });
     }
   }
   setImportState({ done: files.length });
@@ -157,7 +157,7 @@ function enqueue(job: () => Promise<ImportSummary>): Promise<ImportSummary> {
 
 /** Handles everything that arrives through the system share sheet. */
 async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
-  const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
+  const summary: ImportSummary = { added: [], duplicates: [], unsupported: [], failed: [] };
   const text = intent.text?.trim() || null;
 
   diag('share received', `type ${intent.type}`, `${intent.files?.length ?? 0} files`,
@@ -209,7 +209,7 @@ export async function importFromPicker(): Promise<ImportSummary | null> {
   try {
     const picked = await File.pickFileAsync({ multipleFiles: true, mimeTypes: ['audio/*', 'video/*'] });
     if (picked.canceled) return null;
-    const summary: ImportSummary = { added: [], duplicates: [], unsupported: [] };
+    const summary: ImportSummary = { added: [], duplicates: [], unsupported: [], failed: [] };
     const staging = new Directory(Paths.cache, `picked-${Crypto.randomUUID()}`);
     try {
       const files = [];

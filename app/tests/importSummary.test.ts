@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { describeSummary } from '../src/core/importSummary';
+import { describeSummary, isNoSpace } from '../src/core/importSummary';
 
-const sum = (added = 0, duplicates: string[] = [], unsupported = 0) => ({
+const sum = (added = 0, duplicates: string[] = [], unsupported = 0, failed: boolean[] = []) => ({
   added: Array.from({ length: added }, (_, i) => `s${i}`),
   duplicates: duplicates.map((title) => ({ title })),
   unsupported: Array.from({ length: unsupported }, (_, i) => `f${i}.txt`),
+  failed: failed.map((noSpace, i) => ({ name: `g${i}.mp3`, noSpace })),
 });
 
 describe('the line she reads after sharing', () => {
@@ -25,5 +26,17 @@ describe('the line she reads after sharing', () => {
   });
   it('never shows an empty line', () => {
     expect(describeSummary(sum())).toBe('לא נמצא שיר לשמירה');
+  });
+  it('says the phone is full when it is, and otherwise to share again', () => {
+    expect(describeSummary(sum(1, [], 0, [true]))).toBe('שיר אחד נשמר · שיר אחד לא נשמר: אין מספיק מקום בטלפון');
+    expect(describeSummary(sum(0, [], 0, [true, true]))).toBe('2 שירים לא נשמרו: אין מספיק מקום בטלפון');
+    expect(describeSummary(sum(0, [], 0, [false]))).toBe('שיר אחד לא נשמר, נסי לשתף אותו שוב');
+    expect(describeSummary(sum(0, [], 0, [false, false, true]))).toBe('שיר אחד לא נשמר: אין מספיק מקום בטלפון · 2 שירים לא נשמרו, נסי לשתף אותם שוב');
+  });
+  it('recognises a full phone in the platforms\' wordings', () => {
+    expect(isNoSpace('ENOSPC: no space left on device')).toBe(true);
+    expect(isNoSpace('The file couldn’t be saved because there isn’t enough space.')).toBe(true);
+    expect(isNoSpace('Error Domain=NSCocoaErrorDomain Code=640')).toBe(true);
+    expect(isNoSpace('Permission denied')).toBe(false);
   });
 });

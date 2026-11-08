@@ -4,7 +4,7 @@ import { toast } from './toast';
 
 /** What was saved, as a toast. */
 export function showImportResult(s: ImportSummary) {
-  toast(describeSummary(s), s.added.length ? 'success' : 'info');
+  toast(describeSummary(s), s.failed.length ? 'error' : s.added.length ? 'success' : 'info');
 }
 
 /** The "add from Files" buttons (home screen, settings). */
