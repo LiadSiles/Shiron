@@ -16,9 +16,9 @@ appId: app.shiron.gan
 - assertVisible: ".*מעגל בוקר.*"
 - assertVisible: ".*old-song.*"
 - assertVisible: ".*gan-party.*"
-- tapOn: "סידור"
+- tapOn: "סידור הרשימה"
 - tapOn: "להזיז את gan-party למעלה"
-- tapOn: "סיום"
+- tapOn: "סיום הסידור"
 - takeScreenshot: ${VARIANT}-playlist
 - tapOn: "נגני הכול"
 - extendedWaitUntil:
