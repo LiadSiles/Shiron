@@ -1,0 +1,7 @@
+# Maestro has no plain wait: wait for something that never shows.
+appId: app.shiron.gan
+---
+- extendedWaitUntil:
+    visible: "never-shown-0b6f"
+    timeout: 4000
+    optional: true

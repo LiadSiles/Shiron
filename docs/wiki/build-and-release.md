@@ -127,7 +127,22 @@ keyed by the script and `native/ffmpeg/*`. The podspec only vendors the xcframew
 
 Every push to a dev branch touching the app runs two parallel jobs — a simulator build with the
 App Group and one with no entitlements (like Sideloadly with a free ID) — driven by Maestro
-(`scripts/e2e/ios.sh`). Since 0.11.1 the job **fails** when a must-pass check fails:
+(`scripts/e2e/ios.sh`). Since 0.11.1 the job **fails** when a must-pass check fails.
+
+**One Maestro session per run (0.13.0).** Each `maestro test` call starts Maestro's driver
+again, 1–2 minutes on CI; with a call per flow (plus one per injected file to answer iOS's
+"Open in" prompt) the iPhone job took 80+ minutes and the Android one 36. `scripts/e2e/suite.sh`
+now writes a small wrapper per flow (`suite-NN-<flow>.yaml`, with its values: `FILE`, `COUNT`,
+…) and a workspace `config.yaml` (`executionOrder`, `continueOnFailure: true`), runs them all
+in one session, and reads each flow's result from the JUnit report (`report-<variant>.xml`;
+missing = did not run). Only the empty first launch runs alone, before anything is shared to
+the app. iOS's files arrive in **one** share (`inject-ios.sh` stages them, `import-shared.yaml`
+opens the link), which also covers a WhatsApp selection of several files. On Android a cleanup
+flow (`cleanup-android.yaml`, Maestro's `onFlowComplete`) closes the file picker after every
+flow. The real share sheet (`share-link`, `share-file`, `share-out` on iOS), which had not
+passed on the simulator in many runs and cost ~25 minutes each time, runs only when the
+workflow is started by hand with `full`. The no-group job checks only what differs without
+the group: the link path and Settings.
 
 - `check` (must pass, `e2e-*.yaml` + `launch.yaml`, with assertions): the empty first launch;
   YouTube (from the extension's no-group link, `simctl openurl`) — full player, the small
@@ -187,7 +202,7 @@ opens on "Recent", which doesn't list every file; the tap on "Downloads" in its 
 mid-slide and miss (0.12.3 and the next run: the WhatsApp opus failed to add, and the import,
 song and background flows failed after it). `add-android.yaml` now scrolls to the file and tries
 once more (a run at 3d14299 was in Downloads but the opus, last in the list, sat half below the
-screen and counted as not visible — hence a scroll, not a wait), and after any failed flow `android.sh` force-stops the picker
+screen and counted as not visible — hence a scroll, not a wait), and after every flow the cleanup flow stops the picker
 (`com.google.android.documentsui`): left open, it stays in the app's task and covered the full
 player in a later flow. Two more flakes, both in tooling: the Maestro installer's download
 sometimes returns 504 (every Android flow then failed with "maestro: command not found";

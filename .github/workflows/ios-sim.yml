@@ -1,17 +1,17 @@
 name: iPhone share check
 
-# Builds the app for the iPhone simulator and drives it with Maestro (scripts/e2e/ios.sh).
-# Checks that must pass (e2e-*.yaml, with assertions): the empty first launch; YouTube — full
-# player, the small window, ⤢, dragging, ✕, "חזרה" again and again; Settings; and with the App
-# Group, files handed over the way the share extension does (mp3, voice note, WMA, MPG, a
-# duplicate, a broken file, a text file) → convert, play, the player's controls and back
-# button, renaming (kept after a restart), pinning, deleting, lists, search. Then the real share
-# sheet and file picker, best effort (the simulator taps them unreliably). Two jobs in
-# parallel: with the App Group (AltStore / a paid account) and without any entitlements, the
-# way Sideloadly with a free Apple ID installs it. With the
-# GEMINI_API_KEY secret it also sends Gemini a Hebrew recording (tests/gemini.live.test.ts).
-# Screenshots go to the `screenshots` branch under ios-<dev branch>; the extension's log lines
-# become annotations. WhatsApp itself can't run on a simulator.
+# Builds the app for the iPhone simulator and drives it with Maestro (scripts/e2e/ios.sh), all
+# flows of a variant in one Maestro session (scripts/e2e/suite.sh). Checks that must pass
+# (e2e-*.yaml): the empty first launch; YouTube — full player, the small window, dragging, ✕,
+# "חזרה" again and again; Settings; and with the App Group, files handed over in one share the
+# way the extension does (mp3, voice note, WMA, MPG, a duplicate, a broken file, a text file) →
+# convert, play, the player's controls, the end of a song in each repeat mode, renaming,
+# pinning, deleting, lists, search, leaving during YouTube. Two jobs in parallel: with the App
+# Group (AltStore / a paid account) and without any entitlements (Sideloadly with a free Apple
+# ID: the link path and Settings only). The real share sheet, which the simulator taps
+# unreliably, runs only when started by hand with "full". With the GEMINI_API_KEY secret it
+# also sends Gemini a Hebrew recording (tests/gemini.live.test.ts). Screenshots go to the
+# `screenshots` branch under ios-<dev branch>. WhatsApp itself can't run on a simulator.
 on:
   push:
     branches: ["dev/**"]
@@ -20,6 +20,11 @@ on:
       - ".github/workflows/ios-sim.yml"
       - "scripts/e2e/**"
   workflow_dispatch:
+    inputs:
+      full:
+        description: Also the real share sheet (unreliable on the simulator, ~20 min more)
+        type: boolean
+        default: false
 
 concurrency:
   group: ios-sim-${{ github.ref }}
@@ -35,7 +40,7 @@ jobs:
       matrix:
         variant: [group, nogroup]
     runs-on: macos-15
-    timeout-minutes: 120
+    timeout-minutes: 75
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
@@ -103,6 +108,8 @@ jobs:
           command -v ffmpeg >/dev/null || brew install ffmpeg >/dev/null || true
 
       - name: Checks and share flows (${{ matrix.variant }})
+        env:
+          FULL: ${{ inputs.full && '1' || '0' }}
         run: bash scripts/e2e/ios.sh "$RUNNER_TEMP/${{ matrix.variant }}.app" ${{ matrix.variant }}
 
       - name: Report

@@ -1,0 +1,5 @@
+# After every Android flow (suite.sh): close the system file picker. Left open after a failed
+# pick, it stays in the app's task and covered the full player in a later flow.
+appId: app.shiron.gan
+---
+- stopApp: com.google.android.documentsui

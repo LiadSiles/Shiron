@@ -1,0 +1,57 @@
+# The end of a song in each repeat mode (owner, 0.13.0: on the iPhone the song always started
+# again). One song picked from a search, so the list is just that song: without repeat it stops
+# and stays stopped, "play" then starts it again; repeating the list or the song plays it again.
+# The test songs are ~40 s; dragging the bar to the end gets there at once.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: "חיפוש.*"
+- inputText: "old"
+- tapOn: "נגני old-song"
+- tapOn: "ביטול"
+- tapOn: "מתנגן: old-song.*"
+- assertVisible: "מתנגן עכשיו"
+- repeat:
+    while:
+      notVisible: "בלי חזרה"
+    times: 3
+    commands:
+      - tapOn: "חזרה על.*"
+
+# Without repeat: stops at the end, and doesn't start again by itself.
+- swipe:
+    from: "מיקום בשיר"
+    direction: RIGHT
+- extendedWaitUntil:
+    visible: "ניגון"
+    timeout: 10000
+- runFlow: wait-4s.yaml
+- assertVisible: "ניגון"
+- takeScreenshot: ${VARIANT}-end-stopped
+# "Play" after the end starts the song again.
+- tapOn: "ניגון"
+- extendedWaitUntil:
+    visible: "השהיה"
+    timeout: 5000
+
+# Repeating the list (of one) or the song: past the end it is still playing.
+- tapOn: "בלי חזרה"
+- assertVisible: "חזרה על הכול"
+- swipe:
+    from: "מיקום בשיר"
+    direction: RIGHT
+- runFlow: wait-4s.yaml
+- assertVisible: "השהיה"
+- tapOn: "חזרה על הכול"
+- assertVisible: "חזרה על השיר"
+- swipe:
+    from: "מיקום בשיר"
+    direction: RIGHT
+- runFlow: wait-4s.yaml
+- assertVisible: "השהיה"
+- takeScreenshot: ${VARIANT}-end-repeat-one
+- tapOn: "חזרה על השיר"
+- assertVisible: "בלי חזרה"
+- tapOn: "השהיה"
+- runFlow: back.yaml
