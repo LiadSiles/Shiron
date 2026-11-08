@@ -8,7 +8,16 @@ appId: app.shiron.gan
 - longPressOn: "נגני boker-tov"
 - assertVisible: "פרטי שיר"
 - tapOn: "שם השיר"
-- eraseText: 30
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "Clear text"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - eraseText: 40
 - inputText: "בוקר טוב לגן"
 - pressKey: Enter
 - tapOn: "הצמדה"

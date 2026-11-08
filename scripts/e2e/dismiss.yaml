@@ -27,3 +27,9 @@ appId: app.shiron.gan
       platform: Android
     commands:
       - back
+# Search left open by an earlier flow (the app keeps its state between launches on Android).
+- runFlow:
+    when:
+      visible: "מה מחפשים\\?|לא נמצא שיר"
+    commands:
+      - tapOn: "ביטול"

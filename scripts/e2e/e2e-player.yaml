@@ -38,6 +38,11 @@ appId: app.shiron.gan
       - assertNotVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-after-backs
 - tapOn: "מתנגן: .*"
-- tapOn: "השהיה"
+# The test songs are short: pause if it is still playing; either way it shows "ניגון" then.
+- runFlow:
+    when:
+      visible: "השהיה"
+    commands:
+      - tapOn: "השהיה"
 - assertVisible: "ניגון"
 - runFlow: back.yaml

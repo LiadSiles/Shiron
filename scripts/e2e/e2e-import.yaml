@@ -19,23 +19,26 @@ appId: app.shiron.gan
 - assertNotVisible: ".*notes.*"
 - tapOn: "נגני boker-tov"
 - extendedWaitUntil:
-    visible: "השהיית boker-tov"
-    timeout: 10000
-- tapOn: "נגני voice-whatsapp"
-- extendedWaitUntil:
-    visible: "השהיית voice-whatsapp"
-    timeout: 10000
-- tapOn: "נגני old-song"
-- extendedWaitUntil:
-    visible: "השהיית old-song"
-    timeout: 10000
-- tapOn: "נגני gan-party"
-- extendedWaitUntil:
-    visible: "השהיית gan-party"
+    visible: "מתנגן: boker-tov.*"
     timeout: 10000
 - assertNotVisible: ".*לא הצלחנו לנגן.*"
+- tapOn: "נגני voice-whatsapp"
+- extendedWaitUntil:
+    visible: "מתנגן: voice-whatsapp.*"
+    timeout: 10000
+- assertNotVisible: ".*לא הצלחנו לנגן.*"
+- tapOn: "נגני old-song"
+- extendedWaitUntil:
+    visible: "מתנגן: old-song.*"
+    timeout: 10000
+- assertNotVisible: ".*לא הצלחנו לנגן.*"
+- tapOn: "נגני gan-party"
+- extendedWaitUntil:
+    visible: "מתנגן: gan-party.*"
+    timeout: 10000
+- assertNotVisible: ".*לא הצלחנו לנגן.*"
+- assertNotVisible: ".*לא הצלחנו לנגן.*"
 - takeScreenshot: ${VARIANT}-mpg-playing
-- tapOn: "השהיית gan-party"
 - runFlow:
     when:
       platform: iOS

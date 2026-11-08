@@ -13,3 +13,4 @@ appId: app.shiron.gan
 - inputText: "zzzz"
 - assertVisible: "לא נמצא שיר"
 - takeScreenshot: ${VARIANT}-search-none
+- tapOn: "ביטול"

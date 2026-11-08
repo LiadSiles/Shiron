@@ -5,11 +5,12 @@ appId: app.shiron.gan
 - launchApp
 - tapOn: ספרייה
 - tapOn: "רשימה חדשה"
-- tapOn: "שם הרשימה"
-- inputText: "מעגל בוקר"
-- hideKeyboard
 - tapOn: "old-song"
 - tapOn: "gan-party"
+- tapOn: "שם הרשימה"
+- inputText: "מעגל בוקר"
+- pressKey: Enter
+- assertVisible: ".*מעגל בוקר.*"
 - tapOn: "יצירת הרשימה"
 - waitForAnimationToEnd
 - assertVisible: ".*מעגל בוקר.*"
@@ -20,8 +21,9 @@ appId: app.shiron.gan
 - tapOn: "סיום"
 - takeScreenshot: ${VARIANT}-playlist
 - tapOn: "נגני הכול"
-- assertVisible: "השהיית gan-party"
-- tapOn: "השהיית gan-party"
+- extendedWaitUntil:
+    visible: "מתנגן: gan-party.*"
+    timeout: 10000
 - scrollUntilVisible:
     element:
       text: "מחיקת הרשימה"
