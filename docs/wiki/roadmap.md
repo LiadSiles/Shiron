@@ -32,6 +32,7 @@ _Last updated: 2026-11-06_
 | 0.12.0 | Share a song out of the app (song screen → "שיתוף": the file under her title, a YouTube song as a link); "חזרה" no longer blocked by the status banner (it covered the header while songs were named or converted); the iPhone check asserts and fails | released as v0.12.0 at the owner's request with the simulator check still running; untested on a device |
 | 0.12.1 | Background work (naming, transcribing, preparing) shows on the home screen, not floating over every screen | released as v0.12.1 at the owner's request; untested on a device |
 | 0.12.2 | Android sharing to WhatsApp through our own share sheet; list rows stay put while she plays; damaged-file message; name restored when emptied; screen-reader labels; Android picker names; e2e flows on iPhone and Android | released as v0.12.2; WhatsApp itself untested on a device |
+| 0.12.3 | Icons no longer read as stray characters by VoiceOver / TalkBack; every e2e check green on iPhone (both builds) and Android, incl. sharing twice in a row | released as v0.12.3; WhatsApp itself untested on a device |
 | 0.13 | Whole-chat import (WhatsApp "export chat with media" ZIP; use neighbouring messages as context) | planned (moved here from v2 if the owner confirms — open question in the planning doc) |
 | 0.12 | Acoustic-fingerprint dedupe (computed on the phone during conversion, merge into existing song) | planned |
 | 0.13 | Sleep timer with fade, big-tile class mode | planned |
