@@ -9,5 +9,16 @@ export type IconName = ComponentProps<typeof Ionicons>['name'];
  * content, chosen for children's topics. Media controls are drawn in ui/icons.tsx.
  */
 export function Icon({ name, size = 22, color }: { name: IconName; size?: number; color: string }) {
-  return <Ionicons name={name} size={size} color={color} />;
+  // An icon is a glyph of the icon font: VoiceOver read it as a stray character (", מחיקת
+  // הרשימה"). The words next to it, or the button's own label, say what it means.
+  return (
+    <Ionicons
+      name={name}
+      size={size}
+      color={color}
+      accessible={false}
+      importantForAccessibility="no"
+      accessibilityElementsHidden
+    />
+  );
 }

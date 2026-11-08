@@ -137,6 +137,7 @@ export default function PlaylistScreen() {
                 <Pressable
                   onPress={() => setEditingName(true)}
                   accessibilityRole="button"
+                  accessibilityLabel={list.name}
                   accessibilityHint="שינוי שם הרשימה"
                   style={styles.nameRow}
                 >
@@ -194,7 +195,7 @@ export default function PlaylistScreen() {
           </EmptyState>
         }
         ListFooterComponent={
-          <Pressable onPress={confirmDelete} accessibilityRole="button" style={styles.delete}>
+          <Pressable onPress={confirmDelete} accessibilityRole="button" accessibilityLabel="מחיקת הרשימה" style={styles.delete}>
             <Icon name="trash-outline" size={18} color={c.bad} />
             <T weight="medium" style={{ color: c.bad }}>מחיקת הרשימה</T>
           </Pressable>
