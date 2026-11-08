@@ -11,6 +11,6 @@ PASS android e2e-player.yaml
 PASS android e2e-song.yaml
 FAIL(must) android e2e-playlist.yaml
 PASS android e2e-search.yaml
-FAIL(must) android share-out-android.yaml
-PASS android share chooser opened
+PASS android share-out-android.yaml
+PASS android share sheet opened 3 times
 PASS android-cats categories.yaml
