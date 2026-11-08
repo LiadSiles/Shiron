@@ -1,27 +1,27 @@
-08/11 04:42:39 app group · none granted · declared group.app.shiron.gan · provisioned - · alt -
-08/11 04:43:45 share received · type text · 0 files · 
-08/11 04:43:45 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 05:53:32 background task unavailable · 1
+08/11 05:55:07 share received · type text · 0 files · 
+08/11 05:55:07 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 04:43:45 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 05:55:07 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 04:45:14 background task unavailable · 1
-08/11 04:45:14 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 05:56:05 background task unavailable · 1
+08/11 05:56:06 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 04:45:14 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 05:56:06 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 04:45:16 play youtube · שיר מיוטיוב · 1/1
-08/11 04:50:47 background task unavailable · 1
-08/11 04:50:47 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 05:56:07 play youtube · שיר מיוטיוב · 1/1
+08/11 06:00:45 background task unavailable · 1
+08/11 06:00:45 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 04:50:47 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 06:00:45 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 05:00:31 background task unavailable · 1
-08/11 05:00:32 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 06:12:38 app group · none granted · declared group.app.shiron.gan · provisioned - · alt -
+08/11 06:12:38 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 05:00:32 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 06:12:38 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 05:02:00 background task unavailable · 1
-08/11 05:02:00 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 06:14:29 background task unavailable · 1
+08/11 06:14:29 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-08/11 05:02:00 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 06:14:29 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
