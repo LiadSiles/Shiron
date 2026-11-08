@@ -19,7 +19,10 @@ final class AacExporterTests: XCTestCase {
     var at = 0, frames = 0
     while at < bytes.count {
       XCTAssertEqual(bytes[at], 0xFF); XCTAssertEqual(bytes[at + 1] & 0xF6, 0xF0)
-      let length = Int(bytes[at + 3] & 0x3) << 11 | Int(bytes[at + 4]) << 3 | Int(bytes[at + 5]) >> 5
+      let high: Int = Int(bytes[at + 3] & 0x3) << 11
+      let middle: Int = Int(bytes[at + 4]) << 3
+      let low: Int = Int(bytes[at + 5]) >> 5
+      let length: Int = high | middle | low
       XCTAssertGreaterThan(length, 7)
       at += length; frames += 1
     }

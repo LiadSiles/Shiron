@@ -58,14 +58,11 @@ public enum AacExporter {
 
   /// The 7-byte ADTS header (MPEG-4, no CRC) in front of one AAC packet.
   static func header(payload: Int, profile: Int, frequency: Int, channels: Int) -> [UInt8] {
-    let length = payload + 7
-    return [
-      0xFF, 0xF1,
-      UInt8((profile & 0x3) << 6 | (frequency & 0xF) << 2 | (channels >> 2) & 0x1),
-      UInt8((channels & 0x3) << 6 | (length >> 11) & 0x3),
-      UInt8((length >> 3) & 0xFF),
-      UInt8((length & 0x7) << 5 | 0x1F),
-      0xFC,
-    ]
+    let length: Int = payload + 7
+    let b2: Int = (profile & 0x3) << 6 | (frequency & 0xF) << 2 | (channels >> 2) & 0x1
+    let b3: Int = (channels & 0x3) << 6 | (length >> 11) & 0x3
+    let b4: Int = (length >> 3) & 0xFF
+    let b5: Int = (length & 0x7) << 5 | 0x1F
+    return [0xFF, 0xF1, UInt8(b2), UInt8(b3), UInt8(b4), UInt8(b5), 0xFC]
   }
 }
