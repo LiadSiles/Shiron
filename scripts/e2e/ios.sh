@@ -60,8 +60,8 @@ open_url() { # url — opens it in the app and answers iOS's "Open in PlayGan?" 
   for i in 1 2 3; do once open-prompt.yaml "$VARIANT-prompt" && return 0; sleep 2; done
   echo "FAIL(soft) $VARIANT open prompt stayed for $1" >> "shots/results-$VARIANT.txt"
 }
-inject() { # fixture, name, mime
-  bash "$HERE/inject-ios.sh" "$UDID" "app/modules/shiron-audio/fixtures/$1" "$2" "$3" || echo "FAIL(must) $VARIANT inject $2" >> "shots/results-$VARIANT.txt"
+inject() { # file, name, mime
+  bash "$HERE/inject-ios.sh" "$UDID" "$1" "$2" "$3" || echo "FAIL(must) $VARIANT inject $2" >> "shots/results-$VARIANT.txt"
   sleep 2; for i in 1 2 3; do once open-prompt.yaml "$VARIANT-prompt" && break; sleep 2; done; sleep 2
 }
 
@@ -75,13 +75,14 @@ check e2e-settings.yaml "$VARIANT" -e SHARE="$SHARE"
 
 # Files, the way the share extension hands them over (only an App Group can carry files).
 if [ "$VARIANT" = group ]; then
-  inject song.mp3 boker-tov.mp3 audio/mpeg
-  inject voice-whatsapp.opus voice-whatsapp.opus audio/ogg
-  inject tone.wma old-song.wma audio/x-ms-wma
-  inject video.mpg gan-party.mpg video/mpeg
-  inject song.mp3 boker-tov.mp3 audio/mpeg            # the same song again: must not double
-  inject not-audio.mp3 broken.mp3 audio/mpeg           # not really audio: explained, no crash
-  inject README.md notes.txt text/plain                # not a song: must not crash or be added
+  bash "$HERE/long-songs.sh" songs
+  inject songs/boker-tov.mp3 boker-tov.mp3 audio/mpeg
+  inject songs/voice-whatsapp.opus voice-whatsapp.opus audio/ogg
+  inject songs/old-song.wma old-song.wma audio/x-ms-wma
+  inject songs/gan-party.mpg gan-party.mpg video/mpeg
+  inject songs/boker-tov.mp3 boker-tov.mp3 audio/mpeg  # the same song again: must not double
+  inject songs/broken.mp3 broken.mp3 audio/mpeg        # not really audio: explained, no crash
+  inject app/modules/shiron-audio/fixtures/README.md notes.txt text/plain   # not a song: not added
   check e2e-import.yaml "$VARIANT" -e COUNT=6
   check e2e-player.yaml "$VARIANT"
   check e2e-song.yaml "$VARIANT"

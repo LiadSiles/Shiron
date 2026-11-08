@@ -10,17 +10,19 @@ appId: app.shiron.gan
 - waitForAnimationToEnd
 - takeScreenshot: ${VARIANT}-share-sheet
 - assertNotVisible: ".*לא הצלחנו לשתף.*"
-- assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive|שיתוף).*"
+- assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive).*"
 - back
 # Again right away: with expo-sharing every share after the first failed while it still
 # waited for the first one's result (the WhatsApp report, 0.12.1).
-- longPressOn: "נגני בוקר טוב לגן"
+- assertVisible: "פרטי שיר"
 - tapOn: "שיתוף"
 - waitForAnimationToEnd
 - assertNotVisible: ".*לא הצלחנו לשתף.*"
-- assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive|שיתוף).*"
+- assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive).*"
 - takeScreenshot: ${VARIANT}-share-again
 - back
+# Back from the song's page to the list.
+- runFlow: back.yaml
 - longPressOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
 - tapOn: "שיתוף"
 - waitForAnimationToEnd

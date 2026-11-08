@@ -9,7 +9,6 @@ APK=$1
 PKG=app.shiron.gan
 ACT="$PKG/.MainActivity"
 HERE=$(cd "$(dirname "$0")" && pwd)
-FIX=app/modules/shiron-audio/fixtures
 VARIANT=android
 mkdir -p shots
 RESULTS="shots/results-$VARIANT.txt"
@@ -23,11 +22,10 @@ adb shell settings put global hide_error_dialogs 1
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
-for f in "song.mp3 boker-tov.mp3" "voice-whatsapp.opus voice-whatsapp.opus" "tone.wma old-song.wma" \
-         "video.mpg gan-party.mpg" "not-audio.mp3 broken.mp3"; do
-  set -- $f
-  adb push "$FIX/$1" "/sdcard/Download/$2" >/dev/null
-  adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file:///sdcard/Download/$2" >/dev/null 2>&1
+bash "$HERE/long-songs.sh" songs
+for f in boker-tov.mp3 voice-whatsapp.opus old-song.wma gan-party.mpg broken.mp3; do
+  adb push "songs/$f" "/sdcard/Download/$f" >/dev/null
+  adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file:///sdcard/Download/$f" >/dev/null 2>&1
 done
 # Let the launcher finish starting before the first flow (it ANRs on a busy emulator).
 adb shell input keyevent KEYCODE_HOME
@@ -74,11 +72,12 @@ check e2e-song.yaml "$VARIANT"
 check e2e-playlist.yaml "$VARIANT"
 check e2e-search.yaml "$VARIANT"
 check share-out-android.yaml "$VARIANT"
-# The share sheet really received the song's file (an audio stream through our provider).
-if adb logcat -d | grep -E "act=android.intent.action.CHOOSER" | grep -q .; then
-  echo "PASS $VARIANT share chooser opened" >> "$RESULTS"
+# The system share sheet really opened each time: the file twice in a row, then the link.
+CHOOSERS=$(adb logcat -d | grep -c "act=android.intent.action.CHOOSER")
+if [ "$CHOOSERS" -ge 3 ]; then
+  echo "PASS $VARIANT share sheet opened $CHOOSERS times" >> "$RESULTS"
 else
-  echo "FAIL(must) $VARIANT share chooser never opened" >> "$RESULTS"; FAILED+=("share chooser")
+  echo "FAIL(must) $VARIANT share sheet opened $CHOOSERS of 3 times" >> "$RESULTS"; FAILED+=("share chooser")
 fi
 try categories.yaml "$VARIANT-cats"
 

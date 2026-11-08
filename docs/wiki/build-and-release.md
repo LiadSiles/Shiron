@@ -172,6 +172,12 @@ for a file and for a YouTube link; the script also checks logcat for the CHOOSER
 job fails on a failed check or a crash; screenshots, results and errors go to the
 `screenshots` branch under `android-<branch>`.
 
+The songs are the fixtures looped to ~40 s (`scripts/e2e/long-songs.sh`, both platforms;
+the fixture itself if ffmpeg can't write a format): at 2.5 s a song had ended and the next one
+started before the emulator's Maestro looked for "מתנגן: <title>". `share-out-android.yaml`
+shares the same file twice in a row, then a link; the script counts the CHOOSER intents in
+logcat (≥ 3), since the sheet itself is another app.
+
 Gotchas: `hide_error_dialogs` does not hide a launcher ANR ("Pixel Launcher isn't responding")
 — in 0.12.1's run it covered every flow. `android.sh` now lets the launcher settle for 20 s
 after install, and `dismiss.yaml` taps "Wait" while such a dialog shows. On the iPhone, the
