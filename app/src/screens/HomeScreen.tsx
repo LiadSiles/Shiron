@@ -60,7 +60,8 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
             <T weight="bold">
               {pendingCount === 1 ? 'שיר אחד מחכה לשם ולקטגוריה' : `${pendingCount} שירים מחכים לשם ולקטגוריה`}
             </T>
-            <T soft size={14}>חיבור חד-פעמי לשירות AI חינמי, כשתי דקות</T>
+            {/* A key that stopped working says so; otherwise the first-time offer. */}
+            <T soft size={14}>{proc.notice ?? 'חיבור חד-פעמי לשירות AI חינמי, כשתי דקות'}</T>
           </View>
           <Icon name="chevron-back" size={20} color={c.primary} />
         </Pressable>
