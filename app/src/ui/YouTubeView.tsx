@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { attachYoutube, youtubeEvent } from '../player/player';
+import { attachYoutube, youtubeEvent, youtubeResumePoint } from '../player/player';
 import { T } from './components';
 import { Icon } from './Icon';
 import { radius, space, useTheme } from './theme';
@@ -20,7 +20,17 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
   const c = useTheme();
   // loading → ready, or offline (no network / never loaded) with a retry; `attempt` reloads it.
   const [phase, setPhase] = useState<'loading' | 'ready' | 'offline'>('loading');
-  const [attempt, setAttempt] = useState(0);
+  // A reload: she tapped "נסי שוב" (plays from the start), or the system dropped the page in
+  // the background (picks up where it was, playing only if it was playing).
+  // A new video starts from the beginning and plays.
+  const [loaded, setLoad] = useState({ videoId, attempt: 0, start: 0, play: true });
+  const load = loaded.videoId === videoId ? loaded : { videoId, attempt: 0, start: 0, play: true };
+  const attempt = load.attempt;
+  const retry = () => setLoad({ videoId, attempt: attempt + 1, start: 0, play: true });
+  const restore = () => {
+    const r = youtubeResumePoint();
+    setLoad({ videoId, attempt: attempt + 1, start: r.start, play: r.play });
+  };
 
   useEffect(() => {
     setPhase('loading');
@@ -52,7 +62,7 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
     [],
   );
 
-  const html = useMemo(() => page(videoId), [videoId]);
+  const html = useMemo(() => page(videoId, load.start, load.play), [videoId, load.start, load.play]);
 
   const onMessage = (e: WebViewMessageEvent) => {
     let m: { t?: string; s?: number; p?: number; d?: number; c?: number };
@@ -61,7 +71,11 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
     } catch {
       return;
     }
-    if (m.t === 'ready') setPhase('ready');
+    if (m.t === 'ready') {
+      setPhase('ready');
+      // Reloaded paused while she was away, and she's back with it playing: play now.
+      if (!load.play && youtubeResumePoint().play) web.current?.injectJavaScript('window.player && player.playVideo(); true;');
+    }
     else if (m.t === 'offline') offline();
     else if (m.t === 'time') youtubeEvent({ position: m.p, duration: m.d });
     else if (m.t === 'state') {
@@ -95,6 +109,13 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
         allowsFullscreenVideo
+        // No system picture-in-picture outside the app: YouTube's terms forbid playing with the
+        // app minimized (docs/wiki/decisions.md).
+        allowsPictureInPictureMediaPlayback={false}
+        // The system may drop the page while the app is in the background (iOS) or the renderer
+        // may die (Android — unhandled, that closes the app): load it again where it was.
+        onContentProcessDidTerminate={restore}
+        onRenderProcessGone={restore}
         javaScriptEnabled
         // A player, not a page: nothing to scroll (in the small window it looked like one).
         scrollEnabled={false}
@@ -117,7 +138,7 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
                 {compact ? 'אין אינטרנט' : 'אין חיבור לאינטרנט. שירי יוטיוב צריכים רשת.'}
               </T>
               <Pressable
-                onPress={() => setAttempt((a) => a + 1)}
+                onPress={retry}
                 accessibilityRole="button"
                 style={[styles.retry, { backgroundColor: c.primary }]}
               >
@@ -132,8 +153,9 @@ export function YouTubeView({ videoId, style, compact }: { videoId: string; styl
   );
 }
 
-function page(videoId: string): string {
+function page(videoId: string, start: number, play: boolean): string {
   const id = JSON.stringify(videoId);
+  const from = Math.max(0, Math.floor(start) || 0);
   return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <style>html,body{margin:0;background:#000;height:100%;overflow:hidden}#p{width:100%;height:100%}</style></head>
 <body><div id="p"></div>
@@ -142,9 +164,9 @@ function post(m){window.ReactNativeWebView.postMessage(JSON.stringify(m));}
 var tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';tag.onerror=function(){post({t:'offline'});};document.head.appendChild(tag);
 function onYouTubeIframeAPIReady(){
   window.player=new YT.Player('p',{videoId:${id},host:'https://www.youtube-nocookie.com',
-    playerVars:{autoplay:1,playsinline:1,rel:0,origin:'https://shiron.app'},
+    playerVars:{autoplay:${play ? 1 : 0},playsinline:1,rel:0,start:${from},origin:'https://shiron.app'},
     events:{
-      onReady:function(e){post({t:'ready'});e.target.playVideo();},
+      onReady:function(e){post({t:'ready'});${play ? 'e.target.playVideo();' : ''}},
       onStateChange:function(e){post({t:'state',s:e.data});},
       onError:function(e){post({t:'error',c:e.data});}
     }});

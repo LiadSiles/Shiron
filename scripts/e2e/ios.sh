@@ -88,6 +88,7 @@ if [ "$VARIANT" = group ]; then
   check e2e-song.yaml "$VARIANT"
   check e2e-playlist.yaml "$VARIANT"
   check e2e-search.yaml "$VARIANT"
+  check e2e-background.yaml "$VARIANT"
   try share-out.yaml "$VARIANT"
 fi
 

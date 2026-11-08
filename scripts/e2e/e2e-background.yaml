@@ -1,0 +1,36 @@
+# Leaving the app during a YouTube song and coming back (docs/wiki/player.md → "In the
+# background"): the video was paused while away (YouTube's terms), and on return the small
+# window is there again, the player opens, and "next" moves on to an audio song.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- tapOn: "כל השירים.*"
+- tapOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
+- assertVisible: "מתנגן עכשיו"
+- runFlow: back.yaml
+- assertVisible: "סגירת הסרטון"
+- pressKey: Home
+- waitForAnimationToEnd
+- launchApp:
+    stopApp: false
+- runFlow: dismiss.yaml
+- extendedWaitUntil:
+    visible: "סגירת הסרטון"
+    timeout: 10000
+- takeScreenshot: ${VARIANT}-bg-back
+- tapOn: "פתיחת הנגן המלא"
+- assertVisible: "מתנגן עכשיו"
+# Around the list, so there is a next song wherever YouTube sits in it.
+- tapOn:
+    text: "בלי חזרה"
+    optional: true
+- tapOn: "השיר הבא"
+- runFlow: back.yaml
+- extendedWaitUntil:
+    visible: "מתנגן: .*"
+    timeout: 10000
+- assertNotVisible: "מתנגן: שיר מיוטיוב.*"
+- assertNotVisible: "סגירת הסרטון"
+- takeScreenshot: ${VARIANT}-bg-next

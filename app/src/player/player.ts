@@ -8,14 +8,17 @@ import {
   setAudioModeAsync,
 } from 'expo-audio';
 import { router } from 'expo-router';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { getCategory, primaryCategoryId } from '../core/categories';
 import { createStore } from '../core/store';
-import { audioRun, nativeLoop, nextIndex, nextRepeat, previousIndex, RepeatMode } from '../core/queue';
+import {
+  audioAhead, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, RepeatMode, runSlots,
+} from '../core/queue';
 import type { SongWithCategories } from '../core/types';
 import { getSong, onLibraryChange, recordPlay } from '../db/repo';
 import { diag } from '../diag/log';
 import { resolveStored } from '../ingest/storage';
+import { toast } from '../ui/toast';
 import { useStore } from '../ui/useStore';
 
 export interface PlayerState {
@@ -53,13 +56,27 @@ export function usePlayerSelect<S>(select: (state: PlayerState) => S): S {
 
 /**
  * Audio songs play in one native playlist: it gives the notification and lock screen their
- * next/previous buttons, which work with the app in the background. It holds one run of
- * consecutive audio songs from the queue (`run`); YouTube songs play in YouTube's own visible
- * player on the full player screen (ui/YouTubeView). See docs/wiki/player.md.
+ * next/previous buttons, which work with the app in the background. In the foreground it holds
+ * the run of consecutive audio songs around the current one; YouTube songs play in YouTube's own
+ * visible player (ui/YouTubeView). In the background YouTube can't play (its terms), so the
+ * native list grows to every audio song ahead and the music goes on past YouTube songs.
+ * See docs/wiki/player.md.
  */
 let player: AudioPlaylist | null = null;
-/** Queue indexes [start, end] loaded in the native playlist; null while a YouTube song plays. */
-let run: { start: number; end: number } | null = null;
+/** The queue indexes loaded in the native playlist, in its order; null = nothing loaded for the current song. */
+let slots: number[] | null = null;
+/**
+ * Left the app during a YouTube song: the video is paused and the native playlist holds the
+ * audio songs ahead, paused, so the lock screen offers the next song. Play there = adopt it.
+ */
+let standby = false;
+/** The YouTube song was playing when she left: it carries on when she comes back. */
+let resumeYoutube = false;
+/** The music reached a YouTube song in the background with no audio song left: it starts when she's back. */
+let pendingYoutube: number | null = null;
+/** YouTube songs passed over in the background, told when she comes back. */
+let passedInBackground = 0;
+let appActive = AppState.currentState === 'active' || AppState.currentState == null;
 /** While a fade-out runs, status updates still say "playing": don't let them flip the button back. */
 let fading = false;
 /** Ignore stale positions for a moment after a seek, so the scrubber doesn't jump back. */
@@ -100,6 +117,8 @@ async function ensurePlayer(): Promise<AudioPlaylist> {
 }
 
 const isYoutube = (s: SongWithCategories | null) => s?.kind === 'youtube';
+const audioFlags = () => state().queue.map((s) => s.kind === 'audio');
+const loopFor = (repeat: RepeatMode) => nativeLoop(repeat, slots ?? [], audioFlags(), !appActive);
 
 // ---------------------------------------------------------------- the current song
 
@@ -129,7 +148,37 @@ function onNativeIndex(nativeIndex: number) {
     if (nativeIndex === expectIndex) expectIndex = null;
     return;
   }
-  if (run && !isYoutube(state().song)) moveTo(run.start + nativeIndex);
+  const to = slots?.[nativeIndex];
+  if (to === undefined) return;
+  if (standby) {
+    adoptStandby(nativeIndex);
+    return;
+  }
+  if (isYoutube(state().song)) return;
+  if (!appActive) passedInBackground += youtubeBetween(state().index, to);
+  moveTo(to);
+}
+
+/** YouTube songs strictly between two queue positions, going forward. */
+function youtubeBetween(from: number, to: number): number {
+  const q = state().queue;
+  let n = 0;
+  for (let k = 1; k <= passedOver(from, to, q.length); k++) if (isYoutube(q[(from + k) % q.length])) n += 1;
+  return n;
+}
+
+/** She played the lock screen's song while a YouTube song was paused in standby: it becomes current. */
+function adoptStandby(nativeIndex: number) {
+  const to = slots?.[nativeIndex];
+  if (!standby || to === undefined) return;
+  standby = false;
+  resumeYoutube = false;
+  passedInBackground += youtubeBetween(state().index, to);
+  const song = state().queue[to];
+  startSession(song);
+  diag('play from lock screen', song.title, `${to + 1}/${state().queue.length}`);
+  set({ song, index: to, position: 0, duration: song.durationSec ?? 0, error: null, playing: player?.playing ?? true });
+  if (player) player.loop = loopFor(state().repeat);
 }
 
 /** Show another audio song of the loaded run as current. */
@@ -165,6 +214,10 @@ function sameCategories(a: SongWithCategories, b: SongWithCategories): boolean {
 }
 
 function onStatus(status: AudioPlaylistStatus) {
+  if (standby) {
+    if (status.playing) adoptStandby(player?.currentIndex ?? 0);
+    return;
+  }
   if (isYoutube(state().song)) return; // the native player is idle while YouTube plays
   if (typeof status.currentIndex === 'number') onNativeIndex(status.currentIndex);
   if (typeof status.currentTime === 'number') track(status.currentTime);
@@ -180,11 +233,11 @@ function onStatus(status: AudioPlaylistStatus) {
   if (typeof status.currentTime === 'number' && Date.now() >= seekingUntil) patch.position = status.currentTime;
   if (status.duration) patch.duration = status.duration;
   set(patch);
-  // The last song of the run ended (the native loop handles repeat-one and a whole-queue
-  // repeat-all): continue past the run — to a YouTube song, or around the list.
-  if (status.didJustFinish && run && state().index === run.end && state().repeat !== 'one') {
+  // The last loaded song ended (the native loop handles repeat-one and a whole-list
+  // repeat-all): continue past it — to a YouTube song, or around the list.
+  if (status.didJustFinish && slots?.length && state().index === slots[slots.length - 1] && state().repeat !== 'one') {
     const n = nextIndex(state().index, state().queue.length, state().repeat);
-    const wrapsNatively = state().repeat === 'all' && run.start === 0 && run.end === state().queue.length - 1;
+    const wrapsNatively = player?.loop === 'all';
     if (n === null) {
       set({ playing: false });
       void finishSession();
@@ -229,12 +282,29 @@ async function startAt(index: number) {
   const song = state().queue[index];
   if (!song) return;
   if (skipTimer) clearTimeout(skipTimer);
+  if (isYoutube(song) && !appActive) {
+    // In the background YouTube can't play: the music goes on with the next audio song, or
+    // waits for her if there is none.
+    const ahead = audioAhead(audioFlags(), index, state().repeat === 'one' ? 'off' : state().repeat);
+    const to = ahead[0];
+    if (to !== undefined && to !== state().index) {
+      passedInBackground += 1 + youtubeBetween(index, to);
+      return startAt(to);
+    }
+    pendingYoutube = index;
+    diag('youtube waits for the app', song.title);
+    set({ playing: false });
+    void finishSession();
+    return;
+  }
+  standby = false;
+  pendingYoutube = null;
   startSession(song);
   // YouTube reports "playing" itself once it really plays (it may still be loading, or offline).
   set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null, playing: !isYoutube(song) });
 
   if (isYoutube(song)) {
-    run = null;
+    slots = null;
     if (player) {
       player.pause();
       player.clearLockScreenControls(); // the notification would show the previous song
@@ -249,14 +319,14 @@ async function startAt(index: number) {
     notificationsAsked = true;
     await requestNotificationPermissionsAsync().catch(() => undefined);
   }
-  run = audioRun(state().queue.map((s) => s.kind === 'audio'), index)!;
-  const songs = state().queue.slice(run.start, run.end + 1);
-  diag('play', song.title, `${index + 1}/${state().queue.length}`, `native ${songs.length}`);
-  expectIndex = index - run.start;
+  const run = runSlots(audioFlags(), index);
+  slots = appActive ? run : backgroundSlots(run, audioFlags(), state().repeat);
+  diag('play', song.title, `${index + 1}/${state().queue.length}`, `native ${slots.length}`);
+  expectIndex = slots.indexOf(index);
   p.clear();
-  for (const s of songs) p.add({ uri: resolveStored(s.playableUri!).uri });
-  p.skipTo(index - run.start);
-  p.loop = nativeLoop(state().repeat, run, state().queue.length);
+  for (const i of slots) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
+  p.skipTo(slots.indexOf(index));
+  p.loop = loopFor(state().repeat);
   p.volume = 1;
   p.play();
   p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
@@ -453,11 +523,12 @@ export async function playOrToggle(song: SongWithCategories, queue: SongWithCate
   return playSong(song, queue);
 }
 
-/** Inside the loaded run the native playlist moves (gapless, notification in sync); else restart. */
+/** Inside the loaded songs the native playlist moves (gapless, notification in sync); else restart. */
 async function go(target: number) {
-  if (player && run && !isYoutube(state().song) && target >= run.start && target <= run.end) {
-    expectIndex = target - run.start;
-    player.skipTo(target - run.start);
+  const slot = slots?.indexOf(target) ?? -1;
+  if (player && slot >= 0 && !standby && !isYoutube(state().song)) {
+    expectIndex = slot;
+    player.skipTo(slot);
     if (!state().playing) player.play();
     moveTo(target);
     set({ playing: true });
@@ -487,7 +558,7 @@ export async function previous() {
 export function cycleRepeat() {
   const repeat = nextRepeat(state().repeat);
   set({ repeat });
-  if (player && run) player.loop = nativeLoop(repeat, run, state().queue.length);
+  if (player && slots) player.loop = loopFor(repeat);
 }
 
 export async function seek(seconds: number) {
@@ -512,7 +583,102 @@ export async function clearIfCurrent(songId: string) {
     player.clearLockScreenControls();
     player.clear();
   }
-  run = null;
+  slots = null;
+  standby = false;
+  resumeYoutube = false;
+  pendingYoutube = null;
   session = null;
   set({ song: null, queue: [], index: -1, playing: false, position: 0, duration: 0 });
+}
+
+// ---------------------------------------------------------------- the app in the background
+
+/**
+ * YouTube's terms forbid playing with the app's window closed or minimized, and iOS stops a
+ * page's video there anyway. So leaving the app pauses YouTube; the music goes on with the
+ * audio songs (docs/wiki/player.md → "In the background").
+ */
+async function onBackground() {
+  appActive = false;
+  const song = state().song;
+  if (!song) return;
+  if (isYoutube(song)) {
+    // iOS may pause the page's video on the way out, before this runs: what it was doing as she left counts.
+    resumeYoutube = state().playing || playingAsSheLeft;
+    youtube?.pause();
+    set({ playing: false });
+    // The lock screen offers the next audio song, paused: play there and it continues from it.
+    const ahead = audioAhead(audioFlags(), state().index, state().repeat === 'one' ? 'off' : state().repeat);
+    if (!ahead.length) return;
+    const p = await ensurePlayer();
+    if (appActive || !isYoutube(state().song)) return; // she came back meanwhile
+    slots = ahead;
+    standby = true;
+    expectIndex = 0;
+    p.clear();
+    for (const i of ahead) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
+    p.skipTo(0);
+    p.loop = loopFor(state().repeat);
+    p.setActiveForLockScreen(true, lockScreenInfo(state().queue[ahead[0]]), LOCK_SCREEN);
+    diag('background: youtube paused', song.title, `next on the lock screen: ${state().queue[ahead[0]].title}`);
+    return;
+  }
+  if (!player || !slots?.length) return;
+  // Every audio song ahead goes into the native list, so the end of a song and the lock
+  // screen's "next" carry on past YouTube songs.
+  const more = backgroundSlots(slots, audioFlags(), state().repeat).slice(slots.length);
+  for (const i of more) player.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
+  slots = [...slots, ...more];
+  player.loop = loopFor(state().repeat);
+}
+
+async function onForeground() {
+  appActive = true;
+  if (standby) {
+    // She didn't take the lock screen's song: back to the YouTube song where it stopped.
+    standby = false;
+    slots = null;
+    if (player) {
+      player.pause();
+      player.clearLockScreenControls();
+      player.clear();
+    }
+    if (resumeYoutube && isYoutube(state().song)) {
+      youtubeView.set({ closed: false });
+      set({ playing: true });
+      youtube?.play();
+    }
+    resumeYoutube = false;
+  } else if (pendingYoutube !== null) {
+    const i = pendingYoutube;
+    pendingYoutube = null;
+    void startAt(i).catch((e) => diag('continue failed', e));
+  } else if (player && slots?.length && !isYoutube(state().song)) {
+    // Past the songs next to the current one comes a YouTube song: it should play again, not be passed over.
+    const keep = foregroundSlots(slots, slots.indexOf(state().index), state().queue.length);
+    for (let k = slots.length - 1; k >= keep.length; k--) player.remove(k);
+    slots = keep;
+    player.loop = loopFor(state().repeat);
+  }
+  if (passedInBackground > 0) {
+    const n = passedInBackground;
+    passedInBackground = 0;
+    toast(n === 1
+      ? 'שיר יוטיוב אחד דולג כי האפליקציה הייתה ברקע — יוטיוב מתנגן רק כשהאפליקציה פתוחה'
+      : `${n} שירי יוטיוב דולגו כי האפליקציה הייתה ברקע — יוטיוב מתנגן רק כשהאפליקציה פתוחה`, 'info');
+  }
+}
+
+/** iOS passes through "inactive" on the way out (and for Control Center, which changes nothing). */
+let playingAsSheLeft = false;
+
+AppState.addEventListener('change', (s) => {
+  if (s === 'inactive') playingAsSheLeft = isYoutube(state().song) && state().playing;
+  else if (s === 'background' && appActive) void onBackground().catch((e) => diag('background failed', e));
+  else if (s === 'active' && !appActive) void onForeground().catch((e) => diag('foreground failed', e));
+});
+
+/** Where a reloaded YouTube player picks up (the page was dropped by the system meanwhile). */
+export function youtubeResumePoint(): { start: number; play: boolean } {
+  return { start: Math.floor(state().position), play: state().playing };
 }

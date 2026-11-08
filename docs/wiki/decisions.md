@@ -3,6 +3,17 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-08 — YouTube doesn't play in the background; the music goes on without it (0.13.0)
+
+- Owner asked for YouTube to keep playing after leaving the app — without a window if
+  possible, else in a small window. Declined: YouTube's Developer Policies forbid background
+  play, "including keeping videos playing after your service's window is closed or minimized"
+  (a system picture-in-picture outside the app is exactly that), and breaking them risks the
+  embeds being blocked. iOS also suspends a page's video in the background.
+- Instead: leaving pauses the video and the lock screen offers the next audio song; in the
+  background YouTube songs are passed over (told on return); back in the app a paused video
+  resumes where it stopped. Details in `player.md` → "In the background".
+
 ### 2026-11-08 — Android sharing through our own share sheet (0.12.2)
 
 - Owner: "השיתוף דרך whatsapp לא עובד". expo-sharing on Android starts the share sheet *for a

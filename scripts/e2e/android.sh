@@ -71,6 +71,7 @@ check e2e-player.yaml "$VARIANT"
 check e2e-song.yaml "$VARIANT"
 check e2e-playlist.yaml "$VARIANT"
 check e2e-search.yaml "$VARIANT"
+check e2e-background.yaml "$VARIANT"
 check share-out-android.yaml "$VARIANT"
 # The system share sheet really opened each time: the file twice in a row, then the link.
 CHOOSERS=$(adb logcat -d | grep -c "act=android.intent.action.CHOOSER")

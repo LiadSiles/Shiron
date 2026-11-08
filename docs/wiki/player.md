@@ -106,8 +106,36 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   corner, between the header and the mini player; the corner is kept while the app runs. The
   host is laid out `direction: 'ltr'` so the slot frame and corners are physical coordinates.
   The WebView doesn't scroll or bounce (it looked like a scrollable box).
-- If the run ends while the app is in the background, the YouTube song starts when she
-  returns (iOS/Android don't run an embedded player in the background — by design here).
+
+## In the background (0.13.0)
+
+YouTube's Developer Policies forbid "background play", explicitly including keeping a video
+playing after the app's window is closed or minimized — so no system picture-in-picture either
+(`allowsPictureInPictureMediaPlayback={false}`). The owner asked for YouTube in the background;
+it was declined for this reason, and the music goes on with the audio songs instead:
+
+- **Native slots.** The native playlist holds `slots` (queue indexes in its order). In the
+  foreground: the run around the current song, as before. Going to the background
+  (`AppState` → `background`) appends every audio song ahead (`core/queue.backgroundSlots`,
+  around the list when repeating it), so the end of a song and the lock screen's "next" pass
+  over YouTube songs instead of stopping. Back in the foreground, slots past a YouTube gap are
+  removed again (`foregroundSlots`; only after the current one — removing before it would
+  shift the native index), so a YouTube song plays in its visible player again.
+- **Leaving during a YouTube song.** The video is paused (on Android a WebView would go on
+  playing). What it was doing as she left counts — iOS may pause the page itself on the way
+  out, so the state at `inactive` is kept. The native playlist is loaded, paused, with the audio
+  songs ahead and the lock screen shows the first (`standby`). Play or next there → that song
+  becomes current (`adoptStandby`). Back without that → the video carries on where it stopped
+  (if it was playing).
+- **Reaching a YouTube song in the background** (`startAt` with the app not active): the next
+  audio song plays; with none left, the YouTube song waits (`pendingYoutube`) and starts when
+  she is back. She is told how many YouTube songs were passed over (a toast on return).
+- **The page dropped.** iOS may terminate the WebView's content process in the background, and
+  an Android renderer can die (unhandled, that closes the app): `onContentProcessDidTerminate` /
+  `onRenderProcessGone` reload the page at the position it had, playing only if it was.
+- Untested on a device: the lock screen in standby (a paused native playlist with Now Playing
+  info) and process termination. The Maestro flow `e2e-background.yaml` covers leaving and
+  coming back during a YouTube song.
 - The old `youtube/[id]` screen is gone; "פתיחה באפליקציית יוטיוב" is on the full player.
 
 ## Play counting
