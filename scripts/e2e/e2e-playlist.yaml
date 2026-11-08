@@ -7,10 +7,16 @@ appId: app.shiron.gan
 - tapOn: "רשימה חדשה"
 - tapOn: "old-song"
 - tapOn: "gan-party"
-- tapOn: "שם הרשימה"
-- inputText: "מעגל בוקר"
+# The iPhone simulator sometimes types Hebrew out of order ("מעגל וקרב"): check the field
+# itself (the placeholder also mentions this name, so the match is exact) and type again.
+- retry:
+    maxRetries: 2
+    commands:
+      - tapOn: "שם הרשימה"
+      - eraseText: 40
+      - inputText: "מעגל בוקר"
+      - assertVisible: "מעגל בוקר"
 - pressKey: Enter
-- assertVisible: ".*מעגל בוקר.*"
 - tapOn: "יצירת הרשימה"
 - waitForAnimationToEnd
 - assertVisible: ".*מעגל בוקר.*"

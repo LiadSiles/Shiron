@@ -20,8 +20,10 @@ appId: app.shiron.gan
             - waitForAnimationToEnd
             - tapOn: "Downloads"
             - waitForAnimationToEnd
-      - extendedWaitUntil:
-          visible: "${FILE}"
+      # The last file can sit half below the screen, which Maestro counts as not visible:
+      # scroll the list until it is.
+      - scrollUntilVisible:
+          element: "${FILE}"
           timeout: 8000
 - tapOn: "${FILE}"
 # With several files allowed, a tap may only select: then confirm.
