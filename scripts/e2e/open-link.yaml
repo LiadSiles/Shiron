@@ -1,0 +1,10 @@
+# Opens LINK in the app the way the share extension does (shiron://share?text=… without an App
+# Group, shiron://dataUrl=shironShareKey#file for what inject-ios.sh staged in the group),
+# answers iOS's "Open in PlayGan?", and gives the app a moment to take it in: the next flow's
+# launchApp restarts the app, which cut the YouTube link off mid-import once (0.13.0).
+appId: app.shiron.gan
+---
+- openLink: ${LINK}
+- runFlow: dismiss.yaml
+- runFlow: wait-4s.yaml
+- runFlow: wait-4s.yaml

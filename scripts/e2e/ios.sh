@@ -42,11 +42,10 @@ suite() {
 
 # A fresh install: the empty library.
 suite must:launch.yaml
-# The link the extension sends without an App Group, straight to the app (the next flow
-# answers iOS's "Open in PlayGan?").
-xcrun simctl openurl "$UDID" "shiron://share?text=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
+# The link the extension sends without an App Group, straight to the app.
 if [ "$VARIANT" = group ]; then SHARE="הקלטות וקישורים"; else SHARE="רק קישורים"; fi
-FLOWS=(must:e2e-youtube.yaml "must:e2e-settings.yaml@SHARE=$SHARE")
+FLOWS=("must:open-link.yaml@LINK=shiron://share?text=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
+  must:e2e-youtube.yaml "must:e2e-settings.yaml@SHARE=$SHARE")
 if [ "$VARIANT" = group ]; then
   # Files the way the share extension hands them over (only an App Group can carry files), in
   # one share: mp3, voice note, WMA, MPG, the mp3 again (must not double), a broken "mp3"
@@ -58,7 +57,7 @@ if [ "$VARIANT" = group ]; then
     "songs/boker-tov.mp3|boker-tov.mp3|audio/mpeg" "songs/broken.mp3|broken.mp3|audio/mpeg" \
     "app/modules/shiron-audio/fixtures/README.md|notes.txt|text/plain" \
     || echo "FAIL(must) $VARIANT staging the shared files" >> "$RESULTS"
-  FLOWS+=(must:import-shared.yaml "must:e2e-import.yaml@COUNT=6" must:e2e-player.yaml must:e2e-song.yaml
+  FLOWS+=("must:open-link.yaml@LINK=shiron://dataUrl=shironShareKey#file" "must:e2e-import.yaml@COUNT=6" must:e2e-player.yaml must:e2e-song.yaml
     must:e2e-playlist.yaml must:e2e-search.yaml must:e2e-end.yaml must:e2e-background.yaml
     "soft:add-files.yaml@FILE=boker-tov,VARIANT=$VARIANT-add-mp3" "soft:categories.yaml@VARIANT=$VARIANT-cats")
 fi

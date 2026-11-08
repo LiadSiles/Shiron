@@ -1,6 +1,0 @@
-# Opens what inject-ios.sh left in the App Group — several files in one share, the way WhatsApp
-# hands over a selection — the way the share extension opens the app.
-appId: app.shiron.gan
----
-- openLink: "shiron://dataUrl=shironShareKey#file"
-- runFlow: dismiss.yaml

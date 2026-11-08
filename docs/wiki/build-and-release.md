@@ -136,8 +136,9 @@ now writes a small wrapper per flow (`suite-NN-<flow>.yaml`, with its values: `F
 …) and a workspace `config.yaml` (`executionOrder`, `continueOnFailure: true`), runs them all
 in one session, and reads each flow's result from the JUnit report (`report-<variant>.xml`;
 missing = did not run). Only the empty first launch runs alone, before anything is shared to
-the app. iOS's files arrive in **one** share (`inject-ios.sh` stages them, `import-shared.yaml`
-opens the link), which also covers a WhatsApp selection of several files. On Android a cleanup
+the app. iOS's files arrive in **one** share (`inject-ios.sh` stages them, `open-link.yaml`
+opens the link — the YouTube link too: it waits ~8 s after answering "Open in", since the next
+flow's `launchApp` restarts the app and once cut the link off mid-import), which also covers a WhatsApp selection of several files. On Android a cleanup
 flow (`cleanup-android.yaml`, Maestro's `onFlowComplete`) closes the file picker after every
 flow. The real share sheet (`share-link`, `share-file`, `share-out` on iOS), which had not
 passed on the simulator in many runs and cost ~25 minutes each time, runs only when the

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Stages files the way our share extension does when it has an App Group: copies them into the
 # group container and lists them (JSON) under "shironShareKey" in the group's defaults — one
-# share holding several files, like a selection forwarded from WhatsApp. import-shared.yaml then
+# share holding several files, like a selection forwarded from WhatsApp. open-link.yaml then
 # opens shiron://dataUrl=shironShareKey#file as the extension would. Skips the share sheet
 # itself, whose tap is flaky on the simulator, so import → convert → play is checked every run.
 # usage: inject-ios.sh <simulator udid> <file>|<name she would see>|<mime> …
