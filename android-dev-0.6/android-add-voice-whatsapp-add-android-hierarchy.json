@@ -1098,7 +1098,7 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "text" : "5:50 AM",
+                                            "text" : "6:44 AM",
                                             "accessibilityText" : "",
                                             "hintText" : "",
                                             "ignoreBoundsFiltering" : "false",
@@ -1428,8 +1428,8 @@
                   },
                   "children" : [ {
                     "attributes" : {
-                      "text" : "5:58 ",
-                      "accessibilityText" : "5:58 AM",
+                      "text" : "6:53 ",
+                      "accessibilityText" : "6:53 AM",
                       "hintText" : "",
                       "ignoreBoundsFiltering" : "false",
                       "resource-id" : "com.android.systemui:id/clock",
