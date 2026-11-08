@@ -1,16 +1,16 @@
-FAIL(must) android launch.yaml
-FAIL(must) android e2e-youtube.yaml
-FAIL(must) android e2e-settings.yaml
-FAIL(must) android-add-boker-tov add-android.yaml
-FAIL(must) android-add-voice-whatsapp add-android.yaml
-FAIL(must) android-add-old-song add-android.yaml
-FAIL(must) android-add-gan-party add-android.yaml
-FAIL(must) android-add-boker-tov add-android.yaml
+PASS android launch.yaml
+PASS android e2e-youtube.yaml
+PASS android e2e-settings.yaml
+PASS android-add-boker-tov add-android.yaml
+PASS android-add-voice-whatsapp add-android.yaml
+PASS android-add-old-song add-android.yaml
+PASS android-add-gan-party add-android.yaml
+PASS android-add-boker-tov add-android.yaml
 FAIL(must) android e2e-import.yaml
-FAIL(must) android e2e-player.yaml
-FAIL(must) android e2e-song.yaml
+PASS android e2e-player.yaml
+PASS android e2e-song.yaml
 FAIL(must) android e2e-playlist.yaml
-FAIL(must) android e2e-search.yaml
+PASS android e2e-search.yaml
 FAIL(must) android share-out-android.yaml
-FAIL(must) android share chooser never opened
-FAIL(soft) android-cats categories.yaml
+PASS android share chooser opened
+PASS android-cats categories.yaml
