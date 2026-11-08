@@ -173,7 +173,7 @@
                             "value" : "",
                             "text" : "",
                             "hintText" : "",
-                            "resource-id" : "הגדרות",
+                            "resource-id" : "יומן טכני",
                             "bounds" : "[0,56][402,100]",
                             "enabled" : "true",
                             "focused" : "false",
@@ -201,13 +201,13 @@
                             "selected" : false
                           }, {
                             "attributes" : {
-                              "accessibilityText" : "הגדרות",
+                              "accessibilityText" : "יומן טכני",
                               "title" : "",
                               "value" : "",
                               "text" : "",
                               "hintText" : "",
                               "resource-id" : "",
-                              "bounds" : "[173,68][228,88]",
+                              "bounds" : "[170,68][232,88]",
                               "enabled" : "true",
                               "focused" : "false",
                               "selected" : "false",
@@ -300,13 +300,51 @@
                                 },
                                 "children" : [ {
                                   "attributes" : {
+                                    "accessibilityText" : "העתקה",
+                                    "title" : "",
+                                    "value" : "",
+                                    "text" : "",
+                                    "hintText" : "",
+                                    "resource-id" : "",
+                                    "bounds" : "[205,116][386,164]",
+                                    "enabled" : "true",
+                                    "focused" : "false",
+                                    "selected" : "false",
+                                    "checked" : "false"
+                                  },
+                                  "children" : [ ],
+                                  "enabled" : true,
+                                  "focused" : false,
+                                  "checked" : false,
+                                  "selected" : false
+                                }, {
+                                  "attributes" : {
+                                    "accessibilityText" : "ניקוי",
+                                    "title" : "",
+                                    "value" : "",
+                                    "text" : "",
+                                    "hintText" : "",
+                                    "resource-id" : "",
+                                    "bounds" : "[16,116][197,164]",
+                                    "enabled" : "true",
+                                    "focused" : "false",
+                                    "selected" : "false",
+                                    "checked" : "false"
+                                  },
+                                  "children" : [ ],
+                                  "enabled" : true,
+                                  "focused" : false,
+                                  "checked" : false,
+                                  "selected" : false
+                                }, {
+                                  "attributes" : {
                                     "accessibilityText" : "",
                                     "title" : "",
                                     "value" : "",
                                     "text" : "",
                                     "hintText" : "",
                                     "resource-id" : "",
-                                    "bounds" : "[0,100][402,874]",
+                                    "bounds" : "[0,180][402,874]",
                                     "enabled" : "true",
                                     "focused" : "false",
                                     "selected" : "false",
@@ -320,7 +358,7 @@
                                       "text" : "",
                                       "hintText" : "",
                                       "resource-id" : "",
-                                      "bounds" : "[0,100][402,874]",
+                                      "bounds" : "[0,180][402,874]",
                                       "enabled" : "true",
                                       "focused" : "false",
                                       "selected" : "false",
@@ -334,7 +372,7 @@
                                         "text" : "",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[0,85][402,874]",
+                                        "bounds" : "[0,180][402,1364]",
                                         "enabled" : "true",
                                         "focused" : "false",
                                         "selected" : "false",
@@ -348,7 +386,7 @@
                                           "text" : "",
                                           "hintText" : "",
                                           "resource-id" : "",
-                                          "bounds" : "[0,85][402,874]",
+                                          "bounds" : "[0,180][402,1364]",
                                           "enabled" : "true",
                                           "focused" : "false",
                                           "selected" : "false",
@@ -356,13 +394,13 @@
                                         },
                                         "children" : [ {
                                           "attributes" : {
-                                            "accessibilityText" : "שם, מילים וקטגוריה אוטומטיים",
+                                            "accessibilityText" : "PlayGan 0.12.3 · ios 18.5",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[16,109][382,126]",
+                                            "bounds" : "[16,180][386,194]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -370,13 +408,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "שם, מילים וקטגוריה אוטומטיים",
+                                              "accessibilityText" : "PlayGan 0.12.3 · ios 18.5",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[16,109][382,126]",
+                                              "bounds" : "[16,180][386,194]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -394,13 +432,13 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "accessibilityText" : "",
+                                            "accessibilityText" : "08/11 13:59:57 play · בוקר טוב לגן · 1/4 · native 3",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[16,134][386,280]",
+                                            "bounds" : "[16,200][386,215]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -408,32 +446,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "Groq. לחיבור. מומלץ · מתמלל הקלטות בעברית",
+                                              "accessibilityText" : "08/11 13:59:57 play · בוקר טוב לגן · 1/4 · native 3",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[16,134][385,198]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "Gemini. לחיבור. בחשבון החינמי Google רשאית להשתמש בהקלטות לשיפור המודלים שלה",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[16,198][385,279]",
+                                              "bounds" : "[16,200][386,215]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -451,13 +470,13 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "accessibilityText" : "שירות AI חינמי מתמלל את ההקלטות ומציע לכל שיר שם, מילים וקטגוריה. לכל שירות יש מכסה יומית; כששניהם מחוברים, השני ממשיך כשהמכסה של הראשון נגמרת.",
+                                            "accessibilityText" : "08/11 13:56:38 play youtube · שיר מיוטיוב · 4/4",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[20,288][382,342]",
+                                            "bounds" : "[16,221][386,235]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -465,13 +484,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "שירות AI חינמי מתמלל את ההקלטות ומציע לכל שיר שם, מילים וקטגוריה. לכל שירות יש מכסה יומית; כששניהם מחוברים, השני ממשיך כשהמכסה של הראשון נגמרת.",
+                                              "accessibilityText" : "08/11 13:56:38 play youtube · שיר מיוטיוב · 4/4",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[20,288][382,342]",
+                                              "bounds" : "[16,221][386,235]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -489,13 +508,13 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "accessibilityText" : "הוספת שירים",
+                                            "accessibilityText" : "08/11 13:56:32 background task unavailable · 1",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[16,366][382,383]",
+                                            "bounds" : "[16,241][386,255]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -503,13 +522,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "הוספת שירים",
+                                              "accessibilityText" : "08/11 13:56:32 background task unavailable · 1",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[16,366][382,383]",
+                                              "bounds" : "[16,241][386,255]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -527,13 +546,13 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "accessibilityText" : "",
+                                            "accessibilityText" : "08/11 13:54:49 background task unavailable · 1",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[16,391][386,596]",
+                                            "bounds" : "[16,261][386,276]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -541,51 +560,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "שיתוף מוואטסאפ. הקלטות וקישורים",
+                                              "accessibilityText" : "08/11 13:54:49 background task unavailable · 1",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[16,391][385,451]",
-                                              "enabled" : "false",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ ],
-                                            "enabled" : false,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "בחירת קבצי שמע או וידאו. מאפליקציית הקבצים בטלפון",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[16,451][385,515]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "ניסיון חוזר לשירים שנכשלו. שיר אחד שלא הומרו או שהתמלול שלהם נכשל: המרה, שם ותמלול מחדש",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[16,515][385,596]",
+                                              "bounds" : "[16,261][386,276]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -603,13 +584,13 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "accessibilityText" : "הדרך הקלה: בוואטסאפ, לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← PlayGan. אפשר לבחור כמה יחד.",
+                                            "accessibilityText" : "08/11 13:52:59 play · gan-party · 1/2 · native 2",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[20,604][382,640]",
+                                            "bounds" : "[16,282][386,296]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -617,13 +598,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "הדרך הקלה: בוואטסאפ, לחיצה ארוכה על הקלטה, שיר או סרטון ← שיתוף ← PlayGan. אפשר לבחור כמה יחד.",
+                                              "accessibilityText" : "08/11 13:52:59 play · gan-party · 1/2 · native 2",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[20,604][382,640]",
+                                              "bounds" : "[16,282][386,296]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -641,13 +622,13 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "accessibilityText" : "עזרה",
+                                            "accessibilityText" : "08/11 13:52:25 background task unavailable · 1",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[16,665][382,681]",
+                                            "bounds" : "[16,302][386,316]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -655,13 +636,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "עזרה",
+                                              "accessibilityText" : "08/11 13:52:25 background task unavailable · 1",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[16,665][382,681]",
+                                              "bounds" : "[16,302][386,316]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -679,13 +660,13 @@
                                           "selected" : false
                                         }, {
                                           "attributes" : {
-                                            "accessibilityText" : "",
+                                            "accessibilityText" : "08/11 13:49:26 background task unavailable · 1",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[16,689][386,813]",
+                                            "bounds" : "[16,322][386,337]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -693,13 +674,13 @@
                                           },
                                           "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "יומן טכני. לשליחה למפתח כשמשהו לא עובד",
+                                              "accessibilityText" : "08/11 13:49:26 background task unavailable · 1",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[16,690][385,753]",
+                                              "bounds" : "[16,322][386,337]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -710,22 +691,687 @@
                                             "focused" : false,
                                             "checked" : false,
                                             "selected" : false
-                                          }, {
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:48:06 background task unavailable · 1",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,343][386,357]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
                                             "attributes" : {
-                                              "accessibilityText" : "גרסה. 0.12.3",
+                                              "accessibilityText" : "08/11 13:48:06 background task unavailable · 1",
                                               "title" : "",
                                               "value" : "",
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[16,753][385,813]",
-                                              "enabled" : "false",
+                                              "bounds" : "[16,343][386,357]",
+                                              "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
                                               "checked" : "false"
                                             },
                                             "children" : [ ],
-                                            "enabled" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:44:56 play · gan-party · 1/5 · native 3",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,363][386,377]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:44:56 play · gan-party · 1/5 · native 3",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,363][386,377]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:44:50 background task unavailable · 1",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,383][386,397]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:44:50 background task unavailable · 1",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,383][386,397]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:42:27 play · gan-party · 2/5 · native 4",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,404][386,418]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:42:27 play · gan-party · 2/5 · native 4",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,404][386,418]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:42:24 play · old-song · 3/5 · native 4",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,424][386,438]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:42:24 play · old-song · 3/5 · native 4",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,424][386,438]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:42:21 play · voice-whatsapp · 4/5 · native 4",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,444][386,459]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:42:21 play · voice-whatsapp · 4/5 · native 4",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,444][386,459]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:42:18 play · boker-tov · 5/5 · native 4",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,465][386,479]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:42:18 play · boker-tov · 5/5 · native 4",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,465][386,479]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:42:08 background task unavailable · 1",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,485][386,499]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:42:08 background task unavailable · 1",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,485][386,499]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:39:58 share received · type file · 1 files · notes.txt (text/plain) file:///Users/runner/Library/Developer/CoreSimulat",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,505][386,534]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:39:58 share received · type file · 1 files · notes.txt (text/plain) file:///Users/runner/Library/Developer/CoreSimulat",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,505][386,534]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:39:04 convert failed · broken.mp3 · ERR_AUDIO_UNSUPPORTED: Calling the 'processAsync' function has failed\n→ Caused by: Unsupported format: mp3 · 115 ms",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,540][386,597]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:39:04 convert failed · broken.mp3 · ERR_AUDIO_UNSUPPORTED: Calling the 'processAsync' function has failed\n→ Caused by: Unsupported format: mp3 · 115 ms",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,540][386,597]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:39:04 import · broken.mp3 · 0 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,603][386,632]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:39:04 import · broken.mp3 · 0 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,603][386,632]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:39:04 share received · type file · 1 files · broken.mp3 (audio/mpeg) file:///Users/runner/Library/Developer/CoreSimulat",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,638][386,666]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:39:04 share received · type file · 1 files · broken.mp3 (audio/mpeg) file:///Users/runner/Library/Developer/CoreSimulat",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,638][386,666]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:38:07 import · boker-tov.mp3 · 313 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,672][386,701]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:38:07 import · boker-tov.mp3 · 313 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,672][386,701]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:38:07 share received · type file · 1 files · boker-tov.mp3 (audio/mpeg) file:///Users/runner/Library/Developer/CoreSimulat",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,707][386,736]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:38:07 share received · type file · 1 files · boker-tov.mp3 (audio/mpeg) file:///Users/runner/Library/Developer/CoreSimulat",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,707][386,736]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:36:25 converted · gan-party.mpg · 38.8 s of 40.2 s · gain 14.04 dB · 337 KB · 470 ms",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,742][386,770]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:36:25 converted · gan-party.mpg · 38.8 s of 40.2 s · gain 14.04 dB · 337 KB · 470 ms",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,742][386,770]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:36:25 import · gan-party.mpg · 674 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,776][386,805]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:36:25 import · gan-party.mpg · 674 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,776][386,805]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:36:25 share received · type media · 1 files · gan-party.mpg (video/mpeg) file:///Users/runner/Library/Developer/CoreSimulat",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,811][386,854]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:36:25 share received · type media · 1 files · gan-party.mpg (video/mpeg) file:///Users/runner/Library/Developer/CoreSimulat",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,811][386,854]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "08/11 13:35:23 converted · old-song.wma · 38.3 s of 39.6 s · gain 14.01 dB · 251 KB · 545 ms",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[16,860][386,888]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "accessibilityText" : "08/11 13:35:23 converted · old-song.wma · 38.3 s of 39.6 s · gain 14.01 dB · 251 KB · 545 ms",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,860][386,888]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
                                             "focused" : false,
                                             "checked" : false,
                                             "selected" : false
@@ -748,11 +1394,11 @@
                                       "attributes" : {
                                         "accessibilityText" : "Vertical scroll bar, 2 pages",
                                         "title" : "",
-                                        "value" : "100%",
-                                        "text" : "100%",
+                                        "value" : "0%",
+                                        "text" : "0%",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[396,128][426,818]",
+                                        "bounds" : "[396,208][426,818]",
                                         "enabled" : "true",
                                         "focused" : "false",
                                         "selected" : "false",
@@ -766,7 +1412,7 @@
                                           "text" : "",
                                           "hintText" : "",
                                           "resource-id" : "",
-                                          "bounds" : "[396,144][399,815]",
+                                          "bounds" : "[396,211][399,565]",
                                           "enabled" : "true",
                                           "focused" : "false",
                                           "selected" : "false",
@@ -805,11 +1451,11 @@
                                       "attributes" : {
                                         "accessibilityText" : "Vertical scroll bar, 2 pages",
                                         "title" : "",
-                                        "value" : "100%",
-                                        "text" : "100%",
+                                        "value" : "0%",
+                                        "text" : "0%",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[396,128][426,818]",
+                                        "bounds" : "[396,208][426,818]",
                                         "enabled" : "true",
                                         "focused" : "false",
                                         "selected" : "false",
@@ -823,7 +1469,7 @@
                                           "text" : "",
                                           "hintText" : "",
                                           "resource-id" : "",
-                                          "bounds" : "[396,144][399,815]",
+                                          "bounds" : "[396,211][399,565]",
                                           "enabled" : "true",
                                           "focused" : "false",
                                           "selected" : "false",
@@ -1020,13 +1666,13 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "12:43 PM",
+              "accessibilityText" : "2:01 PM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[51,22][96,42]",
+              "bounds" : "[57,22][91,42]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",

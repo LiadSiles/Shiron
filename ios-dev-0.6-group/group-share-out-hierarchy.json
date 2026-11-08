@@ -1875,13 +1875,13 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "12:45 PM",
+              "accessibilityText" : "2:05 PM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[51,22][96,42]",
+              "bounds" : "[55,22][92,42]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",

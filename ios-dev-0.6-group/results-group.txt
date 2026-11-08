@@ -10,5 +10,5 @@ FAIL(must) group e2e-background.yaml
 FAIL(soft) group share-out.yaml
 FAIL(soft) group share-link.yaml
 FAIL(soft) group share-file.yaml
-PASS group-add-mp3 add-files.yaml
+FAIL(soft) group-add-mp3 add-files.yaml
 PASS group-cats categories.yaml
