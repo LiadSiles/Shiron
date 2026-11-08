@@ -12,7 +12,7 @@ import { AppState, Platform } from 'react-native';
 import { getCategory, primaryCategoryId } from '../core/categories';
 import { createStore } from '../core/store';
 import {
-  audioAhead, backgroundSlots, withoutQueueIndex, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, RepeatMode, runSlots,
+  afterEnd, audioAhead, backgroundSlots, withoutQueueIndex, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, RepeatMode, runSlots,
 } from '../core/queue';
 import type { SongWithCategories } from '../core/types';
 import { getSong, onLibraryChange, recordPlay } from '../db/repo';
@@ -86,6 +86,11 @@ let seekingUntil = 0;
  * moment. Ignore index changes until the player reports the one we asked for.
  */
 let expectIndex: number | null = null;
+/**
+ * The list played to its end and stopped. The native playlist has let go of the song by then
+ * (iOS removes a finished item), so "play" or a seek must load it again instead of resuming.
+ */
+let ended = false;
 let notificationsAsked = false;
 
 const LOCK_SCREEN: AudioLockScreenOptions = {
@@ -233,17 +238,30 @@ function onStatus(status: AudioPlaylistStatus) {
   if (typeof status.currentTime === 'number' && Date.now() >= seekingUntil) patch.position = status.currentTime;
   if (status.duration) patch.duration = status.duration;
   set(patch);
-  // The last loaded song ended (the native loop handles repeat-one and a whole-list
-  // repeat-all): continue past it — to a YouTube song, or around the list.
-  if (status.didJustFinish && slots?.length && state().index === slots[slots.length - 1] && state().repeat !== 'one') {
-    const n = nextIndex(state().index, state().queue.length, state().repeat);
-    const wrapsNatively = player?.loop === 'all';
-    if (n === null) {
-      set({ playing: false });
-      void finishSession();
-    } else if (!wrapsNatively) {
-      void startAt(n).catch((e) => diag('continue failed', e));
-    }
+  if (status.didJustFinish && slots?.length && state().index === slots[slots.length - 1]) {
+    // The last loaded song ended. A native loop ("single" for repeat-one, "all" around a list
+    // it holds whole) has already started the next round; otherwise the app decides.
+    const loop = player?.loop ?? 'none';
+    diag('ended', state().song?.title ?? '?', `repeat ${state().repeat}`, `native loop ${loop}`);
+    if (loop === 'none') continueAfterEnd();
+  }
+}
+
+/**
+ * The current song played to its end (and no native loop took over): the same song again, the
+ * next one, or stop — then the play button starts this song again (see `ended`).
+ */
+function continueAfterEnd() {
+  const n = afterEnd(state().index, state().queue.length, state().repeat);
+  if (n === null) {
+    ended = true;
+    set({ playing: false });
+    void finishSession();
+  } else if (n === state().index && isYoutube(state().song)) {
+    youtube?.seek(0);
+    youtube?.play();
+  } else {
+    void startAt(n).catch((e) => diag('continue failed', e));
   }
 }
 
@@ -299,6 +317,7 @@ async function startAt(index: number) {
   }
   standby = false;
   pendingYoutube = null;
+  ended = false;
   startSession(song);
   // YouTube reports "playing" itself once it really plays (it may still be loading, or offline).
   set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null, playing: !isYoutube(song) });
@@ -451,18 +470,8 @@ export function youtubeEvent(e: {
   }
   if (e.ended) {
     direction = 1;
-    if (state().repeat === 'one') {
-      youtube?.seek(0);
-      youtube?.play();
-      return;
-    }
-    const n = nextIndex(state().index, state().queue.length, state().repeat);
-    if (n === null) {
-      set({ playing: false });
-      void finishSession();
-    } else {
-      void startAt(n).catch((err) => diag('continue failed', err));
-    }
+    diag('ended', state().song?.title ?? '?', `repeat ${state().repeat}`, 'youtube');
+    continueAfterEnd();
   }
 }
 
@@ -490,6 +499,7 @@ export function togglePlay(): Promise<void> {
   }
   const p = player;
   if (!p) return Promise.resolve();
+  if (ended) return startAt(state().index);
   if (!state().playing) {
     p.volume = 1;
     p.play();
@@ -526,7 +536,7 @@ export async function playOrToggle(song: SongWithCategories, queue: SongWithCate
 /** Inside the loaded songs the native playlist moves (gapless, notification in sync); else restart. */
 async function go(target: number) {
   const slot = slots?.indexOf(target) ?? -1;
-  if (player && slot >= 0 && !standby && !isYoutube(state().song)) {
+  if (player && slot >= 0 && !standby && !ended && !isYoutube(state().song)) {
     expectIndex = slot;
     player.skipTo(slot);
     if (!state().playing) player.play();
@@ -566,7 +576,10 @@ export async function seek(seconds: number) {
   seekingUntil = Date.now() + 800;
   set({ position: to });
   if (isYoutube(state().song)) youtube?.seek(to);
-  else if (player) await player.seekTo(to);
+  else {
+    if (ended) await startAt(state().index);
+    await player?.seekTo(to);
+  }
 }
 
 /** Is this song loaded in the player's queue (its file may be read at any moment)? */

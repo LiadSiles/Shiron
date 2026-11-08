@@ -22,7 +22,12 @@ export function audioRun(isAudio: boolean[], index: number): { start: number; en
   return { start, end };
 }
 
-/** Where "next" (or the end of a song) goes; null = stop. Repeat-one is handled by the player. */
+/** What plays when a song reaches its end: the same song (repeat-one), the next one, or null = stop. */
+export function afterEnd(index: number, length: number, repeat: RepeatMode): number | null {
+  return repeat === 'one' ? index : nextIndex(index, length, repeat);
+}
+
+/** Where "next" goes; null = stop (repeat-one counts as off here: see afterEnd). */
 export function nextIndex(index: number, length: number, repeat: RepeatMode): number | null {
   if (index + 1 < length) return index + 1;
   return repeat === 'all' && length > 0 ? 0 : null;

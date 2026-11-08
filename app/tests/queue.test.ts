@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  withoutQueueIndex, audioAhead, audioRun, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, runSlots,
+  afterEnd, withoutQueueIndex, audioAhead, audioRun, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, runSlots,
 } from '../src/core/queue';
 
 describe('play queue', () => {
@@ -23,6 +23,19 @@ describe('play queue', () => {
     expect(previousIndex(0, 3, 'off')).toBeNull();
     expect(previousIndex(0, 3, 'all')).toBe(2);
     expect(previousIndex(2, 3, 'one')).toBe(1);
+  });
+
+  it('decides what follows the end of a song in each repeat mode', () => {
+    // One song (picked from a search): stops, starts again, starts again.
+    expect(afterEnd(0, 1, 'off')).toBeNull();
+    expect(afterEnd(0, 1, 'all')).toBe(0);
+    expect(afterEnd(0, 1, 'one')).toBe(0);
+    // The last of three: stops, wraps, itself. The middle one: the next, the next, itself.
+    expect(afterEnd(2, 3, 'off')).toBeNull();
+    expect(afterEnd(2, 3, 'all')).toBe(0);
+    expect(afterEnd(2, 3, 'one')).toBe(2);
+    expect(afterEnd(1, 3, 'off')).toBe(2);
+    expect(afterEnd(1, 3, 'one')).toBe(1);
   });
 
   it('lets the native playlist loop by itself only when it holds every song it should play', () => {

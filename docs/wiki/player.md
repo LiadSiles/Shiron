@@ -56,6 +56,13 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
 - Repeat (`cycleRepeat`): off → **all** (the whole list, around) → **one** → off
   (`core/queue.ts`, tested). Repeat-one = native `loop: 'single'` (YouTube: seek 0 on end);
   repeat-all wraps natively only when the run is the whole queue, otherwise the app wraps.
+  What follows the end of a song is one decision, `afterEnd` (`core/queue.ts`, tested): the
+  same song (one), the next, around (all), or stop — for audio past the native loop and for
+  YouTube alike (`continueAfterEnd`; each end is logged, "ended · <title> · repeat · loop").
+  After a stop, `ended` is set: iOS removes a finished item from the native queue, so "play"
+  and a seek load the song again (`startAt`) instead of resuming nothing. `e2e-end.yaml` drags
+  a lone song to its end in each mode (0.13.0: the owner heard the song start again on the
+  iPhone in every mode; until then no check ever let a song end).
 - Lock screen metadata: title, first category as artist, album "שירון".
 
 ## YouTube in the queue (0.5.0)
