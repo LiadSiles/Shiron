@@ -140,7 +140,10 @@ it was declined for this reason, and the music goes on with the audio songs inst
   pauses) — checked in its source (SDK 58), not on a device.
 - Untested on a device: the lock screen in standby (a paused native playlist with Now Playing
   info) and process termination. The Maestro flow `e2e-background.yaml` covers leaving and
-  coming back during a YouTube song.
+  coming back during a YouTube song, and checks the technical log for "background: youtube
+  paused". On the Android emulator a flow takes minutes, so the 3½-minute test video can end
+  before the check and the list moves on to the next audio song (seen at aedff68): the flow
+  waits for the window only on the iPhone and then opens whichever player is showing.
 - The old `youtube/[id]` screen is gone; "פתיחה באפליקציית יוטיוב" is on the full player.
 
 ## Play counting

@@ -190,7 +190,7 @@ once more, and after any failed flow `android.sh` force-stops the picker
 (`com.google.android.documentsui`): left open, it stays in the app's task and covered the full
 player in a later flow. Two more flakes, both in tooling: the Maestro installer's download
 sometimes returns 504 (every Android flow then failed with "maestro: command not found";
-`scripts/e2e/install-maestro.sh` tries it twice, then the same zip from GitHub's latest release, and stops with a clear error), and the iPhone simulator's keyboard
+`scripts/e2e/install-maestro.sh` tries it twice, then the same zip from GitHub's latest release, and stops with a clear error; at aedff68 GitHub's download answered 504 too, for one job only — re-run that job), and the iPhone simulator's keyboard
 sometimes types Hebrew out of order ("בוקר וב לגןט") or keeps the old name in front, so
 `e2e-song.yaml` checks the field and types the name again. On the iPhone, the
 first "חזרה" right after the YouTube player opened was once ignored (the playing video keeps

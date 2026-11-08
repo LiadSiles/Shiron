@@ -1,6 +1,7 @@
 # Leaving the app during a YouTube song and coming back (docs/wiki/player.md → "In the
-# background"): the video was paused while away (YouTube's terms), and on return the small
-# window is there again, the player opens, and "next" moves on to an audio song.
+# background"): the video was paused while away (YouTube's terms — checked in the technical
+# log), on return the small window is there again (iPhone), the player opens, and "next" moves
+# on to an audio song.
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
@@ -16,11 +17,20 @@ appId: app.shiron.gan
 - launchApp:
     stopApp: false
 - runFlow: dismiss.yaml
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible: "סגירת הסרטון"
+          timeout: 10000
+# The Android emulator is slow enough (minutes per flow) that the 3½-minute video can end
+# meanwhile and the list moves on to an audio song; either way the player opens from here.
 - extendedWaitUntil:
-    visible: "סגירת הסרטון"
+    visible: ".*פתיחת הנגן.*"
     timeout: 10000
 - takeScreenshot: ${VARIANT}-bg-back
-- tapOn: "פתיחת הנגן המלא"
+- tapOn: ".*פתיחת הנגן.*"
 - assertVisible: "מתנגן עכשיו"
 # Around the list, so there is a next song wherever YouTube sits in it.
 - tapOn:
@@ -34,3 +44,14 @@ appId: app.shiron.gan
 - assertNotVisible: "מתנגן: שיר מיוטיוב.*"
 - assertNotVisible: "סגירת הסרטון"
 - takeScreenshot: ${VARIANT}-bg-next
+# The video was paused as she left — the technical log says so (Settings → יומן טכני).
+- runFlow: back.yaml
+- tapOn: "הגדרות"
+- scrollUntilVisible:
+    element: "יומן טכני"
+- tapOn: "יומן טכני"
+- extendedWaitUntil:
+    visible: ".*background: youtube paused.*"
+    timeout: 5000
+- runFlow: back.yaml
+- runFlow: back.yaml
