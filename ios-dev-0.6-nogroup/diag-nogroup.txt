@@ -1,27 +1,26 @@
-07/11 23:11:21 app group · none granted · declared group.app.shiron.gan · provisioned - · alt -
-07/11 23:12:39 share received · type text · 0 files · 
-07/11 23:12:39 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:27:58 share received · type text · 0 files · 
+08/11 00:27:58 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:12:39 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:27:58 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:13:34 background task unavailable · 1
-07/11 23:13:35 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:29:34 background task unavailable · 1
+08/11 00:29:34 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:13:35 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:29:34 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:13:36 play youtube · שיר מיוטיוב · 1/1
-07/11 23:17:51 background task unavailable · 1
-07/11 23:17:52 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:29:35 play youtube · שיר מיוטיוב · 1/1
+08/11 00:35:34 background task unavailable · 1
+08/11 00:35:34 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:17:52 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:35:34 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:30:35 background task unavailable · 1
-07/11 23:30:36 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:45:45 background task unavailable · 1
+08/11 00:45:45 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:30:36 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:45:45 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:32:44 background task unavailable · 1
-07/11 23:32:44 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:48:00 background task unavailable · 1
+08/11 00:48:00 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-07/11 23:32:44 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+08/11 00:48:00 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.

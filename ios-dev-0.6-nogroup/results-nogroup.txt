@@ -1,5 +1,5 @@
-PASS nogroup launch.yaml
-FAIL(must) nogroup e2e-youtube.yaml
+FAIL(must) nogroup launch.yaml
+PASS nogroup e2e-youtube.yaml
 PASS nogroup e2e-settings.yaml
 FAIL(soft) nogroup share-link.yaml
 FAIL(soft) nogroup share-file.yaml
