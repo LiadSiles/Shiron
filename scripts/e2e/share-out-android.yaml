@@ -1,4 +1,4 @@
-# Android: a song's "שיתוף" opens the system share sheet with the song's file.
+# Android: a song's "שיתוף", twice in a row, opens the system share sheet with the song's file.
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
@@ -11,6 +11,15 @@ appId: app.shiron.gan
 - takeScreenshot: ${VARIANT}-share-sheet
 - assertNotVisible: ".*לא הצלחנו לשתף.*"
 - assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive|שיתוף).*"
+- back
+# Again right away: with expo-sharing every share after the first failed while it still
+# waited for the first one's result (the WhatsApp report, 0.12.1).
+- longPressOn: "נגני בוקר טוב לגן"
+- tapOn: "שיתוף"
+- waitForAnimationToEnd
+- assertNotVisible: ".*לא הצלחנו לשתף.*"
+- assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive|שיתוף).*"
+- takeScreenshot: ${VARIANT}-share-again
 - back
 - longPressOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
 - tapOn: "שיתוף"

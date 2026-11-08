@@ -1,6 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Share } from 'react-native';
+import { Platform, Share } from 'react-native';
+import { shareFile } from '../../modules/shiron-audio';
 import { extensionOf, mimeOf, shareFileName, youtubeShareText } from '../core/ingestRules';
 import type { SongWithCategories } from '../core/types';
 import { diag } from '../diag/log';
@@ -39,6 +40,9 @@ export async function shareSong(song: SongWithCategories) {
     const copy = new File(dir, shareFileName(song.title, ext));
     await source.copy(copy);
     diag('share file', song.title, copy.uri, `${copy.size ?? 0} bytes`, mimeOf(copy.name));
+    // Android: our own sheet (modules/shiron-audio SongSharer) — expo-sharing's waited for a
+    // result that WhatsApp never sends, and then refused every later share.
+    if (Platform.OS === 'android' && shareFile(copy.uri, mimeOf(copy.name), song.title)) return;
     await Sharing.shareAsync(copy.uri, {
       mimeType: mimeOf(copy.name),
       UTI: ext === 'm4a' ? 'public.mpeg-4-audio' : undefined,

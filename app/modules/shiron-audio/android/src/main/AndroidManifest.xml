@@ -7,5 +7,15 @@
       android:name="app.shiron.audio.WorkService"
       android:exported="false"
       android:foregroundServiceType="dataSync" />
+    <!-- "שיתוף": the song's file to the app she picks (SongSharer); only cache/share/. -->
+    <provider
+      android:name="app.shiron.audio.ShareFileProvider"
+      android:authorities="${applicationId}.share"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/shiron_share_paths" />
+    </provider>
   </application>
 </manifest>

@@ -95,7 +95,8 @@ app/                         Expo app (React Native, TypeScript, expo-router)
   src/app/                   expo-router routes (layout, shell, category, song, playlist/,
                              player, settings, connect, log)
   modules/shiron-audio/      local Expo module: decode any format → trim → loudness → AAC .m4a;
-                             cut into parts for transcription (AudioSplitter)
+                             cut into parts for transcription (AudioSplitter); Android's share
+                             sheet for "שיתוף" (SongSharer, its own FileProvider on cache/share/)
     ios/Core/                plain AVFoundation (Ogg Opus demux, asset reader, encoder)
     android/                 MediaExtractor/MediaCodec/MediaMuxer; unit + instrumented tests
     swift-tests/             runs ios/Core as a Swift package on macOS

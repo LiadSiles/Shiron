@@ -19,6 +19,7 @@ interface NativeModule {
   startBackgroundWork(text: string): void;
   stopBackgroundWork(): void;
   appGroupStatus?(): AppGroupStatus;
+  shareFile?(uri: string, mimeType: string, title: string): void;
 }
 
 const native = requireNativeModule<NativeModule>('ShironAudio');
@@ -69,4 +70,14 @@ export function appGroupStatus(): AppGroupStatus | null {
 export function audioErrorCode(e: unknown): AudioErrorCode | null {
   const code = (e as { code?: string } | null)?.code;
   return typeof code === 'string' && code.startsWith('ERR_AUDIO_') ? (code.slice(10) as AudioErrorCode) : null;
+}
+
+/**
+ * Android: a file:// URI under cache/share/ to the system share sheet (WhatsApp etc.); returns
+ * once the sheet is up. iOS has no such function (expo-sharing serves it): false there.
+ */
+export function shareFile(uri: string, mimeType: string, title: string): boolean {
+  if (!native.shareFile) return false;
+  native.shareFile(uri, mimeType, title);
+  return true;
 }

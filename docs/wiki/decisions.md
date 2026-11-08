@@ -3,6 +3,19 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-08 — Android sharing through our own share sheet (0.12.2)
+
+- Owner: "השיתוף דרך whatsapp לא עובד". expo-sharing on Android starts the share sheet *for a
+  result* and refuses every later share ("Another share request is being processed now") until
+  that result arrives — and after she sends to WhatsApp it often never does, because WhatsApp
+  moves on to the chat. It also grants read access only to the apps it resolves for the sheet
+  itself, not through the intent. Android now uses `SongSharer` in our native module: a plain
+  `startActivity` of the sheet, the file's read grant on the intent (ClipData + flag), our own
+  `FileProvider` (`<package>.share`) exposing only `cache/share/`. iOS keeps expo-sharing
+  (UIActivityViewController; it resolves on every dismissal).
+- The e2e flow shares the same song twice in a row; the emulator can't reproduce WhatsApp
+  itself, so the WhatsApp leg is still untested on a device.
+
 ### 2026-11-07 — Sharing a song out of the app (0.12.0)
 
 - The owner asked to send songs from the app to WhatsApp. The song screen has "שיתוף": the

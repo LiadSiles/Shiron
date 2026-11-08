@@ -47,6 +47,18 @@ class ShironAudioModule : Module() {
       WorkService.stop()
       Unit
     }
+
+    // "שיתוף": a copy of the song (cache/share/) to the system share sheet (SongSharer).
+    Function("shareFile") { uri: String, mimeType: String, title: String ->
+      try {
+        SongSharer.share(appContext.throwingActivity, fileOf(uri), mimeType, title)
+      } catch (e: CodedException) {
+        throw e
+      } catch (e: Exception) {
+        throw CodedException("ERR_SHARE_FAILED", e.message ?: e.toString(), e)
+      }
+      Unit
+    }
   }
 
   private fun fileOf(uri: String): File {
