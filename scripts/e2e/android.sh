@@ -32,6 +32,10 @@ adb shell input keyevent KEYCODE_HOME
 sleep 20
 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
 adb logcat -c
+# Every share sheet that opens, kept from the start: one long session overflows logcat's buffer
+# (0.13.0: the count at the end found 0 of 4).
+adb logcat -v brief | grep --line-buffered "act=android.intent.action.CHOOSER" > shots/choosers.txt &
+CHOOSERLOG=$!
 
 export MAESTRO_DRIVER_STARTUP_TIMEOUT=240000
 crashed() { adb logcat -d -b crash | grep -q "Process: $PKG"; }
@@ -54,7 +58,8 @@ suite must:e2e-youtube.yaml "must:e2e-settings.yaml@SHARE=בחירת קבצי ש
   must:e2e-search.yaml must:e2e-end.yaml must:e2e-background.yaml must:share-out-android.yaml \
   "soft:categories.yaml@VARIANT=$VARIANT-cats"
 # The system share sheet really opened each time: the file twice in a row, the link, the category.
-CHOOSERS=$(adb logcat -d | grep -c "act=android.intent.action.CHOOSER")
+kill $CHOOSERLOG 2>/dev/null
+CHOOSERS=$(wc -l < shots/choosers.txt | tr -d ' ')
 if [ "$CHOOSERS" -ge 4 ]; then
   echo "PASS $VARIANT share sheet opened $CHOOSERS times" >> "$RESULTS"
 else

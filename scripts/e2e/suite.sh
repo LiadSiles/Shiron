@@ -11,6 +11,10 @@
 # lines to the results file. Exit 1 when a must flow failed.
 set -uo pipefail
 RESULTS=$1 VARIANT=$2 CLEANUP=$3; shift 3
+# Whatever stops this script early must show as a failed check, never as a quiet pass (0.13.0:
+# a bash 3.2 error ended it before any flow ran, and the job went green).
+DONE=0
+trap '[ $DONE = 1 ] || echo "FAIL(must) $VARIANT suite.sh stopped early (line $LINENO)" >> "$RESULTS"' EXIT
 HERE=$(cd "$(dirname "$0")" && pwd)
 ENTRIES=()
 while [ $# -gt 0 ] && [ "$1" != "--" ]; do ENTRIES+=("$1"); shift; done
@@ -28,7 +32,14 @@ for e in "${ENTRIES[@]}"; do
   kind=${e%%:*} rest=${e#*:}
   flow=${rest%%@*} env=""
   [ "$rest" != "$flow" ] && env=${rest#*@}
-  tag="$VARIANT"
+  # Its values, one per line; VARIANT (the screenshots' prefix) unless the entry sets its own.
+  # (macOS ships bash 3.2: no empty arrays under `set -u`, hence the plain loop.)
+  tag="$VARIANT" vals=""
+  while [ -n "$env" ]; do
+    p=${env%%,*}
+    [ "$p" = "$env" ] && env="" || env=${env#*,}
+    if [ "${p%%=*}" = VARIANT ]; then tag=${p#*=}; else vals+="      ${p%%=*}: \"${p#*=}\""$'\n'; fi
+  done
   name=$(printf 'suite-%02d-%s' "$n" "${flow%.yaml}")
   {
     echo "appId: app.shiron.gan"
@@ -37,13 +48,8 @@ for e in "${ENTRIES[@]}"; do
     echo "- runFlow:"
     echo "    file: $flow"
     echo "    env:"
-    echo "      VARIANT: \"$VARIANT\""
-    IFS=',' read -ra kv <<< "$env"
-    for p in "${kv[@]}"; do
-      [ -n "$p" ] || continue
-      echo "      ${p%%=*}: \"${p#*=}\""
-      [ "${p%%=*}" = VARIANT ] && tag=${p#*=}
-    done
+    echo "      VARIANT: \"$tag\""
+    printf '%s' "$vals"
   } > "shots/$name.yaml"
   ORDER+=("$name") KINDS+=("$kind") TAGS+=("$tag") FLOWS+=("$flow")
 done
@@ -88,4 +94,5 @@ PY
 done
 find shots -path '*maestro-*' -name '*.png' -exec cp {} shots/ \; 2>/dev/null
 rm -f shots/*.yaml
+DONE=1
 exit $FAILED

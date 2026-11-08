@@ -142,7 +142,11 @@ flow (`cleanup-android.yaml`, Maestro's `onFlowComplete`) closes the file picker
 flow. The real share sheet (`share-link`, `share-file`, `share-out` on iOS), which had not
 passed on the simulator in many runs and cost ~25 minutes each time, runs only when the
 workflow is started by hand with `full`. The no-group job checks only what differs without
-the group: the link path and Settings.
+the group: the link path and Settings. Gotchas: the macOS runners' bash is 3.2 (an empty
+array under `set -u` is an error — the first run of `suite.sh` stopped before any flow and the
+job went **green**; it now records "stopped early" as a failed check whatever stops it), and in
+one long Android session logcat's buffer overflows, so `android.sh` keeps the CHOOSER lines in
+`shots/choosers.txt` from the start instead of counting at the end.
 
 - `check` (must pass, `e2e-*.yaml` + `launch.yaml`, with assertions): the empty first launch;
   YouTube (from the extension's no-group link, `simctl openurl`) — full player, the small

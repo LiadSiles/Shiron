@@ -1,7 +1,8 @@
 # The end of a song in each repeat mode (owner, 0.13.0: on the iPhone the song always started
 # again). One song picked from a search, so the list is just that song: without repeat it stops
 # and stays stopped, "play" then starts it again; repeating the list or the song plays it again.
-# The test songs are ~40 s; dragging the bar to the end gets there at once.
+# The test songs are ~40 s; dragging the bar to the end gets there at once. (The bar's label
+# carries its value on Android, "מיקום בשיר, 0:05 מתוך 0:38": hence the ".*".)
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
@@ -21,7 +22,7 @@ appId: app.shiron.gan
 
 # Without repeat: stops at the end, and doesn't start again by itself.
 - swipe:
-    from: "מיקום בשיר"
+    from: "מיקום בשיר.*"
     direction: RIGHT
 - extendedWaitUntil:
     visible: "ניגון"
@@ -39,14 +40,14 @@ appId: app.shiron.gan
 - tapOn: "בלי חזרה"
 - assertVisible: "חזרה על הכול"
 - swipe:
-    from: "מיקום בשיר"
+    from: "מיקום בשיר.*"
     direction: RIGHT
 - runFlow: wait-4s.yaml
 - assertVisible: "השהיה"
 - tapOn: "חזרה על הכול"
 - assertVisible: "חזרה על השיר"
 - swipe:
-    from: "מיקום בשיר"
+    from: "מיקום בשיר.*"
     direction: RIGHT
 - runFlow: wait-4s.yaml
 - assertVisible: "השהיה"
