@@ -37,6 +37,9 @@ export function Button({ label, onPress, kind = 'primary', icon, style, disabled
   return (
     <Pressable
       accessibilityRole="button"
+      // Its own label: otherwise iOS reads the icon's font glyph before the words.
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
