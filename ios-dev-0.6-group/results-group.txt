@@ -2,11 +2,11 @@ PASS group launch.yaml
 PASS group e2e-youtube.yaml
 PASS group e2e-settings.yaml
 FAIL(must) group e2e-import.yaml
-FAIL(must) group e2e-player.yaml
-FAIL(must) group e2e-song.yaml
+PASS group e2e-player.yaml
+PASS group e2e-song.yaml
 FAIL(must) group e2e-playlist.yaml
 PASS group e2e-search.yaml
-FAIL(soft) group share-out.yaml
+PASS group share-out.yaml
 FAIL(soft) group share-link.yaml
 FAIL(soft) group share-file.yaml
 PASS group-add-mp3 add-files.yaml

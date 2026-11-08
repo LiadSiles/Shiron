@@ -1,7 +1,6 @@
 title|kind|audio_state|status|error
 שיר מיוטיוב|youtube|done|pending|
-בוקר טוב לגןboker-tov|audio|done|pending|
-voice-whatsapp|audio|done|pending|
+בוקר טוב לגן|audio|done|pending|
 old-song|audio|done|pending|
 gan-party|audio|done|pending|
-broken|audio|unsupported|pending|הפורמט לא נתמך במכשיר הזה
+broken|audio|unsupported|pending|הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום
