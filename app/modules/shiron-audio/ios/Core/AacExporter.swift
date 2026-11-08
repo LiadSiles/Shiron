@@ -24,9 +24,11 @@ public enum AacExporter {
     guard let frequency = frequencies.firstIndex(of: Int(asbd.mSampleRate)) else {
       throw AudioProcessingError.unsupported("AAC at \(Int(asbd.mSampleRate)) Hz")
     }
-    // mFormatFlags holds the MPEG-4 object type (2 = AAC-LC, what AudioProcessor writes);
-    // ADTS stores it minus one.
-    let profile = max(Int(asbd.mFormatFlags), 1) - 1
+    // mFormatFlags holds the MPEG-4 object type when the file states one; AudioProcessor writes
+    // AAC-LC (2), and 0 means "not stated" — read as LC (0 would make it AAC Main, which no
+    // player decodes: the first CI run failed reading the copy). ADTS stores the type minus one.
+    let objectType = (1...4).contains(Int(asbd.mFormatFlags)) ? Int(asbd.mFormatFlags) : 2
+    let profile = objectType - 1
     let channels = Int(asbd.mChannelsPerFrame)
 
     let reader = try AVAssetReader(asset: asset)
