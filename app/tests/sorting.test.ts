@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compareTitles, sortCategories, sortSongs } from '../src/core/sorting';
+import { compareTitles, sortCategories, sortSongs, steadyOrder } from '../src/core/sorting';
 
 const song = (id: string, title: string, createdAt: number, durationSec: number | null) => ({ id, title, createdAt, durationSec });
 const songs = [song('a', 'שלום', 3, 90), song('b', 'אבא', 1, null), song('c', 'בוקר טוב', 2, 30), song('d', '10 אצבעות', 4, 60)];
@@ -36,5 +36,29 @@ describe('sorting categories', () => {
     expect(ids(sortCategories(cats, 'count'))).toEqual(['y', 'z', 'x']);
     expect(ids(sortCategories(cats, 'plays'))).toEqual(['x', 'z', 'y']);
     expect(sortCategories(cats, 'smart')).toBe(cats);
+  });
+});
+
+describe('a list on screen keeps its order', () => {
+  const rows = (...ids: string[]) => ids.map((id) => ({ id }));
+  const order = (list: { id: string }[]) => list.map((s) => s.id);
+
+  it('is the fresh order the first time', () => {
+    expect(order(steadyOrder(rows('b', 'a'), null))).toEqual(['b', 'a']);
+  });
+
+  it('does not move a row because a song was played', () => {
+    // She played "c": by use it is first now, but the rows stay under her finger.
+    expect(order(steadyOrder(rows('c', 'a', 'b'), ['a', 'b', 'c']))).toEqual(['a', 'b', 'c']);
+  });
+
+  it('puts a song that just arrived first and drops one that was deleted', () => {
+    expect(order(steadyOrder(rows('new', 'c', 'a'), ['a', 'b', 'c']))).toEqual(['new', 'a', 'c']);
+  });
+
+  it('keeps every song exactly once', () => {
+    const out = order(steadyOrder(rows('d', 'b', 'a', 'c'), ['c', 'x', 'a']));
+    expect([...out].sort()).toEqual(['a', 'b', 'c', 'd']);
+    expect(out.slice(2)).toEqual(['c', 'a']);
   });
 });

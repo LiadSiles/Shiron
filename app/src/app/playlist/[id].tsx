@@ -1,12 +1,12 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCategory, primaryCategoryId } from '../../core/categories';
 import { textOn } from '../../core/color';
 import { canStart } from '../../core/ingestRules';
 import { cleanName, moveSong, playlistSongs, songCount } from '../../core/playlists';
-import { SONG_SORTS, sortSongs } from '../../core/sorting';
+import { SONG_SORTS, sortSongs, steadyOrder } from '../../core/sorting';
 import type { SongWithCategories } from '../../core/types';
 import { deletePlaylist, renamePlaylist, setPlaylistSongs } from '../../db/repo';
 import { useLibrary } from '../../db/useLibrary';
@@ -39,6 +39,9 @@ export default function PlaylistScreen() {
   const prefs = useStore(viewPrefs);
   const { width } = useWindowDimensions();
 
+  // Rows stay where they are while she is here (core/sorting steadyOrder); her own order is live.
+  const shown = useRef<{ sort: string; ids: string[] } | null>(null);
+
   useEffect(() => {
     if (list && !editingName) setName(list.name);
   }, [list?.name, editingName]);
@@ -54,7 +57,9 @@ export default function PlaylistScreen() {
 
   const ordered = playlistSongs(list.songIds, lib.byId);
   const sort = arranging ? 'manual' : prefs.playlistSort;
-  const songs = sortSongs(ordered, sort, lib.plays);
+  const sorted = sortSongs(ordered, sort, lib.plays);
+  const songs = sort === 'manual' ? sorted : steadyOrder(sorted, shown.current?.sort === sort ? shown.current.ids : null);
+  shown.current = { sort, ids: songs.map((s) => s.id) };
   const playable = songs.filter(canStart);
   const tiles = !arranging && prefs.songLayout === 'tiles';
   const size = Math.floor((width - space.l * 2 - space.m * (COLUMNS - 1)) / COLUMNS);

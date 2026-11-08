@@ -65,7 +65,10 @@ score = Σ over real plays e^(−age_days / 30) + new-song boost + seasonal boos
 - Pinned songs first (latest pin on top), then score, then Hebrew alphabetical.
 - Plays from the last 365 days are loaded (`repo.playsBySong`).
 - The list must not reshuffle while she scrolls: ranking is computed on load/change, not on
-  a timer.
+  a timer. A play *is* a change, and re-ranking right after it moved the row under her finger
+  (her next tap hit another song — seen in the e2e run, 0.12.1). So while a category or list
+  screen stays open, rows keep their places (`core/sorting.steadyOrder`): new songs come first,
+  deleted ones go, and the fresh order applies when she picks another sort or comes back.
 
 ## Seasons and time of day (`core/categories.ts`)
 

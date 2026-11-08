@@ -69,6 +69,20 @@ export function sortSongs<T extends SortableSong>(songs: T[], sort: SongSort, pl
   }
 }
 
+/**
+ * The order a list keeps while it is on screen. Sorting again after every play ("מומלץ",
+ * "הכי מושמעים", "נוגנו לאחרונה") moved the row she was about to tap — her next tap landed on
+ * another song. Songs already shown keep their places, new ones come first, deleted ones go.
+ * `shown`: the ids in the order on screen (null = nothing shown yet: the fresh order).
+ */
+export function steadyOrder<T extends { id: string }>(fresh: T[], shown: readonly string[] | null): T[] {
+  if (!shown) return fresh;
+  const at = new Map(shown.map((id, i) => [id, i]));
+  const added = fresh.filter((s) => !at.has(s.id));
+  const kept = fresh.filter((s) => at.has(s.id)).sort((a, b) => at.get(a.id)! - at.get(b.id)!);
+  return [...added, ...kept];
+}
+
 interface SortableCategory {
   id: string;
   name: string;

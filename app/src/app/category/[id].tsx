@@ -1,10 +1,10 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { FlatList, Pressable, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCategory, UNSORTED_ID } from '../../core/categories';
 import { canStart } from '../../core/ingestRules';
-import { SONG_SORTS, sortSongs } from '../../core/sorting';
+import { SONG_SORTS, sortSongs, steadyOrder } from '../../core/sorting';
 import { ALL_ID, RECENT_ID, songsFor } from '../../core/library';
 import { useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from '../../ui/components';
@@ -28,7 +28,14 @@ export default function CategoryScreen() {
   const isList = isAll || isRecent;
   const cat = getCategory(id);
   const editable = !isList && id !== UNSORTED_ID;
-  const songs = useMemo(() => sortSongs(songsFor(lib, id), prefs.songSort, lib.plays), [lib, id, prefs.songSort]);
+  // Rows stay where they are while she is here (a play doesn't reorder them); a new sort reorders.
+  const shown = useRef<{ sort: string; ids: string[] } | null>(null);
+  const songs = useMemo(() => {
+    const fresh = sortSongs(songsFor(lib, id), prefs.songSort, lib.plays);
+    const out = steadyOrder(fresh, shown.current?.sort === prefs.songSort ? shown.current.ids : null);
+    shown.current = { sort: prefs.songSort, ids: out.map((s) => s.id) };
+    return out;
+  }, [lib, id, prefs.songSort]);
   const playable = songs.filter(canStart);
   const tiles = prefs.songLayout === 'tiles';
   const size = Math.floor((width - space.l * 2 - space.m * (COLUMNS - 1)) / COLUMNS);
