@@ -6,7 +6,7 @@ PASS group e2e-player.yaml
 PASS group e2e-song.yaml
 PASS group e2e-playlist.yaml
 PASS group e2e-search.yaml
-PASS group e2e-background.yaml
+FAIL(must) group e2e-background.yaml
 FAIL(soft) group share-out.yaml
 FAIL(soft) group share-link.yaml
 FAIL(soft) group share-file.yaml
