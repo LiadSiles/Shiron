@@ -347,7 +347,7 @@
                                     },
                                     "children" : [ {
                                       "attributes" : {
-                                        "accessibilityText" : "Me at the zoo - YouTube",
+                                        "accessibilityText" : "jawed",
                                         "title" : "",
                                         "value" : "",
                                         "text" : "",
@@ -2312,13 +2312,13 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "7:17 AM",
+              "accessibilityText" : "9:10 AM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[58,14][90,35]",
+              "bounds" : "[56,14][91,35]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",

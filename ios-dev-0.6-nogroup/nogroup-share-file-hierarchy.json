@@ -488,13 +488,13 @@
             "selected" : false
           }, {
             "attributes" : {
-              "accessibilityText" : "7:24 AM",
+              "accessibilityText" : "9:14 AM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[56,14][92,35]",
+              "bounds" : "[56,14][91,35]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",
