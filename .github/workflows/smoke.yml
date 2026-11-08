@@ -20,6 +20,9 @@ on:
       tag:
         description: Release tag whose APK to open instead of building the branch
         required: false
+      flows:
+        description: Only these e2e flows, e.g. "e2e-end e2e-youtube" (plus the setup they need)
+        required: false
 
 concurrency:
   group: smoke-${{ github.ref }}
@@ -40,30 +43,38 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release download "${{ inputs.tag }}" --pattern '*.apk' --output app.apk --repo "${{ github.repository }}"
-      - uses: actions/setup-node@v5
+      # The same app (app/** unchanged, e.g. a push that only fixes a test) is not built again.
+      - name: Reuse the APK of the same app
+        id: apk
         if: ${{ !inputs.tag }}
+        uses: actions/cache@v4
+        with:
+          path: app.apk
+          key: apk-x86_64-${{ hashFiles('app/**', 'scripts/build-ffmpeg.sh') }}
+      - uses: actions/setup-node@v5
+        if: ${{ !inputs.tag && steps.apk.outputs.cache-hit != 'true' }}
         with:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: app/package-lock.json
       - uses: actions/setup-java@v5
-        if: ${{ !inputs.tag }}
+        if: ${{ !inputs.tag && steps.apk.outputs.cache-hit != 'true' }}
         with:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v5
-        if: ${{ !inputs.tag }}
+        if: ${{ !inputs.tag && steps.apk.outputs.cache-hit != 'true' }}
       - name: Cache the FFmpeg build
-        if: ${{ !inputs.tag }}
+        if: ${{ !inputs.tag && steps.apk.outputs.cache-hit != 'true' }}
         uses: actions/cache@v4
         with:
           path: build/ffmpeg
           key: ffmpeg-android-x86_64-${{ hashFiles('scripts/build-ffmpeg.sh', 'app/modules/shiron-audio/native/ffmpeg/*') }}
       - name: Build FFmpeg for what the phone can't read (LGPL)
-        if: ${{ !inputs.tag }}
+        if: ${{ !inputs.tag && steps.apk.outputs.cache-hit != 'true' }}
         run: scripts/build-ffmpeg.sh android x86_64
       - name: Build the release APK (x86_64 for the emulator)
-        if: ${{ !inputs.tag }}
+        if: ${{ !inputs.tag && steps.apk.outputs.cache-hit != 'true' }}
         working-directory: app
         env:
           CI: 1
@@ -183,7 +194,7 @@ jobs:
           target: google_apis
           profile: pixel_6
           emulator-boot-timeout: 1200
-          script: bash scripts/e2e/android.sh app.apk
+          script: ONLY="${{ inputs.flows }}" bash scripts/e2e/android.sh app.apk
       - name: Report
         if: always()
         run: |

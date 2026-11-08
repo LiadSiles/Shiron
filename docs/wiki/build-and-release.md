@@ -143,7 +143,16 @@ flow (`cleanup-android.yaml`, Maestro's `onFlowComplete`) closes the file picker
 flow. The real share sheet (`share-link`, `share-file`, `share-out` on iOS), which had not
 passed on the simulator in many runs and cost ~25 minutes each time, runs only when the
 workflow is started by hand with `full`. The no-group job checks only what differs without
-the group: the link path and Settings. Gotchas: the macOS runners' bash is 3.2 (an empty
+the group: the link path and Settings.
+
+**Quick re-checks.** Both workflows keep the built app in the Actions cache, keyed on the hash
+of `app/**` (+ the FFmpeg script): a push that only changes tests or scripts reuses it and skips
+~10 minutes (iPhone: project generation + Xcode build) or ~6 (Android: Gradle). Started by
+hand, both take `flows`: only those flows run (e.g. `e2e-end e2e-youtube`), plus the ones that
+set the app up — the first launch, opening the shared links, adding the files, the import
+(`SETUP` in `suite.sh`). Mind the order the flows rely on: `e2e-search` and `e2e-background`
+look for "בוקר טוב לגן", the name `e2e-song` gives. A failure in a test's own setup (not in what
+the app does) doesn't hold a release: re-run that flow, then release. Gotchas: the macOS runners' bash is 3.2 (an empty
 array under `set -u` is an error — the first run of `suite.sh` stopped before any flow and the
 job went **green**; it now records "stopped early" as a failed check whatever stops it), and in
 one long Android session logcat's buffer overflows, so `android.sh` keeps the CHOOSER lines in

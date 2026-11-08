@@ -16,8 +16,16 @@ RESULTS=$1 VARIANT=$2 CLEANUP=$3; shift 3
 DONE=0
 trap '[ $DONE = 1 ] || echo "FAIL(must) $VARIANT suite.sh stopped early (line $LINENO)" >> "$RESULTS"' EXIT
 HERE=$(cd "$(dirname "$0")" && pwd)
+# ONLY="e2e-end e2e-youtube" (the workflows' "flows" input) keeps those flows and the ones
+# that set the app up for them: the first launch, opening a link, adding files, the import.
+SETUP=" launch open-link add-android e2e-import "
 ENTRIES=()
-while [ $# -gt 0 ] && [ "$1" != "--" ]; do ENTRIES+=("$1"); shift; done
+while [ $# -gt 0 ] && [ "$1" != "--" ]; do
+  f=${1#*:}; f=${f%%@*}; f=${f%.yaml}
+  if [ -z "${ONLY:-}" ] || [[ " $ONLY $SETUP " == *" $f "* ]]; then ENTRIES+=("$1"); fi
+  shift
+done
+if [ ${#ENTRIES[@]} -eq 0 ]; then echo "== $VARIANT: no flows to run"; DONE=1; exit 0; fi
 [ "${1:-}" = "--" ] && shift
 mkdir -p shots
 cp "$HERE"/*.yaml shots/
