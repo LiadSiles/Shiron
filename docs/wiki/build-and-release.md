@@ -188,7 +188,11 @@ mid-slide and miss (0.12.3 and the next run: the WhatsApp opus failed to add, an
 song and background flows failed after it). `add-android.yaml` now waits for the file and tries
 once more, and after any failed flow `android.sh` force-stops the picker
 (`com.google.android.documentsui`): left open, it stays in the app's task and covered the full
-player in a later flow. On the iPhone, the
+player in a later flow. Two more flakes, both in tooling: the Maestro installer's download
+sometimes returns 504 (every Android flow then failed with "maestro: command not found"; both
+scripts now retry it and stop with a clear error), and the iPhone simulator's keyboard
+sometimes types Hebrew out of order ("בוקר וב לגןט") or keeps the old name in front, so
+`e2e-song.yaml` checks the field and types the name again. On the iPhone, the
 first "חזרה" right after the YouTube player opened was once ignored (the playing video keeps
 `waitForAnimationToEnd` from settling): `e2e-youtube.yaml` retries that one back once with a
 screenshot; the three rounds after it must pass outright.

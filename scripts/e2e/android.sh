@@ -14,7 +14,12 @@ mkdir -p shots
 RESULTS="shots/results-$VARIANT.txt"
 : > "$RESULTS"
 
-curl -fsSL "https://get.maestro.mobile.dev" | bash >/dev/null
+# The installer's download sometimes gets a 504: try a few times, and stop if it never comes.
+for i in 1 2 3 4; do
+  curl -fsSL "https://get.maestro.mobile.dev" | bash >/dev/null && [ -x "$HOME/.maestro/bin/maestro" ] && break
+  echo "== maestro install failed (try $i)"; sleep 20
+done
+[ -x "$HOME/.maestro/bin/maestro" ] || { echo "::error::Maestro could not be installed"; exit 1; }
 export PATH="$HOME/.maestro/bin:$PATH"
 
 adb install -r -g "$APK" || { echo "== install failed"; exit 1; }

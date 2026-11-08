@@ -7,18 +7,24 @@ appId: app.shiron.gan
 - tapOn: "כל השירים.*"
 - longPressOn: "נגני boker-tov"
 - assertVisible: "פרטי שיר"
-- tapOn: "שם השיר"
-- runFlow:
-    when:
-      platform: iOS
+# The simulator's keyboard sometimes types Hebrew out of order ("בוקר וב לגןט") or leaves the
+# old name in front: check the field holds exactly the new name, else type it again.
+- retry:
+    maxRetries: 2
     commands:
-      - tapOn: "Clear text"
-- runFlow:
-    when:
-      platform: Android
-    commands:
-      - eraseText: 40
-- inputText: "בוקר טוב לגן"
+      - tapOn: "שם השיר"
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - tapOn: "Clear text"
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - eraseText: 40
+      - inputText: "בוקר טוב לגן"
+      - assertVisible: "בוקר טוב לגן"
 - pressKey: Enter
 - tapOn: "הצמדה"
 - assertVisible: "מוצמד"
