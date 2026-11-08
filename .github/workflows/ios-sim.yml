@@ -97,12 +97,7 @@ jobs:
           echo "simulator $UDID"
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
-          # The installer's download sometimes gets a 504: try a few times.
-          for i in 1 2 3 4; do
-            curl -fsSL "https://get.maestro.mobile.dev" | bash && [ -x "$HOME/.maestro/bin/maestro" ] && break
-            echo "maestro install failed (try $i)"; sleep 20
-          done
-          [ -x "$HOME/.maestro/bin/maestro" ] || { echo "::error::Maestro could not be installed"; exit 1; }
+          bash scripts/e2e/install-maestro.sh
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
           # FFmpeg for the ~40 s test songs (scripts/e2e/long-songs.sh); a short song is the fallback.
           command -v ffmpeg >/dev/null || brew install ffmpeg >/dev/null || true
