@@ -1,13 +1,38 @@
-07/11 23:12:42 background task unavailable · 1
-07/11 23:14:21 share received · type text · 0 files · 
-07/11 23:15:25 background task unavailable · 1
-07/11 23:15:27 play youtube · שיר מיוטיוב · 1/1
-07/11 23:20:34 background task unavailable · 1
-07/11 23:29:01 background task unavailable · 1
-07/11 23:30:47 background task unavailable · 1
-07/11 23:32:19 background task unavailable · 1
-07/11 23:34:00 background task unavailable · 1
-07/11 23:35:49 background task unavailable · 1
-07/11 23:37:40 background task unavailable · 1
-07/11 23:50:11 background task unavailable · 1
-07/11 23:52:28 app group · group.app.shiron.gan · declared group.app.shiron.gan · provisioned - · alt -
+08/11 00:09:23 background task unavailable · 1
+08/11 00:10:29 share received · type text · 0 files · 
+08/11 00:11:45 background task unavailable · 1
+08/11 00:11:47 play youtube · שיר מיוטיוב · 1/1
+08/11 00:16:40 background task unavailable · 1
+08/11 00:16:58 share received · type file · 1 files · boker-tov.mp3 (audio/mpeg) file:///Users/runner/Library/Developer/CoreSimulat
+08/11 00:16:58 import · boker-tov.mp3 · 32 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices
+08/11 00:16:59 converted · boker-tov.mp3 · 2.5 s of 4.0 s · gain 14.28 dB · 80 KB · 564 ms
+08/11 00:18:01 share received · type file · 1 files · voice-whatsapp.opus (audio/ogg) file:///Users/runner/Library/Developer/CoreSimulat
+08/11 00:18:01 import · voice-whatsapp.opus · 11 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices
+08/11 00:18:01 converted · voice-whatsapp.opus · 2.5 s of 4.0 s · gain 13.86 dB · 84 KB · 88 ms
+08/11 00:20:08 share received · type file · 1 files · old-song.wma (audio/x-ms-wma) file:///Users/runner/Library/Developer/CoreSimulat
+08/11 00:20:08 import · old-song.wma · 38 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices
+08/11 00:20:08 converted · old-song.wma · 2.5 s of 4.0 s · gain 14.05 dB · 75 KB · 256 ms
+08/11 00:21:02 share received · type media · 1 files · gan-party.mpg (video/mpeg) file:///Users/runner/Library/Developer/CoreSimulat
+08/11 00:21:02 import · gan-party.mpg · 68 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices
+08/11 00:21:02 converted · gan-party.mpg · 2.5 s of 4.0 s · gain 14.08 dB · 81 KB · 197 ms
+08/11 00:21:58 share received · type file · 1 files · boker-tov.mp3 (audio/mpeg) file:///Users/runner/Library/Developer/CoreSimulat
+08/11 00:21:58 import · boker-tov.mp3 · 32 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices
+08/11 00:23:02 share received · type file · 1 files · broken.mp3 (audio/mpeg) file:///Users/runner/Library/Developer/CoreSimulat
+08/11 00:23:02 import · broken.mp3 · 0 KB · from file:///Users/runner/Library/Developer/CoreSimulator/Devices
+08/11 00:23:02 convert failed · broken.mp3 · ERR_AUDIO_UNSUPPORTED: Calling the 'processAsync' function has failed
+→ Caused by: Unsupported format: mp3 · 104 ms
+08/11 00:24:18 share received · type file · 1 files · notes.txt (text/plain) file:///Users/runner/Library/Developer/CoreSimulat
+08/11 00:26:32 background task unavailable · 1
+08/11 00:26:44 play · boker-tov · 6/6 · native 5
+08/11 00:26:47 play · voice-whatsapp · 5/6 · native 5
+08/11 00:26:49 play · old-song · 5/6 · native 4
+08/11 00:26:51 play · gan-party · 5/6 · native 3
+08/11 00:26:54 play · broken · 6/6 · native 1
+08/11 00:29:16 background task unavailable · 1
+08/11 00:31:09 app group · group.app.shiron.gan · declared group.app.shiron.gan · provisioned - · alt -
+08/11 00:31:32 app group · group.app.shiron.gan · declared group.app.shiron.gan · provisioned - · alt -
+08/11 00:33:54 background task unavailable · 1
+08/11 00:36:32 background task unavailable · 1
+08/11 00:38:26 background task unavailable · 1
+08/11 00:50:04 background task unavailable · 1
+08/11 00:52:15 background task unavailable · 1
