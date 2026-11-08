@@ -4,3 +4,4 @@ title|kind|audio_state|status|error
 old-song|audio|done|pending|
 gan-party|audio|done|pending|
 broken|audio|unsupported|pending|הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום
+boker-tov|audio|done|pending|
