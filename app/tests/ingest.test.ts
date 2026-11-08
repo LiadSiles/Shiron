@@ -79,6 +79,7 @@ describe('formats', () => {
 
   it('sends the right MIME type with uploads', () => {
     expect(mimeOf('x.m4a')).toBe('audio/mp4');
+    expect(mimeOf('x.aac')).toBe('audio/aac'); // what the iPhone shares out
     expect(mimeOf('x.opus')).toBe('audio/ogg');
     expect(mimeOf('x.zzz')).toBe('application/octet-stream');
   });

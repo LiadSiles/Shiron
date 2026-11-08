@@ -20,6 +20,8 @@ interface NativeModule {
   stopBackgroundWork(): void;
   appGroupStatus?(): AppGroupStatus;
   shareFilesAsync(uris: string[], mimeType: string, text: string | null, title: string): Promise<void>;
+  /** iOS only. */
+  shareableCopyAsync?(inputUri: string, outputUri: string): Promise<void>;
 }
 
 const native = requireNativeModule<NativeModule>('ShironAudio');
@@ -78,4 +80,14 @@ export function audioErrorCode(e: unknown): AudioErrorCode | null {
  */
 export function shareFiles(uris: string[], mimeType: string, text: string | null, title: string): Promise<void> {
   return native.shareFilesAsync(uris, mimeType, text, title);
+}
+
+/**
+ * iOS: the copy of a converted song (.m4a) to share out, as plain AAC (.aac), without
+ * re-encoding. iOS types .m4a as MPEG-4, a movie type, and WhatsApp took every shared song for
+ * a video ("not supported"). Android shares the .m4a itself.
+ */
+export function shareableCopy(inputUri: string, outputUri: string): Promise<void> {
+  if (!native.shareableCopyAsync) return Promise.reject(new Error('shareableCopy is iOS only'));
+  return native.shareableCopyAsync(inputUri, outputUri);
 }

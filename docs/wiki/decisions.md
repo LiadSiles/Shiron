@@ -12,8 +12,23 @@ whenever a choice would surprise a future contributor.
   counted in a toast).
 - Both platforms through our native module (`shareFilesAsync`): Android `ACTION_SEND_MULTIPLE`
   with every URI in the ClipData; iOS a `UIActivityViewController` with the file URLs and the
-  text (expo-sharing takes one file). One song on iOS still goes through expo-sharing.
+  text (expo-sharing takes one file). Since 0.13.1 one song goes the same way (expo-sharing removed).
 - Whether WhatsApp keeps the text next to many files is up to WhatsApp; untested on a device.
+
+### 2026-11-08 — Songs leave the iPhone as .aac; a searched song plays alone (0.13.1)
+
+- Owner: sharing a song to WhatsApp on the iPhone showed a video trimmer, then "not supported",
+  for every song. iOS declares .m4a as `public.mpeg-4-audio`, which conforms to `public.mpeg-4`
+  — a **movie** type (Apple's system-declared UTIs) — and WhatsApp's share extension took it for
+  a video with no picture. The iPhone now shares a copy re-wrapped as ADTS **.aac**
+  (`AacExporter` in the native module: the same AAC packets, a 7-byte header each, no
+  re-encoding; `public.aac-audio` is audio only), for one song and for lists alike. Android
+  keeps sending the .m4a. One native share sheet on both platforms; expo-sharing is gone (it
+  also renamed files to its declared type's extension). Whether WhatsApp then sends it as an
+  audio message or as a file is WhatsApp's choice; untested on a device.
+- Owner: a song played from the search results must stop at its end — she searched for that
+  song, she is not in a list. Search rows now play a queue of that one song (repeat modes still
+  apply to it); lists, categories and the home sections still go on.
 
 ### 2026-11-08 — YouTube doesn't play in the background; the music goes on without it (0.13.0)
 
@@ -34,8 +49,8 @@ whenever a choice would surprise a future contributor.
   moves on to the chat. It also grants read access only to the apps it resolves for the sheet
   itself, not through the intent. Android now uses `SongSharer` in our native module: a plain
   `startActivity` of the sheet, the file's read grant on the intent (ClipData + flag), our own
-  `FileProvider` (`<package>.share`) exposing only `cache/share/`. iOS keeps expo-sharing
-  (UIActivityViewController; it resolves on every dismissal).
+  `FileProvider` (`<package>.share`) exposing only `cache/share/`. iOS kept expo-sharing until
+  0.13.1 (see above).
 - The e2e flow shares the same song twice in a row; the emulator can't reproduce WhatsApp
   itself, so the WhatsApp leg is still untested on a device.
 

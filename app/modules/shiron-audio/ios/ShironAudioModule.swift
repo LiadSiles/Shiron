@@ -55,9 +55,25 @@ public class ShironAudioModule: Module {
       DispatchQueue.main.async { self.endBackgroundTime() }
     }
 
-    // "שיתוף" of a whole list or category: the songs' copies (cache/share/) and the YouTube
-    // links as text, in one system share sheet. Returns once the sheet is up. (One song goes
-    // through expo-sharing, which takes a single file.)
+    // The copy of a song that is shared out (AacExporter): plain .aac, not an .m4a that
+    // WhatsApp takes for a video.
+    AsyncFunction("shareableCopyAsync") { (inputUri: String, outputUri: String) in
+      guard let input = URL(string: inputUri), input.isFileURL,
+            let output = URL(string: outputUri), output.isFileURL else {
+        throw Exception(name: "ShironAudio", description: "Expected file:// URIs", code: "ERR_AUDIO_BAD_URI")
+      }
+      do {
+        try AacExporter.export(input: input, output: output)
+      } catch {
+        let code = (error as? AudioProcessingError)?.code ?? "FAILED"
+        throw Exception(
+          name: "ShironAudio", description: (error as? LocalizedError)?.errorDescription ?? error.localizedDescription,
+          code: "ERR_AUDIO_\(code)")
+      }
+    }
+
+    // "שיתוף" of a song, a list or a category: the songs' copies (cache/share/) and the YouTube
+    // links as text, in one system share sheet. Returns once the sheet is up.
     AsyncFunction("shareFilesAsync") { (uris: [String], _: String, text: String?, _: String) in
       var items: [Any] = uris.compactMap { URL(string: $0) }
       if let text = text, !text.isEmpty { items.append(text) }

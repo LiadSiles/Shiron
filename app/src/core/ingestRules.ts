@@ -77,7 +77,7 @@ export function canTranscribe(song: { kind: string; playableUri: string | null; 
 export function mimeOf(fileName: string): string {
   const ext = extensionOf(fileName);
   const map: Record<string, string> = {
-    m4a: 'audio/mp4', mp4: 'video/mp4', mp3: 'audio/mpeg', wav: 'audio/wav', flac: 'audio/flac',
+    m4a: 'audio/mp4', aac: 'audio/aac', mp4: 'video/mp4', mp3: 'audio/mpeg', wav: 'audio/wav', flac: 'audio/flac',
     ogg: 'audio/ogg', oga: 'audio/ogg', opus: 'audio/ogg', webm: 'audio/webm',
   };
   return map[ext] ?? 'application/octet-stream';
