@@ -4,10 +4,10 @@ PASS group e2e-settings.yaml
 PASS group e2e-import.yaml
 PASS group e2e-player.yaml
 PASS group e2e-song.yaml
-FAIL(must) group e2e-playlist.yaml
+PASS group e2e-playlist.yaml
 PASS group e2e-search.yaml
 PASS group share-out.yaml
 FAIL(soft) group share-link.yaml
 FAIL(soft) group share-file.yaml
-FAIL(soft) group-add-mp3 add-files.yaml
+PASS group-add-mp3 add-files.yaml
 PASS group-cats categories.yaml
