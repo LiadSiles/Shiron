@@ -47,9 +47,10 @@ appId: app.shiron.gan
 # The video was paused as she left — the technical log says so (Settings → יומן טכני).
 - runFlow: back.yaml
 - tapOn: "הגדרות"
+# On the iPhone the row reads as one element with its subtitle.
 - scrollUntilVisible:
-    element: "יומן טכני"
-- tapOn: "יומן טכני"
+    element: "יומן טכני.*"
+- tapOn: "יומן טכני.*"
 - extendedWaitUntil:
     visible: ".*background: youtube paused.*"
     timeout: 5000
