@@ -6,13 +6,23 @@ appId: app.shiron.gan
 - launchApp
 - tapOn: "הוספת שירים מהקבצים"
 - waitForAnimationToEnd
-- runFlow:
-    when:
-      notVisible: "${FILE}"
+# The picker opens on "Recent", which doesn't list every file: go to Downloads. The drawer is
+# still sliding in when "Downloads" is tapped, and the tap can miss (the picker stayed on
+# Recent): wait for the file, and try once more.
+- retry:
+    maxRetries: 1
     commands:
-      - tapOn: "Show roots"
-      - tapOn: "Downloads"
-      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            notVisible: "${FILE}"
+          commands:
+            - tapOn: "Show roots"
+            - waitForAnimationToEnd
+            - tapOn: "Downloads"
+            - waitForAnimationToEnd
+      - extendedWaitUntil:
+          visible: "${FILE}"
+          timeout: 8000
 - tapOn: "${FILE}"
 # With several files allowed, a tap may only select: then confirm.
 - tapOn:

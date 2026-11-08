@@ -47,6 +47,9 @@ flow() { # must|soft, flow, screenshot prefix, extra maestro args…
     [ "$kind" = must ] && FAILED+=("$tag/$flow")
     maestro hierarchy 2>/dev/null > "shots/$tag-${flow%.yaml}-hierarchy.json"
     adb exec-out screencap -p > "shots/$tag-${flow%.yaml}-FAILED.png" 2>/dev/null
+    # A file picker left open sits in the app's task and comes back in later flows (it covered
+    # the full player in e2e-background): close it, so one failure stays one failure.
+    adb shell am force-stop com.google.android.documentsui >/dev/null 2>&1
   fi
 }
 check() { flow must "$@"; }

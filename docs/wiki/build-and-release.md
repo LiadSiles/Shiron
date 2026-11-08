@@ -176,13 +176,19 @@ The songs are the fixtures looped to ~40 s (`scripts/e2e/long-songs.sh`, both pl
 the fixture itself if ffmpeg can't write a format): at 2.5 s a song had ended and the next one
 started before the emulator's Maestro looked for "מתנגן: <title>". `share-out-android.yaml`
 shares the same file twice in a row, then a link; the script counts the CHOOSER intents in
-logcat (≥ 3), since the sheet itself is another app.
+logcat (≥ 4: the file twice, the link, a category), since the sheet itself is another app.
 
 The CI machines have no ffmpeg by default: both workflows install it (apt, brew).
 
 Gotchas: `hide_error_dialogs` does not hide a launcher ANR ("Pixel Launcher isn't responding")
 — in 0.12.1's run it covered every flow. `android.sh` now lets the launcher settle for 20 s
-after install, and `dismiss.yaml` taps "Wait" while such a dialog shows. On the iPhone, the
+after install, and `dismiss.yaml` taps "Wait" while such a dialog shows. The Android picker
+opens on "Recent", which doesn't list every file; the tap on "Downloads" in its drawer can land
+mid-slide and miss (0.12.3 and the next run: the WhatsApp opus failed to add, and the import,
+song and background flows failed after it). `add-android.yaml` now waits for the file and tries
+once more, and after any failed flow `android.sh` force-stops the picker
+(`com.google.android.documentsui`): left open, it stays in the app's task and covered the full
+player in a later flow. On the iPhone, the
 first "חזרה" right after the YouTube player opened was once ignored (the playing video keeps
 `waitForAnimationToEnd` from settling): `e2e-youtube.yaml` retries that one back once with a
 screenshot; the three rounds after it must pass outright.
