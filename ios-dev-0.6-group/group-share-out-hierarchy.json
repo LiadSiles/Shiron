@@ -70,82 +70,6 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "dismiss popup",
-              "title" : "",
-              "value" : "",
-              "text" : "",
-              "hintText" : "",
-              "resource-id" : "PopoverDismissRegion",
-              "bounds" : "[-402,-874][804,1748]",
-              "enabled" : "true",
-              "focused" : "false",
-              "selected" : "false",
-              "checked" : "false"
-            },
-            "children" : [ ],
-            "enabled" : true,
-            "focused" : false,
-            "checked" : false,
-            "selected" : false
-          } ],
-          "enabled" : true,
-          "focused" : false,
-          "checked" : false,
-          "selected" : false
-        } ],
-        "enabled" : true,
-        "focused" : false,
-        "checked" : false,
-        "selected" : false
-      }, {
-        "attributes" : {
-          "accessibilityText" : "",
-          "title" : "",
-          "value" : "",
-          "text" : "",
-          "hintText" : "",
-          "resource-id" : "",
-          "bounds" : "[0,0][402,874]",
-          "enabled" : "true",
-          "focused" : "false",
-          "selected" : "false",
-          "checked" : "false"
-        },
-        "children" : [ {
-          "attributes" : {
-            "accessibilityText" : "dismiss popup",
-            "title" : "",
-            "value" : "",
-            "text" : "",
-            "hintText" : "",
-            "resource-id" : "PopoverDismissRegion",
-            "bounds" : "[-402,-874][804,1748]",
-            "enabled" : "true",
-            "focused" : "false",
-            "selected" : "false",
-            "checked" : "false"
-          },
-          "children" : [ ],
-          "enabled" : true,
-          "focused" : false,
-          "checked" : false,
-          "selected" : false
-        }, {
-          "attributes" : {
-            "accessibilityText" : "",
-            "title" : "",
-            "value" : "",
-            "text" : "",
-            "hintText" : "",
-            "resource-id" : "",
-            "bounds" : "[0,0][402,874]",
-            "enabled" : "true",
-            "focused" : "false",
-            "selected" : "false",
-            "checked" : "false"
-          },
-          "children" : [ {
-            "attributes" : {
               "accessibilityText" : "",
               "title" : "",
               "value" : "",
@@ -179,7 +103,7 @@
                   "value" : "",
                   "text" : "",
                   "hintText" : "",
-                  "resource-id" : "ActivityListView",
+                  "resource-id" : "",
                   "bounds" : "[0,0][402,874]",
                   "enabled" : "true",
                   "focused" : "false",
@@ -193,7 +117,7 @@
                     "value" : "",
                     "text" : "",
                     "hintText" : "",
-                    "resource-id" : "ShareSheet.RemoteContainerView",
+                    "resource-id" : "",
                     "bounds" : "[0,0][402,874]",
                     "enabled" : "true",
                     "focused" : "false",
@@ -249,6 +173,82 @@
                             "value" : "",
                             "text" : "",
                             "hintText" : "",
+                            "resource-id" : "כל השירים",
+                            "bounds" : "[0,56][402,100]",
+                            "enabled" : "true",
+                            "focused" : "false",
+                            "selected" : "false",
+                            "checked" : "false"
+                          },
+                          "children" : [ {
+                            "attributes" : {
+                              "accessibilityText" : "חזרה",
+                              "title" : "",
+                              "value" : "",
+                              "text" : "",
+                              "hintText" : "",
+                              "resource-id" : "",
+                              "bounds" : "[335,56][402,100]",
+                              "enabled" : "true",
+                              "focused" : "false",
+                              "selected" : "false",
+                              "checked" : "false"
+                            },
+                            "children" : [ ],
+                            "enabled" : true,
+                            "focused" : false,
+                            "checked" : false,
+                            "selected" : false
+                          }, {
+                            "attributes" : {
+                              "accessibilityText" : "כל השירים",
+                              "title" : "",
+                              "value" : "",
+                              "text" : "",
+                              "hintText" : "",
+                              "resource-id" : "",
+                              "bounds" : "[163,68][239,88]",
+                              "enabled" : "true",
+                              "focused" : "false",
+                              "selected" : "false",
+                              "checked" : "false"
+                            },
+                            "children" : [ ],
+                            "enabled" : true,
+                            "focused" : false,
+                            "checked" : false,
+                            "selected" : false
+                          }, {
+                            "attributes" : {
+                              "accessibilityText" : "שיתוף כל השירים",
+                              "title" : "",
+                              "value" : "",
+                              "text" : "",
+                              "hintText" : "",
+                              "resource-id" : "",
+                              "bounds" : "[16,56][60,100]",
+                              "enabled" : "true",
+                              "focused" : "false",
+                              "selected" : "false",
+                              "checked" : "false"
+                            },
+                            "children" : [ ],
+                            "enabled" : true,
+                            "focused" : false,
+                            "checked" : false,
+                            "selected" : false
+                          } ],
+                          "enabled" : true,
+                          "focused" : false,
+                          "checked" : false,
+                          "selected" : false
+                        }, {
+                          "attributes" : {
+                            "accessibilityText" : "",
+                            "title" : "",
+                            "value" : "",
+                            "text" : "",
+                            "hintText" : "",
                             "resource-id" : "",
                             "bounds" : "[0,0][402,874]",
                             "enabled" : "true",
@@ -264,7 +264,7 @@
                               "text" : "",
                               "hintText" : "",
                               "resource-id" : "",
-                              "bounds" : "[0,410][402,874]",
+                              "bounds" : "[0,0][402,874]",
                               "enabled" : "true",
                               "focused" : "false",
                               "selected" : "false",
@@ -278,26 +278,7 @@
                                 "text" : "",
                                 "hintText" : "",
                                 "resource-id" : "",
-                                "bounds" : "[-150,260][552,1024]",
-                                "enabled" : "true",
-                                "focused" : "false",
-                                "selected" : "false",
-                                "checked" : "false"
-                              },
-                              "children" : [ ],
-                              "enabled" : true,
-                              "focused" : false,
-                              "checked" : false,
-                              "selected" : false
-                            }, {
-                              "attributes" : {
-                                "accessibilityText" : "",
-                                "title" : "",
-                                "value" : "",
-                                "text" : "",
-                                "hintText" : "",
-                                "resource-id" : "",
-                                "bounds" : "[0,410][402,874]",
+                                "bounds" : "[0,100][402,874]",
                                 "enabled" : "true",
                                 "focused" : "false",
                                 "selected" : "false",
@@ -311,7 +292,7 @@
                                   "text" : "",
                                   "hintText" : "",
                                   "resource-id" : "",
-                                  "bounds" : "[0,410][402,874]",
+                                  "bounds" : "[0,100][402,874]",
                                   "enabled" : "true",
                                   "focused" : "false",
                                   "selected" : "false",
@@ -325,7 +306,7 @@
                                     "text" : "",
                                     "hintText" : "",
                                     "resource-id" : "",
-                                    "bounds" : "[0,410][402,874]",
+                                    "bounds" : "[0,100][402,874]",
                                     "enabled" : "true",
                                     "focused" : "false",
                                     "selected" : "false",
@@ -338,103 +319,8 @@
                                       "value" : "",
                                       "text" : "",
                                       "hintText" : "",
-                                      "resource-id" : "UIActivityContentView",
-                                      "bounds" : "[0,410][402,482]",
-                                      "enabled" : "true",
-                                      "focused" : "false",
-                                      "selected" : "false",
-                                      "checked" : "false"
-                                    },
-                                    "children" : [ {
-                                      "attributes" : {
-                                        "accessibilityText" : "‎⁨בוקר טוב לגן.m4a⁩",
-                                        "title" : "",
-                                        "value" : "",
-                                        "text" : "",
-                                        "hintText" : "",
-                                        "resource-id" : "",
-                                        "bounds" : "[54,427][327,445]",
-                                        "enabled" : "true",
-                                        "focused" : "false",
-                                        "selected" : "false",
-                                        "checked" : "false"
-                                      },
-                                      "children" : [ ],
-                                      "enabled" : true,
-                                      "focused" : false,
-                                      "checked" : false,
-                                      "selected" : false
-                                    }, {
-                                      "attributes" : {
-                                        "accessibilityText" : "Close",
-                                        "title" : "",
-                                        "value" : "",
-                                        "text" : "",
-                                        "hintText" : "",
-                                        "resource-id" : "header.closeButton",
-                                        "bounds" : "[351,416][394,460]",
-                                        "enabled" : "true",
-                                        "focused" : "false",
-                                        "selected" : "false",
-                                        "checked" : "false"
-                                      },
-                                      "children" : [ {
-                                        "attributes" : {
-                                          "accessibilityText" : "",
-                                          "title" : "",
-                                          "value" : "",
-                                          "text" : "",
-                                          "hintText" : "",
-                                          "resource-id" : "UICloseButtonBackground",
-                                          "bounds" : "[359,423][389,453]",
-                                          "enabled" : "true",
-                                          "focused" : "false",
-                                          "selected" : "false",
-                                          "checked" : "false"
-                                        },
-                                        "children" : [ ],
-                                        "enabled" : true,
-                                        "focused" : false,
-                                        "checked" : false,
-                                        "selected" : false
-                                      } ],
-                                      "enabled" : true,
-                                      "focused" : false,
-                                      "checked" : false,
-                                      "selected" : false
-                                    }, {
-                                      "attributes" : {
-                                        "accessibilityText" : "Video · 334 KB",
-                                        "title" : "",
-                                        "value" : "",
-                                        "text" : "",
-                                        "hintText" : "",
-                                        "resource-id" : "",
-                                        "bounds" : "[54,445][327,463]",
-                                        "enabled" : "true",
-                                        "focused" : "false",
-                                        "selected" : "false",
-                                        "checked" : "false"
-                                      },
-                                      "children" : [ ],
-                                      "enabled" : true,
-                                      "focused" : false,
-                                      "checked" : false,
-                                      "selected" : false
-                                    } ],
-                                    "enabled" : true,
-                                    "focused" : false,
-                                    "checked" : false,
-                                    "selected" : false
-                                  }, {
-                                    "attributes" : {
-                                      "accessibilityText" : "",
-                                      "title" : "",
-                                      "value" : "",
-                                      "text" : "",
-                                      "hintText" : "",
                                       "resource-id" : "",
-                                      "bounds" : "[0,410][402,874]",
+                                      "bounds" : "[0,100][402,840]",
                                       "enabled" : "true",
                                       "focused" : "false",
                                       "selected" : "false",
@@ -448,7 +334,7 @@
                                         "text" : "",
                                         "hintText" : "",
                                         "resource-id" : "",
-                                        "bounds" : "[0,410][402,874]",
+                                        "bounds" : "[0,100][402,840]",
                                         "enabled" : "true",
                                         "focused" : "false",
                                         "selected" : "false",
@@ -461,8 +347,8 @@
                                           "value" : "",
                                           "text" : "",
                                           "hintText" : "",
-                                          "resource-id" : "shareSheet.activity.contentView",
-                                          "bounds" : "[0,410][402,874]",
+                                          "resource-id" : "",
+                                          "bounds" : "[0,100][402,744]",
                                           "enabled" : "true",
                                           "focused" : "false",
                                           "selected" : "false",
@@ -476,7 +362,7 @@
                                             "text" : "",
                                             "hintText" : "",
                                             "resource-id" : "",
-                                            "bounds" : "[0,410][402,874]",
+                                            "bounds" : "[0,100][402,744]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
@@ -490,7 +376,444 @@
                                               "text" : "",
                                               "hintText" : "",
                                               "resource-id" : "",
-                                              "bounds" : "[0,410][402,874]",
+                                              "bounds" : "[16,116][386,236]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ {
+                                              "attributes" : {
+                                                "accessibilityText" : "נגני הכול",
+                                                "title" : "",
+                                                "value" : "",
+                                                "text" : "",
+                                                "hintText" : "",
+                                                "resource-id" : "",
+                                                "bounds" : "[16,116][137,164]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "selected" : "false",
+                                                "checked" : "false"
+                                              },
+                                              "children" : [ ],
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "accessibilityText" : "6 שירים",
+                                                "title" : "",
+                                                "value" : "",
+                                                "text" : "",
+                                                "hintText" : "",
+                                                "resource-id" : "",
+                                                "bounds" : "[149,131][386,150]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "selected" : "false",
+                                                "checked" : "false"
+                                              },
+                                              "children" : [ {
+                                                "attributes" : {
+                                                  "accessibilityText" : "6 שירים",
+                                                  "title" : "",
+                                                  "value" : "",
+                                                  "text" : "",
+                                                  "hintText" : "",
+                                                  "resource-id" : "",
+                                                  "bounds" : "[149,131][386,150]",
+                                                  "enabled" : "true",
+                                                  "focused" : "false",
+                                                  "selected" : "false",
+                                                  "checked" : "false"
+                                                },
+                                                "children" : [ ],
+                                                "enabled" : true,
+                                                "focused" : false,
+                                                "checked" : false,
+                                                "selected" : false
+                                              } ],
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "accessibilityText" : "",
+                                                "title" : "",
+                                                "value" : "",
+                                                "text" : "",
+                                                "hintText" : "",
+                                                "resource-id" : "",
+                                                "bounds" : "[72,180][386,220]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "selected" : "false",
+                                                "checked" : "false"
+                                              },
+                                              "children" : [ {
+                                                "attributes" : {
+                                                  "accessibilityText" : "",
+                                                  "title" : "",
+                                                  "value" : "",
+                                                  "text" : "",
+                                                  "hintText" : "",
+                                                  "resource-id" : "",
+                                                  "bounds" : "[72,180][386,220]",
+                                                  "enabled" : "true",
+                                                  "focused" : "false",
+                                                  "selected" : "false",
+                                                  "checked" : "false"
+                                                },
+                                                "children" : [ {
+                                                  "attributes" : {
+                                                    "accessibilityText" : "",
+                                                    "title" : "",
+                                                    "value" : "",
+                                                    "text" : "",
+                                                    "hintText" : "",
+                                                    "resource-id" : "",
+                                                    "bounds" : "[-121,180][386,220]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "selected" : "false",
+                                                    "checked" : "false"
+                                                  },
+                                                  "children" : [ {
+                                                    "attributes" : {
+                                                      "accessibilityText" : "",
+                                                      "title" : "",
+                                                      "value" : "",
+                                                      "text" : "",
+                                                      "hintText" : "",
+                                                      "resource-id" : "",
+                                                      "bounds" : "[-121,180][386,220]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "selected" : "false",
+                                                      "checked" : "false"
+                                                    },
+                                                    "children" : [ {
+                                                      "attributes" : {
+                                                        "accessibilityText" : "מיון: מומלץ",
+                                                        "title" : "",
+                                                        "value" : "radio button",
+                                                        "text" : "radio button",
+                                                        "hintText" : "",
+                                                        "resource-id" : "",
+                                                        "bounds" : "[323,180][386,220]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "selected" : "true",
+                                                        "checked" : "false"
+                                                      },
+                                                      "children" : [ ],
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : true
+                                                    }, {
+                                                      "attributes" : {
+                                                        "accessibilityText" : "מיון: א–ת",
+                                                        "title" : "",
+                                                        "value" : "radio button",
+                                                        "text" : "radio button",
+                                                        "hintText" : "",
+                                                        "resource-id" : "",
+                                                        "bounds" : "[270,180][319,220]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "selected" : "false",
+                                                        "checked" : "false"
+                                                      },
+                                                      "children" : [ ],
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "accessibilityText" : "מיון: הכי מושמעים",
+                                                        "title" : "",
+                                                        "value" : "radio button",
+                                                        "text" : "radio button",
+                                                        "hintText" : "",
+                                                        "resource-id" : "",
+                                                        "bounds" : "[167,180][266,220]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "selected" : "false",
+                                                        "checked" : "false"
+                                                      },
+                                                      "children" : [ ],
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "accessibilityText" : "מיון: נוגנו לאחרונה",
+                                                        "title" : "",
+                                                        "value" : "radio button",
+                                                        "text" : "radio button",
+                                                        "hintText" : "",
+                                                        "resource-id" : "",
+                                                        "bounds" : "[62,180][163,220]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "selected" : "false",
+                                                        "checked" : "false"
+                                                      },
+                                                      "children" : [ ],
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "accessibilityText" : "מיון: החדשים",
+                                                        "title" : "",
+                                                        "value" : "radio button",
+                                                        "text" : "radio button",
+                                                        "hintText" : "",
+                                                        "resource-id" : "",
+                                                        "bounds" : "[-13,180][58,220]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "selected" : "false",
+                                                        "checked" : "false"
+                                                      },
+                                                      "children" : [ ],
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    } ],
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  } ],
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "accessibilityText" : "Vertical scroll bar, 2 pages",
+                                                    "title" : "",
+                                                    "value" : "0%",
+                                                    "text" : "0%",
+                                                    "hintText" : "",
+                                                    "resource-id" : "",
+                                                    "bounds" : "[75,180][105,220]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "selected" : "false",
+                                                    "checked" : "false"
+                                                  },
+                                                  "children" : [ {
+                                                    "attributes" : {
+                                                      "accessibilityText" : "",
+                                                      "title" : "",
+                                                      "value" : "",
+                                                      "text" : "",
+                                                      "hintText" : "",
+                                                      "resource-id" : "",
+                                                      "bounds" : "[75,181][78,217]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "selected" : "false",
+                                                      "checked" : "false"
+                                                    },
+                                                    "children" : [ ],
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  } ],
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "accessibilityText" : "Vertical scroll bar, 2 pages",
+                                                    "title" : "",
+                                                    "value" : "0%",
+                                                    "text" : "0%",
+                                                    "hintText" : "",
+                                                    "resource-id" : "",
+                                                    "bounds" : "[75,180][105,220]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "selected" : "false",
+                                                    "checked" : "false"
+                                                  },
+                                                  "children" : [ {
+                                                    "attributes" : {
+                                                      "accessibilityText" : "",
+                                                      "title" : "",
+                                                      "value" : "",
+                                                      "text" : "",
+                                                      "hintText" : "",
+                                                      "resource-id" : "",
+                                                      "bounds" : "[75,181][78,217]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "selected" : "false",
+                                                      "checked" : "false"
+                                                    },
+                                                    "children" : [ ],
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  } ],
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                } ],
+                                                "enabled" : true,
+                                                "focused" : false,
+                                                "checked" : false,
+                                                "selected" : false
+                                              } ],
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "accessibilityText" : "תצוגת קוביות",
+                                                "title" : "",
+                                                "value" : "",
+                                                "text" : "",
+                                                "hintText" : "",
+                                                "resource-id" : "",
+                                                "bounds" : "[16,176][64,224]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "selected" : "false",
+                                                "checked" : "false"
+                                              },
+                                              "children" : [ ],
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            } ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "accessibilityText" : "נגני בוקר וב לגןט",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,236][386,309]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "accessibilityText" : "נגני gan-party",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,317][386,389]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "accessibilityText" : "נגני old-song",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,397][386,470]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "accessibilityText" : "נגני שיר מיוטיוב",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,478][386,551]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "accessibilityText" : "נגני voice-whatsapp",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,559][386,631]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "selected" : "false",
+                                              "checked" : "false"
+                                            },
+                                            "children" : [ ],
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "accessibilityText" : "נגני broken",
+                                              "title" : "",
+                                              "value" : "",
+                                              "text" : "",
+                                              "hintText" : "",
+                                              "resource-id" : "",
+                                              "bounds" : "[16,639][386,712]",
                                               "enabled" : "true",
                                               "focused" : "false",
                                               "selected" : "false",
@@ -506,1199 +829,154 @@
                                           "focused" : false,
                                           "checked" : false,
                                           "selected" : false
-                                        }, {
+                                        } ],
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "accessibilityText" : "Vertical scroll bar, 1 page",
+                                          "title" : "",
+                                          "value" : "0%",
+                                          "text" : "0%",
+                                          "hintText" : "",
+                                          "resource-id" : "",
+                                          "bounds" : "[3,100][33,840]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "selected" : "false",
+                                          "checked" : "false"
+                                        },
+                                        "children" : [ {
                                           "attributes" : {
                                             "accessibilityText" : "",
                                             "title" : "",
                                             "value" : "",
                                             "text" : "",
                                             "hintText" : "",
-                                            "resource-id" : "activityCollectionView",
-                                            "bounds" : "[0,410][402,874]",
+                                            "resource-id" : "",
+                                            "bounds" : "[3,199][6,837]",
                                             "enabled" : "true",
                                             "focused" : "false",
                                             "selected" : "false",
                                             "checked" : "false"
                                           },
-                                          "children" : [ {
-                                            "attributes" : {
-                                              "accessibilityText" : "",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[6,482][396,610]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ {
-                                              "attributes" : {
-                                                "accessibilityText" : "PlayGan",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "shareCell",
-                                                "bounds" : "[6,482][84,610]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[6,482][84,610]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "",
-                                                    "bounds" : "[6,569][84,582]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ {
-                                                    "attributes" : {
-                                                      "accessibilityText" : "",
-                                                      "title" : "",
-                                                      "value" : "",
-                                                      "text" : "",
-                                                      "hintText" : "",
-                                                      "resource-id" : "",
-                                                      "bounds" : "[6,569][84,582]",
-                                                      "enabled" : "true",
-                                                      "focused" : "false",
-                                                      "selected" : "false",
-                                                      "checked" : "false"
-                                                    },
-                                                    "children" : [ ],
-                                                    "enabled" : true,
-                                                    "focused" : false,
-                                                    "checked" : false,
-                                                    "selected" : false
-                                                  } ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                }, {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "PlayGan",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "cellTitleLabel",
-                                                    "bounds" : "[6,569][84,582]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                }, {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "activityImageView",
-                                                    "bounds" : "[15,504][75,564]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            }, {
-                                              "attributes" : {
-                                                "accessibilityText" : "More",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "shareCell",
-                                                "bounds" : "[98,482][176,610]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[98,482][176,610]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "",
-                                                    "bounds" : "[98,569][176,582]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ {
-                                                    "attributes" : {
-                                                      "accessibilityText" : "",
-                                                      "title" : "",
-                                                      "value" : "",
-                                                      "text" : "",
-                                                      "hintText" : "",
-                                                      "resource-id" : "",
-                                                      "bounds" : "[98,569][176,582]",
-                                                      "enabled" : "true",
-                                                      "focused" : "false",
-                                                      "selected" : "false",
-                                                      "checked" : "false"
-                                                    },
-                                                    "children" : [ ],
-                                                    "enabled" : true,
-                                                    "focused" : false,
-                                                    "checked" : false,
-                                                    "selected" : false
-                                                  } ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                }, {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "More",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "cellTitleLabel",
-                                                    "bounds" : "[98,569][176,582]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                }, {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "activityImageView",
-                                                    "bounds" : "[107,504][167,564]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            } ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "Copy",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "actionGroupCell",
-                                              "bounds" : "[16,610][386,660]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,610][386,660]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,610][386,660]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            }, {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,610][386,660]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,610][386,660]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "",
-                                                    "bounds" : "[16,610][386,660]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "titleStackView",
-                                                  "bounds" : "[36,625][327,645]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "Copy",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "titleLabel",
-                                                    "bounds" : "[36,625][327,645]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[36,625][327,645]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "imageStackView",
-                                                  "bounds" : "[343,619][375,651]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "copy",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "activityImageView",
-                                                    "bounds" : "[343,614][375,656]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            } ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "Save Video",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "actionGroupCell",
-                                              "bounds" : "[16,670][386,720]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,670][386,720]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,670][386,720]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            }, {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,670][386,720]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,670][386,720]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "",
-                                                    "bounds" : "[16,670][386,720]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "titleStackView",
-                                                  "bounds" : "[36,685][327,705]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "Save Video",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "titleLabel",
-                                                    "bounds" : "[36,685][327,705]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[36,685][327,705]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "imageStackView",
-                                                  "bounds" : "[343,679][375,711]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "download",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "activityImageView",
-                                                    "bounds" : "[343,674][375,715]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            } ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[16,720][386,720]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "Add to Shared Album",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "actionGroupCell",
-                                              "bounds" : "[16,720][386,771]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,720][386,771]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,720][386,771]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            }, {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,720][386,771]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,720][386,771]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "",
-                                                    "bounds" : "[16,720][386,771]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "titleStackView",
-                                                  "bounds" : "[36,735][327,756]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "Add to Shared Album",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "titleLabel",
-                                                    "bounds" : "[36,735][327,756]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[36,735][327,756]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "imageStackView",
-                                                  "bounds" : "[343,730][375,762]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "activityImageView",
-                                                    "bounds" : "[343,730][375,762]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            } ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "",
-                                              "bounds" : "[16,770][386,771]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "Save to Files",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "actionGroupCell",
-                                              "bounds" : "[16,771][386,821]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,771][386,821]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,771][386,821]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            }, {
-                                              "attributes" : {
-                                                "accessibilityText" : "",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "",
-                                                "bounds" : "[16,771][386,821]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[16,771][386,821]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "",
-                                                    "bounds" : "[16,771][386,821]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "titleStackView",
-                                                  "bounds" : "[36,786][327,806]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "Save to Files",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "titleLabel",
-                                                    "bounds" : "[36,786][327,806]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[36,786][327,806]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              }, {
-                                                "attributes" : {
-                                                  "accessibilityText" : "",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "imageStackView",
-                                                  "bounds" : "[343,780][375,812]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ {
-                                                  "attributes" : {
-                                                    "accessibilityText" : "",
-                                                    "title" : "",
-                                                    "value" : "",
-                                                    "text" : "",
-                                                    "hintText" : "",
-                                                    "resource-id" : "activityImageView",
-                                                    "bounds" : "[343,780][375,812]",
-                                                    "enabled" : "true",
-                                                    "focused" : "false",
-                                                    "selected" : "false",
-                                                    "checked" : "false"
-                                                  },
-                                                  "children" : [ ],
-                                                  "enabled" : true,
-                                                  "focused" : false,
-                                                  "checked" : false,
-                                                  "selected" : false
-                                                } ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            } ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          }, {
-                                            "attributes" : {
-                                              "accessibilityText" : "",
-                                              "title" : "",
-                                              "value" : "",
-                                              "text" : "",
-                                              "hintText" : "",
-                                              "resource-id" : "collectionView.footerEditView",
-                                              "bounds" : "[16,821][386,880]",
-                                              "enabled" : "true",
-                                              "focused" : "false",
-                                              "selected" : "false",
-                                              "checked" : "false"
-                                            },
-                                            "children" : [ {
-                                              "attributes" : {
-                                                "accessibilityText" : "Edit Actions…",
-                                                "title" : "",
-                                                "value" : "",
-                                                "text" : "",
-                                                "hintText" : "",
-                                                "resource-id" : "editButton",
-                                                "bounds" : "[36,831][366,864]",
-                                                "enabled" : "true",
-                                                "focused" : "false",
-                                                "selected" : "false",
-                                                "checked" : "false"
-                                              },
-                                              "children" : [ {
-                                                "attributes" : {
-                                                  "accessibilityText" : "Edit Actions…",
-                                                  "title" : "",
-                                                  "value" : "",
-                                                  "text" : "",
-                                                  "hintText" : "",
-                                                  "resource-id" : "",
-                                                  "bounds" : "[36,837][140,858]",
-                                                  "enabled" : "true",
-                                                  "focused" : "false",
-                                                  "selected" : "false",
-                                                  "checked" : "false"
-                                                },
-                                                "children" : [ ],
-                                                "enabled" : true,
-                                                "focused" : false,
-                                                "checked" : false,
-                                                "selected" : false
-                                              } ],
-                                              "enabled" : true,
-                                              "focused" : false,
-                                              "checked" : false,
-                                              "selected" : false
-                                            } ],
-                                            "enabled" : true,
-                                            "focused" : false,
-                                            "checked" : false,
-                                            "selected" : false
-                                          } ],
+                                          "children" : [ ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        } ],
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "accessibilityText" : "Horizontal scroll bar, 1 page",
+                                          "title" : "",
+                                          "value" : "100%",
+                                          "text" : "100%",
+                                          "hintText" : "",
+                                          "resource-id" : "",
+                                          "bounds" : "[0,807][402,837]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "selected" : "false",
+                                          "checked" : "false"
+                                        },
+                                        "children" : [ {
+                                          "attributes" : {
+                                            "accessibilityText" : "",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[3,834][399,837]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        } ],
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "accessibilityText" : "Vertical scroll bar, 1 page",
+                                          "title" : "",
+                                          "value" : "0%",
+                                          "text" : "0%",
+                                          "hintText" : "",
+                                          "resource-id" : "",
+                                          "bounds" : "[3,100][33,840]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "selected" : "false",
+                                          "checked" : "false"
+                                        },
+                                        "children" : [ {
+                                          "attributes" : {
+                                            "accessibilityText" : "",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[3,199][6,837]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ ],
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        } ],
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "accessibilityText" : "Horizontal scroll bar, 1 page",
+                                          "title" : "",
+                                          "value" : "100%",
+                                          "text" : "100%",
+                                          "hintText" : "",
+                                          "resource-id" : "",
+                                          "bounds" : "[0,807][402,837]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "selected" : "false",
+                                          "checked" : "false"
+                                        },
+                                        "children" : [ {
+                                          "attributes" : {
+                                            "accessibilityText" : "",
+                                            "title" : "",
+                                            "value" : "",
+                                            "text" : "",
+                                            "hintText" : "",
+                                            "resource-id" : "",
+                                            "bounds" : "[3,834][399,837]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "selected" : "false",
+                                            "checked" : "false"
+                                          },
+                                          "children" : [ ],
                                           "enabled" : true,
                                           "focused" : false,
                                           "checked" : false,
@@ -1875,13 +1153,13 @@
           },
           "children" : [ {
             "attributes" : {
-              "accessibilityText" : "7:32 AM",
+              "accessibilityText" : "9:32 AM",
               "title" : "",
               "value" : "",
               "text" : "",
               "hintText" : "",
               "resource-id" : "",
-              "bounds" : "[56,22][92,42]",
+              "bounds" : "[55,22][92,42]",
               "enabled" : "true",
               "focused" : "false",
               "selected" : "false",
