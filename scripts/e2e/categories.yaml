@@ -24,6 +24,12 @@ appId: app.shiron.gan
     optional: true
 - waitForAnimationToEnd
 - inputText: שירי גשם
+# Any emoji from the keyboard (0.14.0): typed into the "+" field, it becomes the symbol.
+- tapOn:
+    text: "אימוג׳י אחר מהמקלדת"
+    optional: true
+- inputText: "🦄"
+- tapOn: "שם הקטגוריה"
 - takeScreenshot: ${VARIANT}-category-editor
 # The keyboard covers the button; "done" on the keyboard saves too.
 - pressKey: Enter
