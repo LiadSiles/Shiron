@@ -49,7 +49,7 @@ The owner asked for a professional pass over the UI. What changed, and why:
   music apps put it: an icon, accent-coloured when on, with a "1" for this song, and a toast
   that says the new mode in words (its name stays the accessibility label). The tiles below
   are now לרשימה · שיתוף · פרטים — sharing was two screens away.
-- The mini player leaves out "לא מסווג" too, and the home screen's lone "+" reads "+ הוספה".
+- The mini player and the full player leave out "לא מסווג" too, and the home screen's lone "+" reads "+ הוספה".
 
 ## Sorting, rows or tiles, her categories (0.10.0)
 

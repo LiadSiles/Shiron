@@ -2,7 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, View, ViewInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getCategory, primaryCategoryId } from '../core/categories';
+import { getCategory, primaryCategoryId, UNSORTED_ID } from '../core/categories';
 import { nextRepeat } from '../core/queue';
 import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer, youtubeView } from '../player/player';
 import { Button, CategoryBadge, T } from '../ui/components';
@@ -67,7 +67,7 @@ export default function PlayerScreen() {
         </View>
       )}
       <T weight="bold" size={26} style={{ textAlign: 'center' }}>{p.song.title}</T>
-      <T soft style={{ textAlign: 'center' }}>{cat.name}</T>
+      {catId !== UNSORTED_ID ? <T soft style={{ textAlign: 'center' }}>{cat.name}</T> : null}
 
       {p.error ? (
         <T style={{ color: c.bad, textAlign: 'center' }}>לא הצלחנו לנגן את השיר: {p.error}</T>
