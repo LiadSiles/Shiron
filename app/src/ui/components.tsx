@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
-import { getCategory, primaryCategoryId } from '../core/categories';
+import { getCategory, primaryCategoryId, UNSORTED_ID } from '../core/categories';
 import { isPreparing } from '../core/ingestRules';
 import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
@@ -9,6 +9,7 @@ import { MissingFileError, NotPlayableError, playOrToggle, playSong, usePlayerSe
 import { Icon, IconName } from './Icon';
 import { PauseIcon, PlayIcon } from './icons';
 import { font, radius, space, TOUCH, useTheme } from './theme';
+import { useAiConnected } from './useAiConnected';
 
 export function T({ style, weight = 'regular', size = 16, soft, ...rest }: TextProps & {
   weight?: 'regular' | 'medium' | 'bold';
@@ -64,12 +65,22 @@ export function CategoryBadge({ id, size = 44 }: { id: string; size?: number }) 
   );
 }
 
-export function statusLabel(song: SongWithCategories): string | null {
-  if (song.kind === 'youtube') return song.status === 'pending' ? 'יוטיוב · ממתין לשם וקטגוריה' : 'יוטיוב';
+/**
+ * The song's state in a few words, or null when there is nothing to say. "Waiting for a name"
+ * only while an AI service is connected (`ai`): without one, nothing is on its way.
+ */
+export function statusLabel(song: SongWithCategories, ai: boolean | null): string | null {
+  const waiting = song.status === 'pending' && ai !== false;
+  if (song.kind === 'youtube') return waiting ? 'יוטיוב · ממתין לשם וקטגוריה' : 'יוטיוב';
   if (song.audioState === 'unsupported' && !song.playableUri) return song.error ?? 'הפורמט לא נתמך במכשיר הזה';
   if (isPreparing(song)) return 'מכינה לניגון…';
-  if (song.status === 'pending') return 'ממתין לשם וקטגוריה';
-  return null;
+  return waiting ? 'ממתין לשם וקטגוריה' : null;
+}
+
+/** A row's second line: the category (not "לא מסווג", which says nothing) and the state. */
+function rowDetails(song: SongWithCategories, showCategory: boolean, ai: boolean | null): string {
+  const catId = primaryCategoryId(song);
+  return [showCategory && catId !== UNSORTED_ID ? getCategory(catId).name : null, statusLabel(song, ai)].filter(Boolean).join(' · ');
 }
 
 /** Tap = play now (or pause, if it is the song playing). A YouTube song opens the full player. */
@@ -132,7 +143,7 @@ export function SongRow({ song, queue, showCategory = true, query }: {
   const active = mine !== 'other';
   const playing = mine === 'playing';
   const catId = primaryCategoryId(song);
-  const status = statusLabel(song);
+  const details = rowDetails(song, showCategory, useAiConnected());
   return (
     <Pressable
       accessibilityRole="button"
@@ -158,19 +169,19 @@ export function SongRow({ song, queue, showCategory = true, query }: {
         <CategoryBadge id={catId} />
       )}
       <View style={{ flex: 1, gap: 2 }}>
-        <Highlighted
-          weight={active ? 'bold' : 'medium'}
-          size={18}
-          numberOfLines={1}
-          text={song.title}
-          query={query}
-          style={active ? { color: c.primary } : undefined}
-        />
-        <T soft size={13} numberOfLines={1}>
-          {[showCategory ? getCategory(catId).name : null, status].filter(Boolean).join(' · ')}
-        </T>
+        <View style={styles.titleLine}>
+          <Highlighted
+            weight={active ? 'bold' : 'medium'}
+            size={18}
+            numberOfLines={1}
+            text={song.title}
+            query={query}
+            style={[{ flexShrink: 1 }, active ? { color: c.primary } : null]}
+          />
+          {song.pinnedAt ? <Icon name="pin" size={14} color={c.primary} /> : null}
+        </View>
+        {details ? <T soft size={13} numberOfLines={1}>{details}</T> : null}
       </View>
-      {song.pinnedAt ? <Icon name="pin" size={16} color={c.inkSoft} /> : null}
       <Pressable
         onPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
         hitSlop={4}
@@ -193,7 +204,7 @@ export function SongTile({ song, queue, size }: { song: SongWithCategories; queu
   const mine = usePlayerSelect((p) => (p.song?.id !== song.id ? 'other' : p.playing ? 'playing' : 'paused'));
   const active = mine !== 'other';
   const cat = getCategory(primaryCategoryId(song));
-  const status = statusLabel(song);
+  const details = rowDetails(song, true, useAiConnected());
   return (
     <Pressable
       accessibilityRole="button"
@@ -234,7 +245,7 @@ export function SongTile({ song, queue, size }: { song: SongWithCategories; queu
       </View>
       <View style={{ flex: 1, justifyContent: 'flex-end' }}>
         <T weight="bold" size={16} numberOfLines={3} style={active ? { color: c.primary } : undefined}>{song.title}</T>
-        <T soft size={12} numberOfLines={1}>{status ?? cat.name}</T>
+        {details ? <T soft size={12} numberOfLines={1}>{details}</T> : null}
       </View>
     </Pressable>
   );
@@ -285,6 +296,7 @@ const styles = StyleSheet.create({
     gap: space.s,
   },
   badge: { alignItems: 'center', justifyContent: 'center' },
+  titleLine: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

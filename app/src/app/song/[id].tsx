@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { connectedProviders } from '../../api/keys';
-import { allCategories } from '../../core/categories';
+import { allCategories, UNSORTED_ID } from '../../core/categories';
 import { canTranscribe } from '../../core/ingestRules';
 import { formatTime } from '../../core/time';
 import type { SongWithCategories } from '../../core/types';
@@ -14,6 +14,7 @@ import { CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
 import { ActionBar, ListGroup, ListItem } from '../../ui/list';
 import { Icon } from '../../ui/Icon';
 import { shareSong } from '../../ui/share';
+import { useAiConnected } from '../../ui/useAiConnected';
 import { toast } from '../../ui/toast';
 import { font, radius, space, useTheme } from '../../ui/theme';
 
@@ -24,6 +25,8 @@ export default function SongScreen() {
   const [title, setTitle] = useState('');
   const [editingLyrics, setEditingLyrics] = useState(false);
   const [lyrics, setLyrics] = useState('');
+  const ai = useAiConnected();
+  const [allShown, setAllShown] = useState(false);
 
   useEffect(() => {
     const load = () =>
@@ -106,7 +109,12 @@ export default function SongScreen() {
       },
     ]);
 
-  const status = statusLabel(song);
+  const status = statusLabel(song, ai);
+  const chosen = selected.filter((x) => x !== UNSORTED_ID);
+  const collapsed = !allShown && chosen.length > 0;
+  const shownCategories = collapsed
+    ? allCategories().filter((cat) => chosen.includes(cat.id))
+    : [...allCategories().filter((cat) => chosen.includes(cat.id)), ...allCategories().filter((cat) => !chosen.includes(cat.id))];
 
   return (
     <ScrollView contentContainerStyle={{ padding: space.l, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
@@ -143,8 +151,10 @@ export default function SongScreen() {
       </View>
 
       <T weight="bold" size={18} style={styles.h}>קטגוריות</T>
+      {/* Her chosen categories first; the other thirty-odd only when she asks for them (or
+          when the song has none yet, the moment she needs them). */}
       <View style={[styles.chips, { marginBottom: space.s }]}>
-        {allCategories().map((cat) => {
+        {shownCategories.map((cat) => {
           const on = selected.includes(cat.id);
           return (
             <Pressable
@@ -159,6 +169,16 @@ export default function SongScreen() {
             </Pressable>
           );
         })}
+        {collapsed ? (
+          <Pressable
+            onPress={() => setAllShown(true)}
+            accessibilityRole="button"
+            style={[styles.chip, { backgroundColor: c.surfaceAlt, borderColor: 'transparent' }]}
+          >
+            <Icon name="chevron-down" size={18} color={c.ink} />
+            <T size={14} weight="medium">כל הקטגוריות</T>
+          </Pressable>
+        ) : null}
         <Pressable
           onPress={() => router.push({ pathname: '/category/edit', params: { song: song.id } })}
           accessibilityRole="button"

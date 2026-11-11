@@ -34,6 +34,22 @@ font, no network): tab bar (outline when inactive, filled when active), search f
 Emoji stay only where they are content: category icons and the big art on library tiles.
 The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exactly at every size.
 
+## Quieter rows, chosen categories first, repeat with the controls (0.14.0)
+
+The owner asked for a professional pass over the UI. What changed, and why:
+- **Rows say only what helps.** The second line drops "לא מסווג" (the grey badge already says
+  it) and "ממתין לשם וקטגוריה" when no AI service is connected — nothing is on its way, and on
+  every row it was noise (`useAiConnected`; the home card offers to connect). An empty second
+  line is left out, so the title centres. The pin sits right after the title, in the accent
+  colour, instead of floating between the text and ⋮.
+- **Song screen: her categories first.** Thirty-odd chips at once buried the two that matter.
+  When the song has categories, only those show, then "כל הקטגוריות" and "קטגוריה חדשה"; a song
+  without any shows them all (that is when she needs to choose).
+- **Full player.** Repeat moved from a labelled tile into the transport row, at the end, where
+  music apps put it: an icon, accent-coloured when on, with a "1" for this song, and a toast
+  that says the new mode in words (its name stays the accessibility label). The tiles below
+  are now לרשימה · שיתוף · פרטים — sharing was two screens away.
+
 ## Sorting, rows or tiles, her categories (0.10.0)
 
 `ui/ViewControls.tsx`: sort chips that scroll sideways and a rows/tiles switch (48 pt), above
