@@ -1,9 +1,10 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, TextInput, TextInputInstance, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { allCategories, getCategory, isBuiltinCategory, UNSORTED_ID } from '../../core/categories';
 import { textOn } from '../../core/color';
+import { lastEmoji } from '../../core/emoji';
 import { createCategory, deleteCategory, getSong, setCategories, updateCategory } from '../../db/repo';
 import { useLibrary } from '../../db/useLibrary';
 import { diag } from '../../diag/log';
@@ -32,6 +33,7 @@ export default function EditCategory() {
   const [icon, setIcon] = useState(existing?.icon ?? ICONS[0]);
   const [color, setColor] = useState(existing?.color ?? COLORS[allCategories().length % COLORS.length]);
   const [saving, setSaving] = useState(false);
+  const emojiField = useRef<TextInputInstance>(null);
   const ink = textOn(color);
 
   const save = async () => {
@@ -100,7 +102,25 @@ export default function EditCategory() {
 
         <T soft size={13} style={styles.label}>סמל</T>
         <View style={styles.wrap}>
-          {ICONS.map((e) => (
+          {/* Any emoji from the phone's keyboard (owner, 0.14.0): the field takes the last one typed. */}
+          <TextInput
+            ref={emojiField}
+            value=""
+            onChangeText={(text) => {
+              const e = lastEmoji(text);
+              if (e) {
+                setIcon(e);
+                emojiField.current?.blur();
+              }
+              else if (text.trim()) toast('כאן בוחרים אימוג׳י: במקלדת, הכפתור עם הפרצוף 🙂', 'info');
+            }}
+            placeholder="+"
+            placeholderTextColor={c.primary}
+            accessibilityLabel="אימוג׳י אחר מהמקלדת"
+            accessibilityHint="פותח את המקלדת. בחרי אימוג׳י, והוא יהיה הסמל של הקטגוריה"
+            style={[styles.icon, styles.custom, { borderColor: c.primary, color: c.ink, fontFamily: font.bold }]}
+          />
+          {(ICONS.includes(icon) ? ICONS : [icon, ...ICONS]).map((e) => (
             <Pressable
               key={e}
               onPress={() => setIcon(e)}
@@ -113,6 +133,10 @@ export default function EditCategory() {
             </Pressable>
           ))}
         </View>
+
+        <T soft size={12} style={{ marginTop: space.xs }}>
+          ב־+ אפשר לבחור כל אימוג׳י מהמקלדת של הטלפון.
+        </T>
 
         <T soft size={13} style={styles.label}>צבע</T>
         <View style={styles.wrap}>
@@ -150,5 +174,6 @@ const styles = StyleSheet.create({
   label: { marginTop: space.l, marginBottom: space.xs },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   icon: { width: 48, height: 48, borderRadius: radius.s, alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
+  custom: { borderStyle: 'dashed', textAlign: 'center', fontSize: 24, padding: 0 },
   swatch: { width: 44, height: 44, borderRadius: 22, borderWidth: 3 },
 });

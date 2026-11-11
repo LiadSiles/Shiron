@@ -40,7 +40,9 @@ The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exact
 the library's categories, a category's songs and a playlist. Choices are remembered
 (`ui/viewPrefs.ts`). Tiles for songs: `SongTile` (category colour, emoji, title; tap = play,
 long press / ⋮ = details). Rows for categories: badge, name, count. Category editor
-(`app/category/edit.tsx`, modal): name, emoji grid, 12 colours, live preview, remove; opened from
+(`app/category/edit.tsx`, modal): name, emoji grid — first a dashed "+" field for any emoji
+from the phone's keyboard (0.14.0, `core/emoji.ts → lastEmoji`; her own emoji then leads the
+grid, selected) —, 12 colours, live preview, remove; opened from
 a category's ✎, the library's "קטגוריה חדשה", and a song's "קטגוריה חדשה" chip.
 
 ## Library (`src/screens/LibraryScreen.tsx`, 0.3.1; playlists 0.7.0)
