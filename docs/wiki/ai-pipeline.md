@@ -131,6 +131,15 @@ subtitle credits) — and it can loop on one line over an instrumental. Defences
 
 Lists live in `transcript.ts` (`PHANTOM_EXACT`, `PHANTOM_PREFIX`); add phrases the log shows.
 
+**Hebrew only (owner, 0.14.0).** Some lyrics had English lines even with `language: he`
+(Whisper over unclear singing, its stock English phrases, a model translating). Every prompt
+now asks for Hebrew letters only, a foreign word sung in the song written in Hebrew letters
+(Whisper's prompt, `TRANSCRIBE_PART` for Gemini, rule 3 of the naming prompt), and
+`isPhantom` drops any line with letters but no Hebrew letter (`isForeignLine`) — so both
+`cleanTranscript` and `stripPhantomLines` leave it out. A Hebrew line with an English word
+stays. Migration v8 (the first written in code: `Migration` may be a function) runs
+`hebrewLinesOnly` over the lyrics already in the library.
+
 ## Transcribing again (0.5.1)
 
 The song screen has "תמלול מחדש" under the lyrics for every song with something to listen to

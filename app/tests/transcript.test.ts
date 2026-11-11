@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanTranscript, completeLyrics, isPhantom, joinParts, stripPhantomLines } from '../src/core/transcript';
+import { cleanTranscript, completeLyrics, hebrewLinesOnly, isForeignLine, isPhantom, joinParts, stripPhantomLines } from '../src/core/transcript';
 
 describe('transcript cleaning', () => {
   it('drops the stock phrases Whisper invents over music', () => {
@@ -59,5 +59,27 @@ describe('transcript cleaning', () => {
     expect(stripPhantomLines('שלום שלום\nתודה רבה.\n\n\nלהתראות')).toBe('שלום שלום\n\nלהתראות');
     expect(stripPhantomLines('תודה רבה')).toBeNull();
     expect(stripPhantomLines(null)).toBeNull();
+  });
+});
+
+describe('Hebrew only (owner, 0.14.0)', () => {
+  it('drops lines without a Hebrew letter, keeps Hebrew lines with a foreign word', () => {
+    expect(isForeignLine('Good morning, good morning to you')).toBe(true);
+    expect(isForeignLine('Доброе утро')).toBe(true);
+    expect(isForeignLine('בוקר טוב, good morning')).toBe(false);
+    expect(isForeignLine('בוקר טוב לגן')).toBe(false);
+    expect(isForeignLine('1, 2, 3 ♪')).toBe(false);
+  });
+
+  it('leaves English lines out of a transcript and out of the tidied lyrics', () => {
+    expect(cleanTranscript({ segments: [{ text: 'בוקר טוב' }, { text: 'Thank you for watching' }, { text: 'לכל הילדים' }] }))
+      .toBe('בוקר טוב\nלכל הילדים');
+    expect(stripPhantomLines('בוקר טוב\nGood morning everyone\nלכל הילדים')).toBe('בוקר טוב\nלכל הילדים');
+  });
+
+  it('cleans lyrics already in the library (migration v8)', () => {
+    expect(hebrewLinesOnly('בוקר טוב\nGood morning\n\nלכל הילדים')).toBe('בוקר טוב\n\nלכל הילדים');
+    expect(hebrewLinesOnly('Only English here')).toBeNull();
+    expect(hebrewLinesOnly('בוקר טוב')).toBe('בוקר טוב');
   });
 });

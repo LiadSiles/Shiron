@@ -112,7 +112,8 @@ async function understand(key: string, input: SongInput, sound: object | null, n
 
 /** Asks for the words of one part of a recording, verbatim. */
 const TRANSCRIBE_PART = 'תמללי מילה במילה, בעברית, את כל מה שמושר או נאמר בקטע השמע המצורף, מתחילתו ועד סופו, כולל חזרות. ' +
-  'כתבי רק את המילים, שורה לכל שורה מושרת, בלי כותרות ובלי הסברים. אם אין בקטע שירה או דיבור, החזירי שורה ריקה.';
+  'כתבי רק את המילים, שורה לכל שורה מושרת, בלי כותרות ובלי הסברים. באותיות עבריות בלבד: בלי תרגום ובלי שורות באנגלית; ' +
+  'מילה לועזית שמושרת — באותיות עבריות. אם אין בקטע שירה או דיבור, החזירי שורה ריקה.';
 
 /**
  * The words of one part of a recording (transcription part by part, see api/ai.ts). Null when

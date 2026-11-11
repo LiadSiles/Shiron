@@ -22,10 +22,27 @@ const PHANTOM_EXACT = new Set(
 );
 const PHANTOM_PREFIX = ['כתוביות', 'תורגם', 'תרגום', 'תמלול', 'הופק', 'subtitles', 'transcribed'].map(normalize);
 
-/** Is this segment one of Whisper's stock inventions rather than something sung? */
+/**
+ * A line with letters but not one Hebrew letter: Whisper and the models sometimes put an
+ * English line (or a translation) into Hebrew lyrics. The lyrics are Hebrew only (owner,
+ * 0.14.0): such a line goes, while a Hebrew line with a foreign word in it stays. Lines without
+ * letters (numbers, ♪) are left to the other rules.
+ */
+export function isForeignLine(text: string): boolean {
+  return /\p{L}/u.test(text) && !/\p{Script=Hebrew}/u.test(text);
+}
+
+/** Lyrics without their lines that have no Hebrew letter (null when nothing is left). */
+export function hebrewLinesOnly(lyrics: string): string | null {
+  const text = lyrics.split('\n').filter((l) => !isForeignLine(l)).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return text || null;
+}
+
+/** Is this segment one of Whisper's stock inventions (or not Hebrew) rather than something sung? */
 export function isPhantom(segment: WhisperSegment): boolean {
   const t = normalize(segment.text);
   if (!t) return true;
+  if (isForeignLine(segment.text)) return true;
   if (PHANTOM_EXACT.has(t)) return true;
   if (PHANTOM_PREFIX.some((p) => t.startsWith(p))) return true;
   // Whisper's own rules: "nothing was said here" (high no-speech probability with low

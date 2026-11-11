@@ -1,8 +1,12 @@
 import * as SQLite from 'expo-sqlite';
+import { hebrewLinesOnly } from '../core/transcript';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
-const MIGRATIONS: string[] = [
+/** A schema change (SQL), or a change to the data that needs code. */
+type Migration = string | ((db: SQLite.SQLiteDatabase) => Promise<void>);
+
+const MIGRATIONS: Migration[] = [
   // v1
   `
   CREATE TABLE IF NOT EXISTS songs (
@@ -97,6 +101,15 @@ const MIGRATIONS: string[] = [
     created_at INTEGER NOT NULL
   );
   `,
+  // v8 — lyrics are Hebrew only (0.14.0): lines without a Hebrew letter, which transcription
+  // sometimes wrote in English, leave the songs already in the library too.
+  async (db) => {
+    const rows = await db.getAllAsync<{ id: string; lyrics: string }>('SELECT id, lyrics FROM songs WHERE lyrics IS NOT NULL');
+    for (const { id, lyrics } of rows) {
+      const cleaned = hebrewLinesOnly(lyrics);
+      if (cleaned !== lyrics) await db.runAsync('UPDATE songs SET lyrics = ? WHERE id = ?', cleaned, id);
+    }
+  },
 ];
 
 async function migrate(db: SQLite.SQLiteDatabase) {
@@ -108,7 +121,9 @@ async function migrate(db: SQLite.SQLiteDatabase) {
     // The version bump is in the same transaction: a crash can't leave a migration applied but
     // unrecorded (re-running v2's ALTER TABLE would then fail on every launch).
     await db.withTransactionAsync(async () => {
-      await db.execAsync(MIGRATIONS[version]);
+      const migration = MIGRATIONS[version];
+      if (typeof migration === 'string') await db.execAsync(migration);
+      else await migration(db);
       await db.execAsync(`PRAGMA user_version = ${next}`);
     });
     version = next;
