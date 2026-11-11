@@ -1,24 +1,36 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, View, ViewInstance } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, View, ViewInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCategory, primaryCategoryId } from '../core/categories';
+import { nextRepeat } from '../core/queue';
 import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer, youtubeView } from '../player/player';
 import { Button, CategoryBadge, T } from '../ui/components';
+import { Icon } from '../ui/Icon';
+import { shareSong } from '../ui/share';
+import { toast } from '../ui/toast';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from '../ui/icons';
 import { Scrubber } from '../ui/Scrubber';
 import { ActionBar } from '../ui/list';
 import { cardShadow, space, useTheme } from '../ui/theme';
 
-/** Short enough for an action tile: off → the whole list → this song. */
+/** The repeat button's name: off → the whole list → this song. */
 const REPEAT_LABEL = {
   off: 'בלי חזרה',
   all: 'חזרה על הכול',
   one: 'חזרה על השיר',
 } as const;
 
+/** What the toast says after a tap: the button is an icon, so the change is said in words. */
+const REPEAT_TOLD = {
+  off: 'הניגון ייעצר בסוף הרשימה',
+  all: 'הרשימה תתנגן שוב ושוב',
+  one: 'השיר יתנגן שוב ושוב',
+} as const;
+
 /**
- * Full player: one huge play/pause button, a bar to drag through the song, repeat, lyrics.
+ * Full player: one huge play/pause button with previous, next and repeat around it, a bar to
+ * drag through the song, add to a list / share / details, lyrics.
  * A YouTube song shows YouTube's own player at the top (it may only play visibly): the app-wide
  * player (ui/YouTubeHost) is placed over this screen's slot, and shrinks to a small window when
  * she leaves, so the video keeps playing while she browses.
@@ -67,6 +79,7 @@ export default function PlayerScreen() {
 
       {/* Media controls are not mirrored in RTL: previous on the left, next on the right. */}
       <View style={styles.controls}>
+        <View style={styles.repeat} />
         <Pressable onPress={() => previous()} accessibilityLabel="שיר קודם / לתחילת השיר" style={[styles.side, { backgroundColor: c.surfaceAlt }]}>
           <PreviousIcon size={20} color={c.ink} />
         </Pressable>
@@ -85,13 +98,33 @@ export default function PlayerScreen() {
         >
           <NextIcon size={20} color={c.ink} />
         </Pressable>
+        {/* Repeat sits with the controls, where music apps put it; on, it takes the accent
+            colour, and "1" marks repeating this song. */}
+        <Pressable
+          onPress={() => {
+            cycleRepeat();
+            toast(REPEAT_TOLD[nextRepeat(p.repeat)], 'info');
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={REPEAT_LABEL[p.repeat]}
+          accessibilityHint="מחליף בין בלי חזרה, חזרה על הכול וחזרה על השיר"
+          hitSlop={6}
+          style={[styles.repeat, { backgroundColor: p.repeat === 'off' ? 'transparent' : c.primarySoft }]}
+        >
+          <Icon name="repeat" size={24} color={p.repeat === 'off' ? c.inkSoft : c.primary} />
+          {p.repeat === 'one' ? (
+            <View style={[styles.one, { backgroundColor: c.primary }]}>
+              <T weight="bold" size={10} style={{ color: c.primaryInk, lineHeight: 12 }}>1</T>
+            </View>
+          ) : null}
+        </Pressable>
       </View>
 
       <View style={{ marginTop: space.xl }}>
         <ActionBar
           actions={[
-            { icon: 'repeat', label: REPEAT_LABEL[p.repeat], active: p.repeat !== 'off', onPress: cycleRepeat },
             { icon: 'list', label: 'לרשימה', onPress: () => router.push({ pathname: '/playlist/add', params: { song: p.song!.id } }) },
+            { icon: Platform.OS === 'ios' ? 'share-outline' : 'share-social-outline', label: 'שיתוף', onPress: () => shareSong(p.song!) },
             { icon: 'ellipsis-horizontal', label: 'פרטים', onPress: () => router.push({ pathname: '/song/[id]', params: { id: p.song!.id } }) },
           ]}
         />
@@ -172,7 +205,10 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { padding: space.xl, paddingBottom: 60, gap: space.s },
   art: { alignSelf: 'center', width: 240, height: 240, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: space.l, ...cardShadow },
-  controls: { direction: 'ltr', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xl, marginTop: space.l },
+  controls: { direction: 'ltr', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s, marginTop: space.l },
+  // 44 + hitSlop, gaps of 8: the five controls (320 pt) fit a 375 pt phone's row.
+  repeat: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  one: { position: 'absolute', top: 6, right: 6, minWidth: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   main: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center' },
   side: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
 });
