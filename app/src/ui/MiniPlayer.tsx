@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { getCategory, primaryCategoryId } from '../core/categories';
+import { getCategory, primaryCategoryId, UNSORTED_ID } from '../core/categories';
 import { next, previous, showPlayer, togglePlay, usePlayer } from '../player/player';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from './icons';
 import { CategoryBadge, T } from './components';
@@ -26,9 +26,9 @@ export function MiniPlayer() {
         <T weight="medium" numberOfLines={1}>{p.song.title}</T>
         {p.error ? (
           <T size={12} numberOfLines={2} style={{ color: c.bad }}>לא הצלחנו לנגן את השיר: {p.error}</T>
-        ) : (
+        ) : catId !== UNSORTED_ID ? (
           <T soft size={12} numberOfLines={1}>{getCategory(catId).name}</T>
-        )}
+        ) : null}
       </View>
       {/* Media controls stay left-to-right (not mirrored in RTL): previous, play, next — like
           every player. Previous restarts the song after its first seconds, as in the full player. */}

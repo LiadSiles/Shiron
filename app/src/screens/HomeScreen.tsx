@@ -41,7 +41,9 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
           hitSlop={4}
           style={({ pressed }) => [styles.add, { backgroundColor: c.primarySoft, opacity: pressed ? 0.8 : 1 }]}
         >
-          <Icon name="add" size={28} color={c.primary} />
+          {/* A word next to the "+": on its own it didn't say what it adds. */}
+          <Icon name="add" size={24} color={c.primary} />
+          <T weight="medium" style={{ color: c.primary }}>הוספה</T>
         </Pressable>
       </View>
 
@@ -123,7 +125,7 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
 const styles = StyleSheet.create({
   content: { padding: space.l, paddingBottom: 40 },
   header: { marginBottom: space.s, flexDirection: 'row', alignItems: 'center', gap: space.m },
-  add: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  add: { height: 48, borderRadius: 24, paddingStart: space.m, paddingEnd: space.l, flexDirection: 'row', gap: space.xs, alignItems: 'center', justifyContent: 'center' },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   all: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 40, marginBottom: space.xs },
   banner: { flexDirection: 'row', alignItems: 'center', gap: space.m, padding: space.m, borderRadius: radius.m, borderWidth: 1, marginTop: space.m },
