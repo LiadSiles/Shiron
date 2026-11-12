@@ -4,6 +4,11 @@ appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
 - launchApp
+# The shared link can take a few more seconds to land on a slow CI simulator (the song was in
+# the library at the end of a run where this step had given up after 17 s).
+- extendedWaitUntil:
+    visible: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
+    timeout: 30000
 - tapOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
 - assertVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-yt-player

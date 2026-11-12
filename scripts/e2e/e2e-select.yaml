@@ -13,7 +13,8 @@ appId: app.shiron.gan
 - takeScreenshot: ${VARIANT}-sheet-category
 - tapOn: "ביטול"
 - tapOn: "כל השירים.*"
-- tapOn: "בחירה"
+# The header button reads "בחירה"; on the iPhone Maestro sees its accessibility label.
+- tapOn: "(בחירה|בחירת כמה שירים)"
 - tapOn: "בוקר טוב לגן"
 - tapOn: "old-song"
 - assertVisible: "2 נבחרו"
