@@ -14,6 +14,6 @@ PASS android e2e-search.yaml
 PASS android e2e-end.yaml
 PASS android e2e-background.yaml
 PASS android e2e-select.yaml
-FAIL(must) android share-out-android.yaml
+PASS android share-out-android.yaml
 PASS android-cats categories.yaml
-FAIL(must) android share sheet opened 1 of 4 times
+PASS android share sheet opened 4 times
