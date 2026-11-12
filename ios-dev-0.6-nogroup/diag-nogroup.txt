@@ -1,19 +1,18 @@
-12/11 08:51:53 app group · none granted · declared group.app.shiron.gan · provisioned - · alt -
-12/11 08:54:40 share received · type text · 0 files · 
-12/11 08:54:40 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 09:25:19 background task unavailable · 1
+12/11 09:27:53 share received · type text · 0 files · 
+12/11 09:27:53 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-12/11 08:54:40 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 09:27:53 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-12/11 08:54:58 background task unavailable · 1
-12/11 08:54:58 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 09:28:00 background task unavailable · 1
+12/11 09:28:00 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-12/11 08:54:58 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 09:28:00 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-12/11 08:55:00 play youtube · שיר מיוטיוב · 1/1
-12/11 08:58:49 ended · שיר מיוטיוב · repeat off · youtube
-12/11 09:00:25 app group · none granted · declared group.app.shiron.gan · provisioned - · alt -
-12/11 09:00:25 background task unavailable · 1
-12/11 09:00:25 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 09:28:04 play youtube · שיר מיוטיוב · 1/1
+12/11 09:31:49 ended · שיר מיוטיוב · repeat off · youtube
+12/11 09:33:18 background task unavailable · 1
+12/11 09:33:18 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-12/11 09:00:25 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 09:33:18 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
