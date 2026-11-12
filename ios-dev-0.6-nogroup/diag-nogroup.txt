@@ -1,8 +1,18 @@
-12/11 13:55:53 background task unavailable · 1
-12/11 13:59:09 background task unavailable · 1
-12/11 14:00:15 background task unavailable · 1
-12/11 14:00:15 share received · type text · 0 files · 
-12/11 14:00:15 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 21:38:17 background task unavailable · 1
+12/11 21:41:03 share received · type text · 0 files · 
+12/11 21:41:04 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-12/11 14:00:15 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+12/11 21:41:04 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+→ Caused by: A required entitlement isn't present.
+12/11 21:42:05 background task unavailable · 1
+12/11 21:42:05 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+→ Caused by: A required entitlement isn't present.
+12/11 21:42:05 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+→ Caused by: A required entitlement isn't present.
+12/11 21:42:30 play youtube · שיר מיוטיוב · 1/1
+12/11 21:46:13 ended · שיר מיוטיוב · repeat off · youtube
+12/11 21:47:12 background task unavailable · 1
+12/11 21:47:12 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+→ Caused by: A required entitlement isn't present.
+12/11 21:47:12 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
