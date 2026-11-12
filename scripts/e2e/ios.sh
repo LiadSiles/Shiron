@@ -59,7 +59,7 @@ if [ "$VARIANT" = group ]; then
     || echo "FAIL(must) $VARIANT staging the shared files" >> "$RESULTS"
   FLOWS+=("must:open-link.yaml@LINK=shiron://dataUrl=shironShareKey#file" "must:e2e-import.yaml@COUNT=6" must:e2e-player.yaml must:e2e-song.yaml
     must:e2e-playlist.yaml must:e2e-search.yaml must:e2e-end.yaml must:e2e-background.yaml
-    "must:e2e-many-links.yaml@AFTER=8"
+    "must:e2e-many-links.yaml@AFTER=7"
     "soft:add-files.yaml@FILE=boker-tov,VARIANT=$VARIANT-add-mp3" "soft:categories.yaml@VARIANT=$VARIANT-cats")
 fi
 # The real share sheet: the simulator taps it unreliably (these have not passed there in many

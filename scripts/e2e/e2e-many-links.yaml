@@ -1,10 +1,14 @@
 # Several YouTube links shared together (owner, 0.14.1: only the first was saved): two new
 # videos and the one already in the library, one link per line as WhatsApp forwards them, in a
 # single share. Both new ones are saved, the known one is not doubled, and the activity dock at
-# the bottom follows them to ready. COUNT = the songs before this share.
+# the bottom follows them to ready. AFTER = the songs after it (e2e-song deleted one before).
 appId: app.shiron.gan
 ---
 - openLink: "shiron://share?text=%D7%A9%D7%99%D7%A8%D7%99%D7%9D%20%D7%9C%D7%92%D7%9F%0Ahttps%3A%2F%2Fyoutu.be%2F9bZkp7q19f0%0Ahttps%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DkJQP7kiw5Fk%0Ahttps%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
+- extendedWaitUntil:
+    visible: "Open"
+    timeout: 10000
+    optional: true
 - runFlow: dismiss.yaml
 - extendedWaitUntil:
     visible: ".*2 שירים נשמרו.*"

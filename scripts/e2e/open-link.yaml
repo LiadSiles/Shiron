@@ -5,6 +5,11 @@
 appId: app.shiron.gan
 ---
 - openLink: ${LINK}
+# iOS's prompt can take seconds to show; answered too early, it stayed over the next flow.
+- extendedWaitUntil:
+    visible: "Open"
+    timeout: 10000
+    optional: true
 - runFlow: dismiss.yaml
 - runFlow: wait-4s.yaml
 - runFlow: wait-4s.yaml
