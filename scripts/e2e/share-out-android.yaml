@@ -14,8 +14,8 @@ appId: app.shiron.gan
 - assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive).*"
 - back
 # Again right away: with expo-sharing every share after the first failed while it still
-# waited for the first one's result (the WhatsApp report, 0.12.1).
-- assertVisible: "פרטי שיר"
+# waited for the first one's result (the WhatsApp report, 0.12.1). From the long-press sheet.
+- longPressOn: "נגני בוקר טוב לגן"
 - tapOn: "שיתוף"
 - waitForAnimationToEnd
 - assertNotVisible: ".*לא הצלחנו לשתף.*"
@@ -29,7 +29,6 @@ appId: app.shiron.gan
 - assertNotVisible: ".*לא הצלחנו לשתף.*"
 - back
 # A whole category: all its songs as files and the YouTube song as a link, in one sheet.
-- runFlow: back.yaml
 - tapOn: "שיתוף כל השירים"
 - waitForAnimationToEnd
 - assertNotVisible: ".*לא הצלחנו לשתף.*"
