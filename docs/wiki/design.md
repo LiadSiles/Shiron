@@ -34,6 +34,25 @@ font, no network): tab bar (outline when inactive, filled when active), search f
 Emoji stay only where they are content: category icons and the big art on library tiles.
 The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exactly at every size.
 
+## Opening without a flicker (0.15.1)
+
+The owner saw the home screen "flicker" as the app opened. Several things on it settled a
+moment after it first showed, each moving the screen:
+- **Safe-area insets.** `SafeAreaProvider` had no `initialMetrics`, so the first frame drew
+  with zero insets (under the status bar) and jumped down on the next. It now starts from
+  `initialWindowMetrics`.
+- **The "connect an AI service" card** appeared only after the processor's first pass set
+  `needsKey`, pushing the songs down. Home now decides it from `useAiConnected` (`ai === false`;
+  `needsKey` still adds a key that stopped working), which is asked at launch.
+- **Rows' second lines** ("ממתין לשם וקטגוריה") flipped when `useAiConnected` went from
+  unknown to known.
+- **Rows vs tiles** (`viewPrefs`) loaded from the database after the first frame.
+- **The activity dock** flashed in for a split-second step of the queue checked at launch.
+Now the splash (`ui/launch.ts`) waits for all of the first screen's needs —
+`launchReady('library' | 'ai' | 'prefs')` — and then fades straight into a screen that no
+longer changes (still at most `SPLASH_MAX_MS`, 2.5 s). The dock shows work she didn't start
+only once it has lasted 1.5 s (`useLasting`); a share's progress still shows at once.
+
 ## Long press, the action sheet, choosing several songs (0.15.0)
 
 The owner asked for long-press menus "like a professional app" on every object, and acting on

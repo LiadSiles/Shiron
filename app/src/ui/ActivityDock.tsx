@@ -15,6 +15,22 @@ import { useStore } from './useStore';
 
 /** How long "all ready" stays before the dock folds away by itself. */
 const DONE_MS = 6000;
+/** Background work she didn't start appears only once it has lasted this long. */
+const STEP_SHOWS_AFTER_MS = 1500;
+
+/** `on`, once it has stayed on for `ms` (off at once). */
+function useLasting(on: boolean, ms: number) {
+  const [lasting, setLasting] = useState(false);
+  useEffect(() => {
+    if (!on) {
+      setLasting(false);
+      return;
+    }
+    const t = setTimeout(() => setLasting(true), ms);
+    return () => clearTimeout(t);
+  }, [on, ms]);
+  return on && lasting;
+}
 
 const STAGE: Record<Stage, { label: string; icon: IconName }> = {
   preparing: { label: 'בהכנה לניגון', icon: 'musical-notes' },
@@ -40,6 +56,9 @@ export function ActivityDock() {
   const ai = useAiConnected();
   const lib = useLibrary();
   const [open, setOpen] = useState(false);
+  // Work she didn't start (the queue checked at launch, a retry) shows only if it lasts: a
+  // step of a split second made the dock flash in and out and the screen above it jump.
+  const quietStep = useLasting(!!step, STEP_SHOWS_AFTER_MS);
 
   const songs = ids.map((id) => lib.byId.get(id)).filter((s): s is NonNullable<typeof s> => !!s);
   const progress = batchProgress(songs, ai);
@@ -78,7 +97,7 @@ export function ActivityDock() {
       fraction: (progress.ready + progress.failed) / progress.total,
       icon: finished ? (progress.failed ? 'alert-circle' : 'checkmark-circle') : 'busy',
     };
-  } else if (step) {
+  } else if (step && quietStep) {
     line = {
       title: step.kind === 'convert' ? 'מכינה לניגון' : 'נותנת שם ומילים',
       detail: step.title + (step.left > 1 ? ` · ועוד ${step.left - 1}` : ''),

@@ -8,6 +8,7 @@ import { Icon } from '../ui/Icon';
 import { PlaylistStrip } from '../ui/playlists';
 import { pickAndImport } from '../ui/importResult';
 import { radius, space, useTheme } from '../ui/theme';
+import { useAiConnected } from '../ui/useAiConnected';
 import { useStore } from '../ui/useStore';
 
 function greeting(hour: number) {
@@ -19,6 +20,7 @@ function greeting(hour: number) {
 export function HomeScreen({ lib }: { lib: LibraryState }) {
   const c = useTheme();
   const proc = useStore(processorStore);
+  const ai = useAiConnected();
 
   // Not on every processor tick: ranking every category runs the Hebrew calendar per song.
   const sections = useMemo(() => homeSections(lib), [lib]);
@@ -46,7 +48,10 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
         </Pressable>
       </View>
 
-      {proc?.needsKey && pendingCount > 0 ? (
+      {/* Known before the screen first shows (useAiConnected is asked at launch), so the card is
+          there from the first frame instead of pushing the songs down a moment later; the
+          processor's needsKey adds a key that stopped working. */}
+      {(ai === false || proc?.needsKey) && pendingCount > 0 ? (
         <Pressable
           onPress={() => router.push('/connect')}
           accessibilityRole="button"
@@ -66,7 +71,7 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
         </Pressable>
       ) : null}
 
-      {proc?.notice && !proc.needsKey && pendingCount > 0 ? (
+      {proc?.notice && !proc.needsKey && ai !== false && pendingCount > 0 ? (
         <T soft size={13} style={{ marginTop: space.s }}>{proc.notice}</T>
       ) : null}
 

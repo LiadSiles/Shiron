@@ -8,7 +8,7 @@ import * as SystemUI from 'expo-system-ui';
 import { useEffect, useRef } from 'react';
 import { AppState, I18nManager, Platform, View } from 'react-native';
 import { appGroupStatus } from '../../modules/shiron-audio';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 import { connectedProviders } from '../api/keys';
 import { diag } from '../diag/log';
 import { getSetting, setSetting } from '../db/repo';
@@ -20,7 +20,7 @@ import { showImportResult } from '../ui/importResult';
 import { YouTubeHost } from '../ui/YouTubeHost';
 import { keepWorkingInBackground, registerBackgroundProcessing } from '../ingest/background';
 import { processQueue, retryUnconvertedAfterUpdate } from '../ingest/processor';
-import { appReady, SPLASH_MAX_MS } from '../ui/launch';
+import { hideSplash, SPLASH_MAX_MS } from '../ui/launch';
 import { font, useTheme } from '../ui/theme';
 import { StatusHost, toast } from '../ui/toast';
 
@@ -93,9 +93,10 @@ export default function RootLayout() {
     SystemUI.setBackgroundColorAsync(c.bg).catch(() => {});
   }, [c.bg]);
 
-  // The home screen calls appReady() once its songs are drawn; this is only the safety net.
+  // The splash goes once the first screen has all it needs (ui/launch.ts); this is only the
+  // safety net.
   useEffect(() => {
-    const t = setTimeout(appReady, SPLASH_MAX_MS);
+    const t = setTimeout(hideSplash, SPLASH_MAX_MS);
     return () => clearTimeout(t);
   }, []);
 
@@ -121,7 +122,9 @@ export default function RootLayout() {
 
   return (
     <ShareIntentProvider options={{ resetOnBackground: false }}>
-      <SafeAreaProvider>
+      {/* Insets known from the first frame: without them the screens drew under the status bar
+          for a frame, then jumped down — the flicker on opening (0.15.1). */}
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <StatusBar style="auto" />
         <ShareHandler />
         <ActionSheetHost />

@@ -6,10 +6,24 @@ import * as SplashScreen from 'expo-splash-screen';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 SplashScreen.setOptions({ fade: true, duration: 250 });
 
+/**
+ * What the first screen needs before it is shown, so nothing on it moves once she sees it
+ * (owner, 0.15.1: the home screen "flickered" on opening): her songs, whether an AI service
+ * is connected (it decides the "connect" card and the rows' second lines) and how she likes
+ * her lists laid out (rows or tiles). Fonts come first in the root layout.
+ */
+type Need = 'library' | 'ai' | 'prefs';
+const waiting = new Set<Need>(['library', 'ai', 'prefs']);
 let hidden = false;
 
-/** The first screen has its content (fonts and the library are loaded): show it. */
-export function appReady() {
+/** One of the first screen's needs is in; the splash fades out once all are. */
+export function launchReady(need: Need) {
+  waiting.delete(need);
+  if (!waiting.size) hideSplash();
+}
+
+/** Shows the app: once everything is in, or after SPLASH_MAX_MS whatever is still loading. */
+export function hideSplash() {
   if (hidden) return;
   hidden = true;
   SplashScreen.hide();

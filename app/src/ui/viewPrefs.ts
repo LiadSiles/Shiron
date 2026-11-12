@@ -1,6 +1,7 @@
 import type { CategorySort, Layout, SongSort } from '../core/sorting';
 import { createStore } from '../core/store';
 import { getSetting, setSetting } from '../db/repo';
+import { launchReady } from './launch';
 
 /** How she likes to see things; remembered across launches (settings table). */
 export interface ViewPrefs {
@@ -24,7 +25,8 @@ getSetting(KEY)
   .then((raw) => {
     if (raw) viewPrefs.set({ ...DEFAULTS, ...(JSON.parse(raw) as Partial<ViewPrefs>) });
   })
-  .catch(() => undefined);
+  .catch(() => undefined)
+  .finally(() => launchReady('prefs')); // before the first screen shows: no rows → tiles switch
 
 export function setViewPref(patch: Partial<ViewPrefs>) {
   viewPrefs.set(patch);

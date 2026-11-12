@@ -8,7 +8,7 @@ import { LibraryScreen } from '../screens/LibraryScreen';
 import { SearchResults } from '../screens/SearchResults';
 import { T } from '../ui/components';
 import { Icon, IconName } from '../ui/Icon';
-import { appReady } from '../ui/launch';
+import { launchReady } from '../ui/launch';
 import { ActivityDock } from '../ui/ActivityDock';
 import { MiniPlayer } from '../ui/MiniPlayer';
 import { SearchField } from '../ui/SearchField';
@@ -38,9 +38,9 @@ export default function Shell() {
   const input = useRef<TextInputInstance>(null);
   const searching = focused || query.trim().length > 0;
 
-  // First frame with her songs in it: the splash fades straight into it.
+  // Her songs are in: one of the first screen's needs (ui/launch.ts).
   useEffect(() => {
-    if (!lib.loading) appReady();
+    if (!lib.loading) launchReady('library');
   }, [lib.loading]);
 
   const endSearch = () => {
