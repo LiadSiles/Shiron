@@ -2,29 +2,30 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { cleanName, newPlaylistName, songCount, toggleSong } from '../../core/playlists';
+import { cleanName, newPlaylistName, playlistColor, songCount, toggleSongs } from '../../core/playlists';
 import { createPlaylist, setPlaylistSongs } from '../../db/repo';
 import { useLibrary } from '../../db/useLibrary';
 import { diag } from '../../diag/log';
 import { Button, T } from '../../ui/components';
 import { Icon } from '../../ui/Icon';
-import { playlistColor } from '../../ui/playlists';
 import { toast } from '../../ui/toast';
 import { font, radius, space, TOUCH, useTheme } from '../../ui/theme';
 
 /**
- * From a song's screen: which of her lists it is in. Each tap adds it to the end of a list or
- * takes it out, at once — no save button to forget. Or start a new list with this song.
+ * Which of her lists a song is in — or several songs chosen together (`songs`, ids joined by
+ * ","). Each tap adds them to the end of a list, or takes them out when they are all in it
+ * already, at once — no save button to forget. Or start a new list with them.
  */
 export default function AddToPlaylist() {
-  const { song: songId } = useLocalSearchParams<{ song: string }>();
+  const { songs: param } = useLocalSearchParams<{ songs: string }>();
   const c = useTheme();
   const lib = useLibrary();
-  const song = lib.byId.get(songId);
+  const songIds = (param ?? '').split(',').filter((id) => lib.byId.has(id));
+  const one = songIds.length === 1 ? lib.byId.get(songIds[0]) : null;
   const [name, setName] = useState('');
 
   const toggle = (listId: string, ids: string[]) =>
-    setPlaylistSongs(listId, toggleSong(ids, songId)).catch((e) => {
+    setPlaylistSongs(listId, toggleSongs(ids, songIds)).catch((e) => {
       diag('playlist toggle failed', e);
       toast('לא הצלחנו לעדכן את הרשימה', 'error');
     });
@@ -32,8 +33,8 @@ export default function AddToPlaylist() {
   const create = async () => {
     const finalName = cleanName(name) || newPlaylistName(lib.playlists.map((p) => p.name));
     try {
-      await createPlaylist(finalName, [songId]);
-      toast(`השיר נוסף לרשימה החדשה "${finalName}"`, 'success');
+      await createPlaylist(finalName, songIds);
+      toast(one ? `השיר נוסף לרשימה החדשה "${finalName}"` : `${songIds.length} שירים נוספו לרשימה החדשה "${finalName}"`, 'success');
       router.back();
     } catch (e) {
       diag('playlist create failed', e);
@@ -44,10 +45,10 @@ export default function AddToPlaylist() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['bottom']}>
       <ScrollView contentContainerStyle={{ padding: space.l, gap: space.s }} keyboardShouldPersistTaps="handled">
-        {song ? <T soft numberOfLines={1}>{song.title}</T> : null}
+        <T soft numberOfLines={1}>{one ? one.title : `${songIds.length} שירים נבחרו`}</T>
 
         {lib.playlists.map((p) => {
-          const on = p.songIds.includes(songId);
+          const on = songIds.length > 0 && songIds.every((x) => p.songIds.includes(x));
           const color = playlistColor(p.id);
           return (
             <Pressable
@@ -73,7 +74,7 @@ export default function AddToPlaylist() {
           );
         })}
 
-        <T weight="bold" size={18} style={{ marginTop: lib.playlists.length ? space.xl : 0 }}>רשימה חדשה עם השיר הזה</T>
+        <T weight="bold" size={18} style={{ marginTop: lib.playlists.length ? space.xl : 0 }}>{one ? 'רשימה חדשה עם השיר הזה' : 'רשימה חדשה עם השירים האלה'}</T>
         <TextInput
           value={name}
           onChangeText={setName}

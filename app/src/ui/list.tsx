@@ -21,7 +21,7 @@ export function ListGroup({ title, footer, children }: { title?: string; footer?
   );
 }
 
-export function ListItem({ icon, tint, title, subtitle, value, onPress, danger, chevron = !!onPress, last, disabled }: {
+export function ListItem({ icon, tint, title, subtitle, value, onPress, onLongPress, danger, chevron = !!onPress, last, disabled }: {
   icon: IconName;
   /** Icon tile colour; defaults to the primary colour. */
   tint?: string;
@@ -30,6 +30,8 @@ export function ListItem({ icon, tint, title, subtitle, value, onPress, danger, 
   /** Short text at the end of the row ("מחובר"). */
   value?: string;
   onPress?: () => void;
+  /** Its actions (ui/menus), as on every item that has some. */
+  onLongPress?: () => void;
   danger?: boolean;
   chevron?: boolean;
   /** No divider under the last row of a group. */
@@ -41,6 +43,7 @@ export function ListItem({ icon, tint, title, subtitle, value, onPress, danger, 
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
       disabled={!onPress || disabled}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={rowLabel(title, value, subtitle)}

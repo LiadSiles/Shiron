@@ -14,6 +14,7 @@ import { diag } from '../diag/log';
 import { getSetting, setSetting } from '../db/repo';
 import { sharedTextFromUrl } from '../core/incoming';
 import type { ImportSummary } from '../core/importSummary';
+import { ActionSheetHost } from '../ui/ActionSheet';
 import { enqueueShare } from '../ingest/ingest';
 import { showImportResult } from '../ui/importResult';
 import { YouTubeHost } from '../ui/YouTubeHost';
@@ -123,6 +124,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="auto" />
         <ShareHandler />
+        <ActionSheetHost />
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: c.bg },

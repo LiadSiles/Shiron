@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { T } from './components';
+import { T } from './text';
 import { Icon, IconName } from './Icon';
 import { cardShadow, radius, space, useTheme } from './theme';
 

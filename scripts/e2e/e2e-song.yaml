@@ -5,7 +5,9 @@ appId: app.shiron.gan
 - launchApp
 - tapOn: ספרייה
 - tapOn: "כל השירים.*"
+# A long press opens the song's actions (0.15.0); its page is "פרטים ועריכה".
 - longPressOn: "נגני boker-tov"
+- tapOn: "פרטים ועריכה"
 - assertVisible: "פרטי שיר"
 # The simulator's keyboard sometimes types Hebrew out of order ("בוקר וב לגןט") or leaves the
 # old name in front: check the field holds exactly the new name, else type it again.
@@ -35,10 +37,8 @@ appId: app.shiron.gan
 - tapOn: "כל השירים.*"
 - assertVisible: ".*בוקר טוב לגן.*"
 - assertNotVisible: ".*boker-tov.*"
+# Deleting straight from the long-press sheet.
 - longPressOn: "נגני voice-whatsapp"
-- scrollUntilVisible:
-    element:
-      text: "מחיקת השיר"
 - tapOn: "מחיקת השיר"
 - tapOn: "מחיקה"
 - waitForAnimationToEnd

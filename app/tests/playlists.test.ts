@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addSongs, cleanName, MAX_NAME, moveSong, newPlaylistName, playlistSongs, songCount, toggleSong } from '../src/core/playlists';
+import { addSongs, cleanName, MAX_NAME, moveSong, newPlaylistName, playlistSongs, songCount, toggleSong, toggleSongs, playlistColor } from '../src/core/playlists';
 
 describe('playlists', () => {
   it('cleans names', () => {
@@ -17,6 +17,9 @@ describe('playlists', () => {
   it('adds and removes songs, each at most once', () => {
     expect(toggleSong(['a', 'b'], 'c')).toEqual(['a', 'b', 'c']);
     expect(toggleSong(['a', 'b', 'c'], 'b')).toEqual(['a', 'c']);
+    // Several selected songs: add the missing ones; all there already → take them all out.
+    expect(toggleSongs(['a', 'b'], ['b', 'c', 'd'])).toEqual(['a', 'b', 'c', 'd']);
+    expect(toggleSongs(['a', 'b', 'c'], ['c', 'a'])).toEqual(['b']);
     expect(addSongs(['a'], ['b', 'a', 'c', 'b'])).toEqual(['a', 'b', 'c']);
   });
 
@@ -37,5 +40,12 @@ describe('playlists', () => {
     expect(songCount(1)).toBe('שיר אחד');
     expect(songCount(0)).toBe('0 שירים');
     expect(songCount(7)).toBe('7 שירים');
+  });
+});
+
+describe('a list’s colour', () => {
+  it('is its own, the same every time', () => {
+    expect(playlistColor('abc')).toBe(playlistColor('abc'));
+    expect(playlistColor('abc')).toMatch(/^#[0-9A-F]{6}$/);
   });
 });

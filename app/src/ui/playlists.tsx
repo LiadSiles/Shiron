@@ -2,22 +2,15 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { textOn } from '../core/color';
 import { canStart } from '../core/ingestRules';
-import { playlistSongs, songCount } from '../core/playlists';
+import { playlistColor, playlistSongs, songCount } from '../core/playlists';
 import type { Playlist, SongWithCategories } from '../core/types';
 import { togglePlay, usePlayerSelect } from '../player/player';
-import { playAll, T } from './components';
+import { playAll } from './play';
+import { T } from './text';
 import { Icon } from './Icon';
+import { showPlaylistMenu } from './menus';
 import { PauseIcon, PlayIcon } from './icons';
 import { radius, space, TOUCH, useTheme } from './theme';
-
-/** Each list keeps its own colour (picked from its id), distinct from the categories' palette. */
-const COLORS = ['#5B4FC4', '#2E7D8C', '#B5447A', '#3F7D3A', '#A65A2A', '#4A6FB5'];
-
-export function playlistColor(id: string): string {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
-  return COLORS[Math.abs(h) % COLORS.length];
-}
 
 export function openPlaylist(id: string) {
   router.push({ pathname: '/playlist/[id]', params: { id } });
@@ -46,6 +39,8 @@ export function PlaylistStrip({ playlists, byId }: { playlists: Playlist[]; byId
           <Pressable
             key={p.id}
             onPress={() => openPlaylist(p.id)}
+            onLongPress={() => showPlaylistMenu(p, playlistSongs(p.songIds, byId))}
+            accessibilityHint="לחיצה ארוכה פותחת את האפשרויות"
             accessibilityRole="button"
             accessibilityLabel={`רשימה ${p.name}, ${songCount(p.songIds.length)}`}
             style={({ pressed }) => [styles.card, { backgroundColor: color, opacity: pressed ? 0.85 : 1 }]}

@@ -6,13 +6,13 @@ import { allCategories, UNSORTED_ID } from '../../core/categories';
 import { canTranscribe } from '../../core/ingestRules';
 import { formatTime } from '../../core/time';
 import type { SongWithCategories } from '../../core/types';
-import { deleteSong, getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
+import { getSong, onLibraryChange, setCategories, updateSong } from '../../db/repo';
 import { retrySong } from '../../ingest/processor';
-import { deleteStored, resolveStored } from '../../ingest/storage';
-import { forgetSong } from '../../player/player';
+import { resolveStored } from '../../ingest/storage';
 import { CategoryBadge, playOrOpen, statusLabel, T } from '../../ui/components';
 import { ActionBar, ListGroup, ListItem } from '../../ui/list';
 import { Icon } from '../../ui/Icon';
+import { addToPlaylist, confirmDeleteSongs } from '../../ui/menus';
 import { shareSong } from '../../ui/share';
 import { useAiConnected } from '../../ui/useAiConnected';
 import { toast } from '../../ui/toast';
@@ -94,20 +94,7 @@ export default function SongScreen() {
     setEditingLyrics(false);
   };
 
-  const remove = () =>
-    Alert.alert('למחוק את השיר?', song.title, [
-      { text: 'ביטול', style: 'cancel' },
-      {
-        text: 'מחיקה',
-        style: 'destructive',
-        onPress: async () => {
-          await forgetSong(song.id);
-          deleteStored(song.originalUri, song.playableUri);
-          await deleteSong(song.id);
-          router.back();
-        },
-      },
-    ]);
+  const remove = () => confirmDeleteSongs([song], () => router.back());
 
   const status = statusLabel(song, ai);
   const chosen = selected.filter((x) => x !== UNSORTED_ID);
@@ -144,7 +131,7 @@ export default function SongScreen() {
           actions={[
             { icon: 'play', label: 'ניגון', primary: true, onPress: () => playOrOpen(song, [song]) },
             { icon: song.pinnedAt ? 'pin' : 'pin-outline', label: song.pinnedAt ? 'מוצמד' : 'הצמדה', active: !!song.pinnedAt, onPress: togglePin },
-            { icon: 'list', label: 'לרשימה', onPress: () => router.push({ pathname: '/playlist/add', params: { song: song.id } }) },
+            { icon: 'list', label: 'לרשימה', onPress: () => addToPlaylist([song.id]) },
             { icon: Platform.OS === 'ios' ? 'share-outline' : 'share-social-outline', label: 'שיתוף', onPress: () => shareSong(song) },
           ]}
         />

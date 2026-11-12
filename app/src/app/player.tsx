@@ -7,6 +7,7 @@ import { nextRepeat } from '../core/queue';
 import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer, youtubeView } from '../player/player';
 import { Button, CategoryBadge, T } from '../ui/components';
 import { Icon } from '../ui/Icon';
+import { addToPlaylist } from '../ui/menus';
 import { shareSong } from '../ui/share';
 import { toast } from '../ui/toast';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from '../ui/icons';
@@ -123,7 +124,7 @@ export default function PlayerScreen() {
       <View style={{ marginTop: space.xl }}>
         <ActionBar
           actions={[
-            { icon: 'list', label: 'לרשימה', onPress: () => router.push({ pathname: '/playlist/add', params: { song: p.song!.id } }) },
+            { icon: 'list', label: 'לרשימה', onPress: () => addToPlaylist([p.song!.id]) },
             { icon: Platform.OS === 'ios' ? 'share-outline' : 'share-social-outline', label: 'שיתוף', onPress: () => shareSong(p.song!) },
             { icon: 'ellipsis-horizontal', label: 'פרטים', onPress: () => router.push({ pathname: '/song/[id]', params: { id: p.song!.id } }) },
           ]}

@@ -22,6 +22,14 @@ export function toggleSong(ids: string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
 }
 
+/**
+ * Several songs at once (selected together): all in the list already → take them all out;
+ * otherwise add the missing ones at the end. What a tap on a list does in "add to list".
+ */
+export function toggleSongs(ids: string[], songIds: string[]): string[] {
+  return songIds.every((id) => ids.includes(id)) ? ids.filter((x) => !songIds.includes(x)) : addSongs(ids, songIds);
+}
+
 /** Adds songs at the end, skipping those already in the list (a song appears once). */
 export function addSongs(ids: string[], add: string[]): string[] {
   const out = [...ids];
@@ -46,4 +54,13 @@ export function playlistSongs<S>(songIds: string[], byId: Map<string, S>): S[] {
 /** "שיר אחד" / "5 שירים" */
 export function songCount(n: number): string {
   return n === 1 ? 'שיר אחד' : `${n} שירים`;
+}
+
+/** Each list keeps its own colour (picked from its id), distinct from the categories' palette. */
+const COLORS = ['#5B4FC4', '#2E7D8C', '#B5447A', '#3F7D3A', '#A65A2A', '#4A6FB5'];
+
+export function playlistColor(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return COLORS[Math.abs(h) % COLORS.length];
 }

@@ -11,6 +11,8 @@ import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from
 import { Icon } from '../../ui/Icon';
 import { ActivityDock } from '../../ui/ActivityDock';
 import { MiniPlayer } from '../../ui/MiniPlayer';
+import { addToPlaylist, confirmDeleteSongs } from '../../ui/menus';
+import { SelectButton, selectionHeader, SelectionBar, useSelection } from '../../ui/selection';
 import { shareSongs } from '../../ui/share';
 import { ShareButton } from '../../ui/ShareButton';
 import { space, useTheme } from '../../ui/theme';
@@ -42,18 +44,29 @@ export default function CategoryScreen() {
   const playable = songs.filter(canStart);
   const tiles = prefs.songLayout === 'tiles';
   const size = Math.floor((width - space.l * 2 - space.m * (COLUMNS - 1)) / COLUMNS);
+  const sel = useSelection();
+  const picked = songs.filter((s) => sel.ids.has(s.id));
+  const title = isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name;
+  const mode = (song: (typeof songs)[number]) =>
+    sel.active
+      ? { select: { selected: sel.ids.has(song.id), onToggle: () => sel.toggle(song.id) } }
+      : { menu: { onSelect: () => sel.start(song.id) } };
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
       <Stack.Screen
-        options={{
-          title: isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name,
+        options={sel.active ? selectionHeader(sel, songs.map((s) => s.id)) : {
+          title,
+          headerBackVisible: true,
+          gestureEnabled: true,
+          headerLeft: undefined,
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {songs.length > 1 ? <SelectButton onPress={() => sel.start()} /> : null}
               {songs.length ? (
                 <ShareButton
                   label={isList ? `שיתוף ${isAll ? 'כל השירים' : 'השירים שנוספו לאחרונה'}` : 'שיתוף הקטגוריה'}
-                  onPress={() => shareSongs(isAll ? 'כל השירים' : isRecent ? 'נוספו לאחרונה' : cat.name, songs)}
+                  onPress={() => shareSongs(title, songs)}
                 />
               ) : null}
               {editable ? (
@@ -85,11 +98,11 @@ export default function CategoryScreen() {
               <View style={{ flex: 1 }}>
                 <T soft>{songs.length} שירים</T>
               </View>
-              {playable.length > 1 ? (
+              {playable.length > 1 && !sel.active ? (
                 <Button label="נגני הכול" icon="play" onPress={() => playAll(playable)} />
               ) : null}
             </View>
-            {songs.length > 1 ? (
+            {songs.length > 1 && !sel.active ? (
               <ViewControls
                 sorts={SONG_SORTS.filter((s) => s.id !== 'manual')}
                 sort={prefs.songSort}
@@ -101,12 +114,30 @@ export default function CategoryScreen() {
           </View>
         }
         renderItem={({ item }) =>
-          tiles ? <SongTile song={item} queue={songs} size={size} /> : <SongRow song={item} queue={songs} showCategory={isList} />
+          tiles ? (
+            <SongTile song={item} queue={songs} size={size} {...mode(item)} />
+          ) : (
+            <SongRow song={item} queue={songs} showCategory={isList} {...mode(item)} />
+          )
         }
         ListEmptyComponent={<EmptyState emoji={cat.icon} title="אין כאן שירים עדיין" body="שירים שיסווגו לקטגוריה הזו יופיעו כאן." />}
       />
-      <ActivityDock />
-      <MiniPlayer />
+      {sel.active ? (
+        <SelectionBar
+          count={picked.length}
+          actions={[
+            { icon: 'play', label: 'נגני', onPress: () => void playAll(picked.filter(canStart)) },
+            { icon: 'list', label: 'לרשימה', onPress: () => addToPlaylist(picked.map((s) => s.id)) },
+            { icon: 'share-outline', label: 'שיתוף', onPress: () => void shareSongs(title, picked) },
+            { icon: 'trash-outline', label: 'מחיקה', danger: true, onPress: () => confirmDeleteSongs(picked, sel.end) },
+          ]}
+        />
+      ) : (
+        <>
+          <ActivityDock />
+          <MiniPlayer />
+        </>
+      )}
     </SafeAreaView>
   );
 }

@@ -1,22 +1,23 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCategory, primaryCategoryId } from '../../core/categories';
 import { textOn } from '../../core/color';
 import { canStart } from '../../core/ingestRules';
-import { cleanName, moveSong, playlistSongs, songCount } from '../../core/playlists';
+import { cleanName, moveSong, playlistColor, playlistSongs, songCount } from '../../core/playlists';
 import { SONG_SORTS, sortSongs, steadyOrder } from '../../core/sorting';
 import type { SongWithCategories } from '../../core/types';
-import { deletePlaylist, renamePlaylist, setPlaylistSongs } from '../../db/repo';
+import { renamePlaylist, setPlaylistSongs } from '../../db/repo';
 import { useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from '../../ui/components';
 import { Icon, IconName } from '../../ui/Icon';
 import { ActivityDock } from '../../ui/ActivityDock';
 import { MiniPlayer } from '../../ui/MiniPlayer';
+import { addToPlaylist, confirmDeletePlaylist, removeFromPlaylist } from '../../ui/menus';
+import { SelectButton, selectionHeader, SelectionBar, useSelection } from '../../ui/selection';
 import { shareSongs } from '../../ui/share';
 import { ShareButton } from '../../ui/ShareButton';
-import { playlistColor } from '../../ui/playlists';
 import { font, radius, space, TOUCH, useTheme } from '../../ui/theme';
 import { useStore } from '../../ui/useStore';
 import { setViewPref, viewPrefs } from '../../ui/viewPrefs';
@@ -32,13 +33,15 @@ const COLUMNS = 2;
  * name, plays…) and in tiles; "שמירה כסדר הרשימה" makes that order hers.
  */
 export default function PlaylistScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, rename } = useLocalSearchParams<{ id: string; rename?: string }>();
   const c = useTheme();
   const lib = useLibrary();
   const list = lib.playlists.find((p) => p.id === id);
   const [arranging, setArranging] = useState(false);
   const [name, setName] = useState(list?.name ?? '');
-  const [editingName, setEditingName] = useState(false);
+  // "שינוי שם" from the list's long-press menu opens it with the name being edited.
+  const [editingName, setEditingName] = useState(rename === '1');
+  const sel = useSelection();
   const prefs = useStore(viewPrefs);
   const { width } = useWindowDimensions();
 
@@ -83,28 +86,26 @@ export default function PlaylistScreen() {
     setViewPref({ playlistSort: 'manual' });
   };
 
-  const confirmDelete = () =>
-    Alert.alert('למחוק את הרשימה?', `"${list.name}" תימחק. השירים עצמם נשארים בספרייה.`, [
-      { text: 'ביטול', style: 'cancel' },
-      {
-        text: 'מחיקה',
-        style: 'destructive',
-        onPress: async () => {
-          await deletePlaylist(list.id);
-          router.back();
-        },
-      },
-    ]);
+  const confirmDelete = () => confirmDeletePlaylist(list, () => router.back());
+  const picked = songs.filter((s) => sel.ids.has(s.id));
+  const mode = (song: SongWithCategories) =>
+    sel.active
+      ? { select: { selected: sel.ids.has(song.id), onToggle: () => sel.toggle(song.id) } }
+      : { menu: { playlist: list, onSelect: () => sel.start(song.id) } };
 
   const addSongs = () => router.push({ pathname: '/playlist/pick', params: { id: list.id } });
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
       <Stack.Screen
-        options={{
+        options={sel.active ? selectionHeader(sel, songs.map((s) => s.id)) : {
           title: '',
+          headerBackVisible: true,
+          gestureEnabled: true,
+          headerLeft: undefined,
           headerRight: () => (
             <View style={styles.headerRow}>
+              {songs.length > 1 && !arranging ? <SelectButton onPress={() => sel.start()} /> : null}
               {songs.length && !arranging ? <ShareButton label="שיתוף הרשימה" onPress={() => shareSongs(list.name, songs)} /> : null}
               {songs.length > 1 ? (
                 <Pressable onPress={() => setArranging((a) => !a)} hitSlop={12} accessibilityRole="button" accessibilityLabel={arranging ? 'סיום הסידור' : 'סידור הרשימה'} style={styles.headerBtn}>
@@ -154,7 +155,7 @@ export default function PlaylistScreen() {
               )}
               <T style={{ color: ink, opacity: 0.85 }}>{songCount(songs.length)}</T>
             </View>
-            <View style={styles.actions}>
+            <View style={[styles.actions, sel.active ? { display: 'none' } : null]}>
               {playable.length ? (
                 <Button label="נגני הכול" icon="play" onPress={() => playAll(playable)} style={{ flex: 1 }} />
               ) : null}
@@ -191,9 +192,9 @@ export default function PlaylistScreen() {
               onRemove={() => remove(item.id)}
             />
           ) : tiles ? (
-            <SongTile song={item} queue={songs} size={size} />
+            <SongTile song={item} queue={songs} size={size} {...mode(item)} />
           ) : (
-            <SongRow song={item} queue={songs} />
+            <SongRow song={item} queue={songs} {...mode(item)} />
           )
         }
         ListEmptyComponent={
@@ -208,8 +209,27 @@ export default function PlaylistScreen() {
           </Pressable>
         }
       />
-      <ActivityDock />
-      <MiniPlayer />
+      {sel.active ? (
+        <SelectionBar
+          count={picked.length}
+          actions={[
+            { icon: 'play', label: 'נגני', onPress: () => void playAll(picked.filter(canStart)) },
+            { icon: 'list', label: 'לרשימה', onPress: () => addToPlaylist(picked.map((s) => s.id)) },
+            { icon: 'share-outline', label: 'שיתוף', onPress: () => void shareSongs(list.name, picked) },
+            {
+              icon: 'remove-circle-outline',
+              label: 'הוצאה',
+              danger: true,
+              onPress: () => void removeFromPlaylist(list, picked.map((s) => s.id)).then(sel.end),
+            },
+          ]}
+        />
+      ) : (
+        <>
+          <ActivityDock />
+          <MiniPlayer />
+        </>
+      )}
     </SafeAreaView>
   );
 }

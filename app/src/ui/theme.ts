@@ -15,6 +15,8 @@ const light = {
   good: '#2E8B57',
   warn: '#C77B12',
   bad: '#C0392B',
+  /** Behind a sheet over the screen. */
+  scrim: 'rgba(20, 16, 24, 0.45)',
 };
 
 const dark: typeof light = {
@@ -31,6 +33,7 @@ const dark: typeof light = {
   good: '#5CC28A',
   warn: '#E7A64A',
   bad: '#F0796B',
+  scrim: 'rgba(0, 0, 0, 0.6)',
 };
 
 export type Palette = typeof light;

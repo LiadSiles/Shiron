@@ -3,6 +3,7 @@ import { getCategory, primaryCategoryId, UNSORTED_ID } from '../core/categories'
 import { next, previous, showPlayer, togglePlay, usePlayer } from '../player/player';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from './icons';
 import { CategoryBadge, T } from './components';
+import { showSongMenu } from './menus';
 import { radius, space, TOUCH, useTheme } from './theme';
 
 /** Always visible above the tab bar while a song is loaded. */
@@ -16,8 +17,11 @@ export function MiniPlayer() {
   return (
     <Pressable
       onPress={showPlayer}
+      // The song's actions (add to a list, share, details…) without leaving the screen.
+      onLongPress={() => showSongMenu(p.song!, { queue: p.queue })}
       accessibilityRole="button"
       accessibilityLabel={`מתנגן: ${p.song.title}. פתיחת הנגן`}
+      accessibilityHint="לחיצה ארוכה פותחת את האפשרויות של השיר"
       style={[styles.wrap, { backgroundColor: c.surface, borderColor: c.line }]}
     >
       <View style={[styles.progress, { backgroundColor: c.primary, width: `${progress * 100}%` }]} />

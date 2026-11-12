@@ -44,6 +44,9 @@ appId: app.shiron.gan
 - longPressOn:
     text: boker-tov
     optional: true
+- tapOn:
+    text: "פרטים ועריכה"
+    optional: true
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

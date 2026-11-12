@@ -1,18 +1,20 @@
 import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { getCategory } from '../core/categories';
+import { getCategory, UNSORTED_ID } from '../core/categories';
 import { textOn } from '../core/color';
-import { songCount } from '../core/playlists';
+import { playlistColor, songCount } from '../core/playlists';
 import { CATEGORY_SORTS, sortCategories } from '../core/sorting';
-import { ALL_ID, categoryTiles, LibraryState, RECENT_ID, recentlyAdded } from '../core/library';
+import { ALL_ID, categoryTiles, LibraryState, RECENT_ID, recentlyAdded, songsFor } from '../core/library';
+import { playlistSongs } from '../core/playlists';
 import { CategoryBadge, EmptyState, SectionTitle, T } from '../ui/components';
 import { ListGroup, ListItem } from '../ui/list';
 import { useStore } from '../ui/useStore';
 import { setViewPref, viewPrefs } from '../ui/viewPrefs';
 import { ViewControls } from '../ui/ViewControls';
 import { Icon, IconName } from '../ui/Icon';
-import { newPlaylist, openPlaylist, playlistColor } from '../ui/playlists';
+import { showCategoryMenu, showPlaylistMenu } from '../ui/menus';
+import { newPlaylist, openPlaylist } from '../ui/playlists';
 import { radius, space, useTheme } from '../ui/theme';
 
 const COLUMNS = 2;
@@ -34,6 +36,21 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
   const openCategory = (id: string) => router.push({ pathname: '/category/[id]', params: { id } });
   const recent = useMemo(() => recentlyAdded(lib).length, [lib]);
   const total = lib.songs.length;
+  // Long press = its actions (ui/menus): play, share, edit, remove.
+  const categoryMenu = (id: string) => {
+    const cat = getCategory(id);
+    const builtIn = id === ALL_ID || id === RECENT_ID;
+    showCategoryMenu(
+      {
+        id,
+        name: id === ALL_ID ? 'כל השירים' : id === RECENT_ID ? 'נוספו לאחרונה' : cat.name,
+        icon: builtIn ? undefined : cat.icon,
+        color: id === ALL_ID ? c.primary : id === RECENT_ID ? c.accent : cat.color,
+        editable: !builtIn && id !== UNSORTED_ID,
+      },
+      songsFor(lib, id),
+    );
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -55,6 +72,7 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
               color={playlistColor(p.id)}
               count={p.songIds.length}
               onPress={() => openPlaylist(p.id)}
+              onLongPress={() => showPlaylistMenu(p, playlistSongs(p.songIds, lib.byId))}
             />
           ))}
           <NewTile size={size} title="רשימה חדשה" body="בחרי שירים, בסדר שלך" onPress={newPlaylist} />
@@ -70,12 +88,14 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
         />
         {asRows ? (
           <ListGroup>
-            <ListItem icon="musical-notes" title="כל השירים" value={String(total)} onPress={() => openCategory(ALL_ID)} />
-            {recent ? <ListItem icon="sparkles" tint={c.accent} title="נוספו לאחרונה" value={String(recent)} onPress={() => openCategory(RECENT_ID)} /> : null}
+            <ListItem icon="musical-notes" title="כל השירים" value={String(total)} onPress={() => openCategory(ALL_ID)} onLongPress={() => categoryMenu(ALL_ID)} />
+            {recent ? <ListItem icon="sparkles" tint={c.accent} title="נוספו לאחרונה" value={String(recent)} onPress={() => openCategory(RECENT_ID)} onLongPress={() => categoryMenu(RECENT_ID)} /> : null}
             {tiles.map((t) => (
               <Pressable
                 key={t.id}
                 onPress={() => openCategory(t.id)}
+                onLongPress={() => categoryMenu(t.id)}
+                accessibilityHint="לחיצה ארוכה פותחת את האפשרויות"
                 accessibilityRole="button"
                 accessibilityLabel={`${t.name}, ${songCount(t.count)}`}
                 style={({ pressed }) => [styles.catRow, { borderBottomColor: c.line, backgroundColor: pressed ? c.surfaceAlt : 'transparent' }]}
@@ -90,14 +110,14 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
           </ListGroup>
         ) : (
           <View style={styles.grid}>
-            <Tile size={size} name="כל השירים" icon="musical-notes" color={c.primary} count={total} onPress={() => openCategory(ALL_ID)} />
+            <Tile size={size} name="כל השירים" icon="musical-notes" color={c.primary} count={total} onPress={() => openCategory(ALL_ID)} onLongPress={() => categoryMenu(ALL_ID)} />
             {recent ? (
-              <Tile size={size} name="נוספו לאחרונה" icon="sparkles" color={c.accent} count={recent} onPress={() => openCategory(RECENT_ID)} />
+              <Tile size={size} name="נוספו לאחרונה" icon="sparkles" color={c.accent} count={recent} onPress={() => openCategory(RECENT_ID)} onLongPress={() => categoryMenu(RECENT_ID)} />
             ) : null}
             {tiles.map((t) => {
               const cat = getCategory(t.id);
               return (
-                <Tile key={t.id} size={size} name={cat.name} emoji={cat.icon} color={cat.color} count={t.count} onPress={() => openCategory(t.id)} />
+                <Tile key={t.id} size={size} name={cat.name} emoji={cat.icon} color={cat.color} count={t.count} onPress={() => openCategory(t.id)} onLongPress={() => categoryMenu(t.id)} />
               );
             })}
             <NewTile size={size} title="קטגוריה חדשה" body="נושא משלך" onPress={newCategory} />
@@ -109,7 +129,7 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
   );
 }
 
-function Tile({ size, name, icon, emoji, color, count, onPress }: {
+function Tile({ size, name, icon, emoji, color, count, onPress, onLongPress }: {
   size: number;
   name: string;
   /** The big art in the corner: an icon, or a category's own emoji. */
@@ -118,13 +138,16 @@ function Tile({ size, name, icon, emoji, color, count, onPress }: {
   color: string;
   count: number;
   onPress: () => void;
+  onLongPress: () => void;
 }) {
   const ink = textOn(color);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${name}, ${count} שירים`}
+      accessibilityHint="לחיצה ארוכה פותחת את האפשרויות"
       onPress={onPress}
+      onLongPress={onLongPress}
       style={({ pressed }) => [
         styles.tile,
         { width: size, height: size, backgroundColor: color, opacity: pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] },

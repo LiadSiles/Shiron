@@ -34,6 +34,37 @@ font, no network): tab bar (outline when inactive, filled when active), search f
 Emoji stay only where they are content: category icons and the big art on library tiles.
 The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exactly at every size.
 
+## Long press, the action sheet, choosing several songs (0.15.0)
+
+The owner asked for long-press menus "like a professional app" on every object, and acting on
+several at once. One component and one place for what each object offers:
+- **`ui/ActionSheet`** — a sheet from the bottom (thumb's reach; one host in the root layout,
+  `showActions`): the thing's own tile and name at the top so she sees what she acts on, actions
+  as 54 pt rows with an icon, deleting set apart in red at the end, a big "ביטול", a light
+  haptic tap on opening. The action runs after the sheet has closed (an alert or a screen over
+  a closing modal is dropped on iOS).
+- **`ui/menus.ts`** — what each object offers; only what applies, no greyed rows:
+  - a **song** (row, tile, ⋮, the mini player): נגני · פרטים ועריכה · הוספה לרשימה · שיתוף ·
+    הצמדה / ביטול ההצמדה · בחירת כמה שירים (on screens that can select) · הוצאה מהרשימה (in a
+    list) · מחיקת השיר. ⋮ opens the same sheet (it used to open the song's page, now one row of
+    it), so a long press and ⋮ never differ.
+  - a **category** tile or row: פתיחה · נגני הכול · שיתוף כל השירים · עריכה: שם, סמל וצבע ·
+    הסרת הקטגוריה ("כל השירים" / "נוספו לאחרונה": no editing).
+  - a **list** (library tile, home card): פתיחה · נגני את הרשימה · שיתוף הרשימה · הוספת שירים ·
+    שינוי שם (opens the list with its name being edited) · מחיקת הרשימה.
+  Deleting asks once, also for many ("למחוק 3 שירים?"), and says what goes with it.
+- **Choosing several** (`ui/selection.tsx`) — in a category, "כל השירים" / "נוספו לאחרונה" and
+  a list: "בחירה" in the header, or "בחירת כמה שירים" in a song's sheet (that song already
+  checked). Rows show a check circle; a tap checks. The header says "3 נבחרו", "ביטול" takes
+  back's place (Android's back button and the swipe also leave selecting first), and "בחירת
+  הכול" / "ניקוי". In place of the mini player, a bar: נגני · לרשימה · שיתוף · מחיקה (in a list:
+  הוצאה) — dimmed until something is checked. "לרשימה" takes all of them (`playlist/add?songs=`,
+  `toggleSongs`: add the missing ones, or take them all out if all are in).
+- Code: `T` moved to `ui/text.tsx`, the play helpers to `ui/play.ts`, `playlistColor` to
+  `core/playlists.ts` — so the menus need no import cycle through `components`.
+- e2e: `e2e-select.yaml` (a category's sheet, choosing two songs into a new list, a list's
+  sheet deleting it); the flows that long-pressed a song for its page now pick "פרטים ועריכה".
+
 ## The activity dock (0.14.1)
 
 The owner shared several songs at once and nothing said how many were waiting or done; the

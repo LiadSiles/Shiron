@@ -22,8 +22,6 @@ appId: app.shiron.gan
 - assertVisible: ".*(Share|Nearby|Bluetooth|Copy|Messages|Gmail|Drive).*"
 - takeScreenshot: ${VARIANT}-share-again
 - back
-# Back from the song's page to the list.
-- runFlow: back.yaml
 - longPressOn: "נגני .*(שיר מיוטיוב|Rick Astley|Never Gonna).*"
 - tapOn: "שיתוף"
 - waitForAnimationToEnd

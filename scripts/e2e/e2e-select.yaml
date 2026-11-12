@@ -1,0 +1,44 @@
+# Long-press menus and choosing several songs at once (0.15.0). A category tile's long press
+# offers its actions; in "כל השירים", "בחירה" checks songs, the bar adds the two to a new list
+# in one go, and "ביטול" leaves selecting. Then a list's long press offers deleting it, and it
+# is deleted.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- longPressOn: "כל השירים.*"
+- assertVisible: "נגני הכול"
+- assertVisible: "שיתוף כל השירים"
+- takeScreenshot: ${VARIANT}-sheet-category
+- tapOn: "ביטול"
+- tapOn: "כל השירים.*"
+- tapOn: "בחירה"
+- tapOn: "בוקר טוב לגן"
+- tapOn: "old-song"
+- assertVisible: "2 נבחרו"
+- takeScreenshot: ${VARIANT}-selecting
+- tapOn: "לרשימה"
+- assertVisible: "2 שירים נבחרו"
+- tapOn: "יצירת רשימה"
+- extendedWaitUntil:
+    visible: ".*2 שירים נוספו לרשימה החדשה.*"
+    timeout: 5000
+    optional: true
+- assertVisible: "2 נבחרו"
+- tapOn: "ביטול"
+- assertNotVisible: "2 נבחרו"
+- runFlow: back.yaml
+# The new list: its long press offers deleting it.
+- scrollUntilVisible:
+    element:
+      text: "רשימה.*, 2 שירים"
+    direction: UP
+    optional: true
+- longPressOn: "רשימה.*, 2 שירים"
+- takeScreenshot: ${VARIANT}-sheet-list
+- tapOn: "מחיקת הרשימה"
+- tapOn: "מחיקה"
+- extendedWaitUntil:
+    notVisible: "רשימה.*, 2 שירים"
+    timeout: 5000

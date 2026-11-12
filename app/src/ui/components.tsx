@@ -1,29 +1,19 @@
-import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { getCategory, primaryCategoryId, UNSORTED_ID } from '../core/categories';
 import { isPreparing } from '../core/ingestRules';
 import { highlight } from '../core/search';
 import type { SongWithCategories } from '../core/types';
-import { MissingFileError, NotPlayableError, playOrToggle, playSong, usePlayerSelect } from '../player/player';
+import { usePlayerSelect } from '../player/player';
+import { showSongMenu, SongMenuContext } from './menus';
+import { playOrOpen } from './play';
+import { T } from './text';
 import { Icon, IconName } from './Icon';
 import { PauseIcon, PlayIcon } from './icons';
-import { font, radius, space, TOUCH, useTheme } from './theme';
+import { radius, space, TOUCH, useTheme } from './theme';
 import { useAiConnected } from './useAiConnected';
 
-export function T({ style, weight = 'regular', size = 16, soft, ...rest }: TextProps & {
-  weight?: 'regular' | 'medium' | 'bold';
-  size?: number;
-  soft?: boolean;
-}) {
-  const c = useTheme();
-  return (
-    <Text
-      {...rest}
-      style={[{ fontFamily: font[weight], fontSize: size, color: soft ? c.inkSoft : c.ink }, style]}
-    />
-  );
-}
+export { T } from './text';
+export { playAll, playOrOpen } from './play';
 
 export function Button({ label, onPress, kind = 'primary', icon, style, disabled }: {
   label: string;
@@ -77,40 +67,20 @@ export function statusLabel(song: SongWithCategories, ai: boolean | null): strin
   return waiting ? 'ממתין לשם וקטגוריה' : null;
 }
 
+/**
+ * What a song row or tile does besides playing. `menu`: what its long press / ⋮ sheet offers
+ * here (ui/menus). `select`: the screen is selecting several songs — a tap (or a long press)
+ * checks or unchecks this one, nothing plays, and a check circle takes the badge's place.
+ */
+export interface SongItemMode {
+  menu?: Omit<SongMenuContext, 'queue'>;
+  select?: { selected: boolean; onToggle: () => void } | null;
+}
+
 /** A row's second line: the category (not "לא מסווג", which says nothing) and the state. */
 function rowDetails(song: SongWithCategories, showCategory: boolean, ai: boolean | null): string {
   const catId = primaryCategoryId(song);
   return [showCategory && catId !== UNSORTED_ID ? getCategory(catId).name : null, statusLabel(song, ai)].filter(Boolean).join(' · ');
-}
-
-/** Tap = play now (or pause, if it is the song playing). A YouTube song opens the full player. */
-export function playOrOpen(song: SongWithCategories, queue: SongWithCategories[]) {
-  Haptics.selectionAsync().catch(() => undefined);
-  return explainPlayErrors(song, () => playOrToggle(song, queue));
-}
-
-/** "נגני הכול": always starts the first song, even if it is the one playing. */
-export function playAll(queue: SongWithCategories[]) {
-  const first = queue[0];
-  return first ? explainPlayErrors(first, () => playSong(first, queue)) : Promise.resolve();
-}
-
-async function explainPlayErrors(song: SongWithCategories, play: () => Promise<void>) {
-  try {
-    await play();
-  } catch (e) {
-    if (e instanceof NotPlayableError) {
-      const unsupported = song.audioState === 'unsupported';
-      Alert.alert(
-        unsupported ? 'לא ניתן לנגן' : 'עוד רגע',
-        unsupported ? song.error ?? 'הפורמט של הקובץ הזה לא נתמך במכשיר.' : 'השיר עדיין בהכנה. הוא יהיה מוכן לניגון בעוד כמה שניות.',
-      );
-    } else if (e instanceof MissingFileError) {
-      Alert.alert('לא ניתן לנגן', 'קובץ השמע של השיר חסר. אפשר למחוק את השיר ולשתף אותו שוב.');
-    } else {
-      Alert.alert('לא הצלחנו לנגן', String((e as Error)?.message ?? e));
-    }
-  }
 }
 
 /** Text with the words matching a search in bold and the accent colour. */
@@ -130,13 +100,13 @@ export function Highlighted({ text, query, ...props }: React.ComponentProps<type
   );
 }
 
-export function SongRow({ song, queue, showCategory = true, query }: {
+export function SongRow({ song, queue, showCategory = true, query, menu, select }: {
   song: SongWithCategories;
   queue: SongWithCategories[];
   showCategory?: boolean;
   /** Search text: matching words in the title are highlighted. */
   query?: string;
-}) {
+} & SongItemMode) {
   const c = useTheme();
   // Only "is this the song, and is it playing" — not every position tick.
   const mine = usePlayerSelect((p) => (p.song?.id !== song.id ? 'other' : p.playing ? 'playing' : 'paused'));
@@ -146,18 +116,20 @@ export function SongRow({ song, queue, showCategory = true, query }: {
   const details = rowDetails(song, showCategory, useAiConnected());
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={playing ? `השהיית ${song.title}` : `נגני ${song.title}`}
-      accessibilityHint="לחיצה ארוכה או ⋮ פותחים את פרטי השיר"
-      onPress={() => playOrOpen(song, queue)}
-      onLongPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
+      {...itemPress(song, queue, menu, select, playing)}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: active ? c.primarySoft : pressed ? c.surfaceAlt : c.surface, borderColor: c.line },
+        {
+          backgroundColor: select?.selected || (active && !select) ? c.primarySoft : pressed ? c.surfaceAlt : c.surface,
+          borderColor: select?.selected ? c.primary : c.line,
+        },
       ]}
     >
-      {/* The song playing shows a pause button in place of its category; any other row a badge. */}
-      {active ? (
+      {/* Selecting: a check circle. The song playing shows a pause button in place of its
+          category; any other row a badge. */}
+      {select ? (
+        <CheckCircle checked={select.selected} />
+      ) : active ? (
         <View style={[styles.lead, { backgroundColor: c.primary }]}>
           {playing ? <PauseIcon size={18} color={c.primaryInk} /> : <PlayIcon size={18} color={c.primaryInk} />}
         </View>
@@ -182,24 +154,30 @@ export function SongRow({ song, queue, showCategory = true, query }: {
         </View>
         {details ? <T soft size={13} numberOfLines={1}>{details}</T> : null}
       </View>
-      <Pressable
-        onPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
-        hitSlop={4}
-        accessibilityRole="button"
-        accessibilityLabel={`פרטים ואפשרויות: ${song.title}`}
-        style={({ pressed }) => [styles.more, { backgroundColor: pressed ? c.surfaceAlt : 'transparent' }]}
-      >
-        <Icon name="ellipsis-vertical" size={20} color={c.inkSoft} />
-      </Pressable>
+      {select ? null : (
+        <Pressable
+          onPress={() => showSongMenu(song, { queue, ...menu })}
+          hitSlop={4}
+          accessibilityRole="button"
+          accessibilityLabel={`אפשרויות: ${song.title}`}
+          style={({ pressed }) => [styles.more, { backgroundColor: pressed ? c.surfaceAlt : 'transparent' }]}
+        >
+          <Icon name="ellipsis-vertical" size={20} color={c.inkSoft} />
+        </Pressable>
+      )}
     </Pressable>
   );
 }
 
 /**
  * A song as a square tile (the "tiles" layout): its category's colour and emoji, the title.
- * Tap = play / pause, long press or ⋮ = details, like SongRow.
+ * Tap = play / pause, long press or ⋮ = its actions, like SongRow.
  */
-export function SongTile({ song, queue, size }: { song: SongWithCategories; queue: SongWithCategories[]; size: number }) {
+export function SongTile({ song, queue, size, menu, select }: {
+  song: SongWithCategories;
+  queue: SongWithCategories[];
+  size: number;
+} & SongItemMode) {
   const c = useTheme();
   const mine = usePlayerSelect((p) => (p.song?.id !== song.id ? 'other' : p.playing ? 'playing' : 'paused'));
   const active = mine !== 'other';
@@ -207,24 +185,22 @@ export function SongTile({ song, queue, size }: { song: SongWithCategories; queu
   const details = rowDetails(song, true, useAiConnected());
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={mine === 'playing' ? `השהיית ${song.title}` : `נגני ${song.title}`}
-      accessibilityHint="לחיצה ארוכה או ⋮ פותחים את פרטי השיר"
-      onPress={() => playOrOpen(song, queue)}
-      onLongPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
+      {...itemPress(song, queue, menu, select, mine === 'playing')}
       style={({ pressed }) => [
         styles.tile,
         {
           width: size,
           height: size,
-          backgroundColor: active ? c.primarySoft : cat.color + '26',
-          borderColor: active ? c.primary : 'transparent',
+          backgroundColor: active && !select ? c.primarySoft : cat.color + '26',
+          borderColor: select?.selected || (active && !select) ? c.primary : 'transparent',
           transform: [{ scale: pressed ? 0.97 : 1 }],
         },
       ]}
     >
       <View style={styles.tileTop}>
-        {active ? (
+        {select ? (
+          <CheckCircle checked={select.selected} />
+        ) : active ? (
           <View style={[styles.tileLead, { backgroundColor: c.primary }]}>
             {mine === 'playing' ? <PauseIcon size={16} color={c.primaryInk} /> : <PlayIcon size={16} color={c.primaryInk} />}
           </View>
@@ -233,21 +209,64 @@ export function SongTile({ song, queue, size }: { song: SongWithCategories; queu
         ) : (
           <Text style={{ fontSize: size * 0.22 }}>{cat.icon}</Text>
         )}
-        <Pressable
-          onPress={() => router.push({ pathname: '/song/[id]', params: { id: song.id } })}
-          hitSlop={4}
-          accessibilityRole="button"
-          accessibilityLabel={`פרטים ואפשרויות: ${song.title}`}
-          style={styles.tileMore}
-        >
-          <Icon name="ellipsis-vertical" size={18} color={c.inkSoft} />
-        </Pressable>
+        {select ? null : (
+          <Pressable
+            onPress={() => showSongMenu(song, { queue, ...menu })}
+            hitSlop={4}
+            accessibilityRole="button"
+            accessibilityLabel={`אפשרויות: ${song.title}`}
+            style={styles.tileMore}
+          >
+            <Icon name="ellipsis-vertical" size={18} color={c.inkSoft} />
+          </Pressable>
+        )}
       </View>
       <View style={{ flex: 1, justifyContent: 'flex-end' }}>
         <T weight="bold" size={16} numberOfLines={3} style={active ? { color: c.primary } : undefined}>{song.title}</T>
         {details ? <T soft size={12} numberOfLines={1}>{details}</T> : null}
       </View>
     </Pressable>
+  );
+}
+
+/** A row's or tile's taps: play / open its sheet, or — selecting — check it. */
+function itemPress(
+  song: SongWithCategories,
+  queue: SongWithCategories[],
+  menu: SongItemMode['menu'],
+  select: SongItemMode['select'],
+  playing: boolean,
+) {
+  if (select) {
+    return {
+      accessibilityRole: 'checkbox' as const,
+      accessibilityState: { checked: select.selected },
+      accessibilityLabel: song.title,
+      onPress: select.onToggle,
+      onLongPress: select.onToggle,
+    };
+  }
+  return {
+    accessibilityRole: 'button' as const,
+    accessibilityLabel: playing ? `השהיית ${song.title}` : `נגני ${song.title}`,
+    accessibilityHint: 'לחיצה ארוכה פותחת את האפשרויות',
+    onPress: () => playOrOpen(song, queue),
+    onLongPress: () => showSongMenu(song, { queue, ...menu }),
+  };
+}
+
+/** Selected or not, in selection mode: a filled circle with a tick, or an empty ring. */
+export function CheckCircle({ checked }: { checked: boolean }) {
+  const c = useTheme();
+  return (
+    <View
+      style={[
+        styles.check,
+        checked ? { backgroundColor: c.primary, borderColor: c.primary } : { backgroundColor: c.surface, borderColor: c.inkSoft },
+      ]}
+    >
+      {checked ? <Icon name="checkmark" size={20} color={c.primaryInk} /> : null}
+    </View>
   );
 }
 
@@ -297,6 +316,7 @@ const styles = StyleSheet.create({
   },
   badge: { alignItems: 'center', justifyContent: 'center' },
   titleLine: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  check: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, alignItems: 'center', justifyContent: 'center', margin: 10 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

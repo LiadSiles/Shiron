@@ -55,7 +55,7 @@ for f in boker-tov.mp3 voice-whatsapp.opus old-song.wma gan-party.mpg boker-tov.
 done
 suite must:e2e-youtube.yaml "must:e2e-settings.yaml@SHARE=בחירת קבצי שמע או וידאו" "${ADDS[@]}" \
   "must:e2e-import.yaml@COUNT=5" must:e2e-player.yaml must:e2e-song.yaml must:e2e-playlist.yaml \
-  must:e2e-search.yaml must:e2e-end.yaml must:e2e-background.yaml must:share-out-android.yaml \
+  must:e2e-search.yaml must:e2e-end.yaml must:e2e-background.yaml must:e2e-select.yaml must:share-out-android.yaml \
   "soft:categories.yaml@VARIANT=$VARIANT-cats"
 # The system share sheet really opened each time: the file twice in a row, the link, the category.
 kill $CHOOSERLOG 2>/dev/null
