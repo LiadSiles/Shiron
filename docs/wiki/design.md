@@ -34,6 +34,25 @@ font, no network): tab bar (outline when inactive, filled when active), search f
 Emoji stay only where they are content: category icons and the big art on library tiles.
 The play/pause/next/previous glyphs stay drawn (`icons.tsx`) so they match exactly at every size.
 
+## The activity dock (0.14.1)
+
+The owner shared several songs at once and nothing said how many were waiting or done; the
+old progress was a banner over the top of every screen while saving (seconds) and a line on
+the home screen while one song at a time was converted or named. `ui/ActivityDock` replaces
+both, at the bottom of the main screens (home, library, a category, a list) just above the mini
+player — **in the layout, never over it**, so it can't hide a button, and only while there is
+work. One line and a thin bar:
+- saving a share: "שומרת שירים חדשים · 3 מתוך 10" (+ shares queued behind it);
+- a list or category being prepared to share out: "מכינה 12 שירים לשיתוף · 5 מתוך 12";
+- then every song of those shares (`ingest/batch.ts`, ids from each share or pick) on its way:
+  "מכינה 10 שירים · 4 מתוך 10 מוכנים · 3 בהכנה לניגון · 3 מקבלים שם ומילים"
+  (`core/progress.ts`, tested). A tap opens the list of those songs with each one's stage (a
+  song opens its page). When all are ready it says "10 שירים מוכנים" in green — or how many
+  failed, in red — and folds away after 6 s (✕ sooner; not while the list is open).
+- work outside a share (trying failed songs again): the step, as one line.
+A song is ready when it plays and has its name — or just plays, without an AI service (no name
+is coming). Pending with an error (quota, offline) counts as on its way, not failed.
+
 ## Quieter rows, chosen categories first, repeat with the controls (0.14.0)
 
 The owner asked for a professional pass over the UI. What changed, and why:

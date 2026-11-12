@@ -9,6 +9,7 @@ import { ALL_ID, RECENT_ID, songsFor } from '../../core/library';
 import { useLibrary } from '../../db/useLibrary';
 import { Button, CategoryBadge, EmptyState, playAll, SongRow, SongTile, T } from '../../ui/components';
 import { Icon } from '../../ui/Icon';
+import { ActivityDock } from '../../ui/ActivityDock';
 import { MiniPlayer } from '../../ui/MiniPlayer';
 import { shareSongs } from '../../ui/share';
 import { ShareButton } from '../../ui/ShareButton';
@@ -104,6 +105,7 @@ export default function CategoryScreen() {
         }
         ListEmptyComponent={<EmptyState emoji={cat.icon} title="אין כאן שירים עדיין" body="שירים שיסווגו לקטגוריה הזו יופיעו כאן." />}
       />
+      <ActivityDock />
       <MiniPlayer />
     </SafeAreaView>
   );

@@ -98,6 +98,29 @@ export function youtubeIdFrom(text: string): string | null {
 }
 
 /**
+ * Every YouTube video in a share, once each, with the words around it. Several links shared
+ * together (messages forwarded from WhatsApp, a list from Notes) arrive as one text, a link per
+ * line; only the first one used to be saved (owner, 0.14.1). A link's context is its own line
+ * without the link — or, for a single link, the whole text, as before.
+ */
+export function youtubeLinksIn(text: string | null, webUrl?: string | null): { url: string; context: string | null }[] {
+  const lines = [webUrl ?? '', ...(text ?? '').split('\n')];
+  const seen = new Set<string>();
+  const links: { url: string; line: string }[] = [];
+  for (const line of lines) {
+    for (const url of line.match(/\S*(?:youtu\.be|youtube\.com)\/\S+/g) ?? []) {
+      const id = youtubeIdFrom(url);
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      links.push({ url, line });
+    }
+  }
+  const whole = text?.trim() || null;
+  if (links.length === 1) return [{ url: links[0].url, context: whole && whole !== links[0].url ? whole : null }];
+  return links.map(({ url, line }) => ({ url, context: line.replace(url, '').trim() || null }));
+}
+
+/**
  * A readable fallback title until the AI names the song. WhatsApp names like
  * "PTT-20251012-WA0014.opus" or "AUD-20250101-WA0003.mp3" become "הקלטה מ-12.10.2025".
  */

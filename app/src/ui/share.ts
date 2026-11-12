@@ -1,5 +1,6 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import { Platform, Share } from 'react-native';
+import { createStore } from '../core/store';
 import { shareableCopy, shareFiles } from '../../modules/shiron-audio';
 import { extensionOf, mimeOf, shareBundle, shareFileName, shareMimeType, youtubeShareText } from '../core/ingestRules';
 import type { SongWithCategories } from '../core/types';
@@ -98,14 +99,23 @@ async function copiesForSharing(items: { source: File; fileName: string }[]): Pr
   if (dir.exists) dir.delete();
   dir.create({ intermediates: true });
   const out: File[] = [];
-  for (const { source, fileName } of items) {
-    const copy = new File(dir, fileName);
-    if (extensionOf(fileName) === 'aac' && extensionOf(source.name) === 'm4a') await shareableCopy(source.uri, copy.uri);
-    else await source.copy(copy);
-    out.push(copy);
+  const counted = items.length > 1;
+  try {
+    for (const [i, { source, fileName }] of items.entries()) {
+      if (counted) shareOutStore.set({ done: i, total: items.length });
+      const copy = new File(dir, fileName);
+      if (extensionOf(fileName) === 'aac' && extensionOf(source.name) === 'm4a') await shareableCopy(source.uri, copy.uri);
+      else await source.copy(copy);
+      out.push(copy);
+    }
+  } finally {
+    if (counted) shareOutStore.set({ done: 0, total: 0 });
   }
   return out;
 }
+
+/** Copies being made for a list or category shared out, for ui/ActivityDock (total 0 = none). */
+export const shareOutStore = createStore<{ done: number; total: number }>({ done: 0, total: 0 });
 
 /** A few words of the native error, so a screenshot of the toast says what went wrong. */
 function shortReason(e: unknown): string {

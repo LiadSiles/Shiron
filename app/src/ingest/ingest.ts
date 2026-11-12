@@ -2,11 +2,12 @@ import * as Crypto from 'expo-crypto';
 import { Directory, File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 import type { ShareIntent } from 'expo-share-intent';
-import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, youtubeIdFrom } from '../core/ingestRules';
+import { extensionOf, fallbackTitle, isMediaFile, isNativelyPlayable, youtubeIdFrom, youtubeLinksIn } from '../core/ingestRules';
 import { createStore } from '../core/store';
 import type { Song } from '../core/types';
 import { findBySha, findByYoutube, insertSong } from '../db/repo';
 import { processQueue } from './processor';
+import { addToBatch } from './batch';
 import { diag } from '../diag/log';
 import { isNoSpace, type ImportSummary } from '../core/importSummary';
 import { songsDir, toStoredPath } from './storage';
@@ -95,7 +96,7 @@ async function importYoutube(url: string, context: string | null, title: string 
   summary.added.push(id);
 }
 
-/** What is being saved right now, for the status banner (src/ui/ActivityBanner). */
+/** What is being saved right now, for the activity dock (src/ui/ActivityDock). */
 export interface ImportState {
   saving: boolean;
   /** Files of the current share or pick: saved so far, and in total. */
@@ -168,15 +169,17 @@ async function importShareIntent(intent: ShareIntent): Promise<ImportSummary> {
     summary,
   );
 
-  const url = intent.webUrl ?? (text && youtubeIdFrom(text) ? text : null);
-  if (url && youtubeIdFrom(url)) {
-    const context = text && text !== url ? text : null;
-    await importYoutube(url, context, intent.meta?.title ?? null, summary);
-  } else if (!intent.files?.length && text) {
-    summary.unsupported.push(text.slice(0, 40));
+  // Every YouTube link in it: several links shared together arrive as one text.
+  const links = youtubeLinksIn(text, intent.webUrl);
+  for (const { url, context } of links) {
+    await importYoutube(url, context, links.length === 1 ? intent.meta?.title ?? null : null, summary);
   }
+  if (!links.length && !intent.files?.length && text) summary.unsupported.push(text.slice(0, 40));
 
-  if (summary.added.length) processQueue();
+  if (summary.added.length) {
+    addToBatch(summary.added);
+    processQueue();
+  }
   return summary;
 }
 
@@ -218,7 +221,10 @@ export async function importFromPicker(): Promise<ImportSummary | null> {
     } finally {
       if (staging.exists) staging.delete();
     }
-    if (summary.added.length) processQueue();
+    if (summary.added.length) {
+      addToBatch(summary.added);
+      processQueue();
+    }
     return summary;
   } catch (e) {
     diag('file picker failed', e);

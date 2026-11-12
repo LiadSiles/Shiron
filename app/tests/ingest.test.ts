@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canStart, extensionOf, failedConversion, shareBundle, shareFileName, shareMimeType, youtubeShareText, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom } from '../src/core/ingestRules';
+import { canStart, extensionOf, failedConversion, shareBundle, shareFileName, shareMimeType, youtubeShareText, fallbackTitle, isMediaFile, isNativelyPlayable, isPreparing, canTranscribe, keepCategories, mimeOf, windowsMediaFormat, isFailed, youtubeIdFrom, youtubeLinksIn } from '../src/core/ingestRules';
 import { NOW } from './fixtures';
 
 describe('ingest rules', () => {
@@ -188,5 +188,25 @@ describe('a conversion that failed because the phone is full', () => {
     expect(r.keepOriginalPlayable).toBe(true);
     expect(r.error).toContain('אין מספיק מקום');
     expect(failedConversion('FAILED', 'song.mp3', 'decoder error').error).toBe('הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום');
+  });
+});
+
+describe('several YouTube links in one share (owner, 0.14.1: only one was saved)', () => {
+  it('finds every video once, each with its own line as context', () => {
+    const text = 'שיר בוקר https://youtu.be/aaaaaaaaaaa\nhttps://www.youtube.com/watch?v=bbbbbbbbbbb&t=3\nשוב https://youtu.be/aaaaaaaaaaa\nhttps://youtube.com/shorts/ccccccccccc';
+    expect(youtubeLinksIn(text)).toEqual([
+      { url: 'https://youtu.be/aaaaaaaaaaa', context: 'שיר בוקר' },
+      { url: 'https://www.youtube.com/watch?v=bbbbbbbbbbb&t=3', context: null },
+      { url: 'https://youtube.com/shorts/ccccccccccc', context: null },
+    ]);
+  });
+
+  it('keeps a single link with the whole text, as before', () => {
+    expect(youtubeLinksIn('שיר לגן: https://youtu.be/aaaaaaaaaaa')).toEqual([
+      { url: 'https://youtu.be/aaaaaaaaaaa', context: 'שיר לגן: https://youtu.be/aaaaaaaaaaa' },
+    ]);
+    expect(youtubeLinksIn(null, 'https://youtu.be/aaaaaaaaaaa')).toEqual([{ url: 'https://youtu.be/aaaaaaaaaaa', context: null }]);
+    expect(youtubeLinksIn('https://youtu.be/aaaaaaaaaaa', 'https://youtu.be/aaaaaaaaaaa')).toEqual([{ url: 'https://youtu.be/aaaaaaaaaaa', context: null }]);
+    expect(youtubeLinksIn('בלי קישור')).toEqual([]);
   });
 });

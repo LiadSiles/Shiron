@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SavingBanner } from './ActivityBanner';
 import { T } from './components';
 import { Icon, IconName } from './Icon';
 import { cardShadow, radius, space, useTheme } from './theme';
@@ -22,9 +21,9 @@ const ICON: Record<ToastKind, IconName> = { success: 'checkmark-circle', info: '
 
 /**
  * Top of every screen, just below the header (it sits in the root layout, above the
- * navigator): the banner while a share is being saved (seconds), and below it the latest
- * toast. Nothing in it takes a tap. Slower background work shows on the home screen
- * (ActivityBanner → WorkStatus), not here. Large and high
+ * navigator): the latest toast. Nothing in it takes a tap. Work in progress (saving a share,
+ * preparing and naming songs) shows in ui/ActivityDock, at the bottom of the main screens, in
+ * their layout rather than over them. Large and high
  * contrast on purpose — the owner found the old one-line toast too easy to miss.
  */
 export function StatusHost() {
@@ -58,7 +57,6 @@ export function StatusHost() {
     // Below the header and never in the way of a tap: it used to sit over "חזרה" and swallow it
     // for as long as songs were being named — back seemed broken on every screen (owner, 0.11).
     <View pointerEvents="none" style={[styles.host, { top: insets.top + HEADER_H + space.s }]}>
-      <SavingBanner />
       {msg ? (
         <Animated.View
           pointerEvents="none"

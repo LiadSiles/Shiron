@@ -9,6 +9,7 @@ import { SearchResults } from '../screens/SearchResults';
 import { T } from '../ui/components';
 import { Icon, IconName } from '../ui/Icon';
 import { appReady } from '../ui/launch';
+import { ActivityDock } from '../ui/ActivityDock';
 import { MiniPlayer } from '../ui/MiniPlayer';
 import { SearchField } from '../ui/SearchField';
 import { radius, space, TOUCH, useTheme } from '../ui/theme';
@@ -97,6 +98,7 @@ export default function Shell() {
           <LibraryScreen lib={lib} />
         )}
       </View>
+      <ActivityDock />
       <MiniPlayer />
       <SafeAreaView edges={['bottom']} style={[styles.bar, { backgroundColor: c.surface, borderColor: c.line }]}>
         {TABS.map((t) => {

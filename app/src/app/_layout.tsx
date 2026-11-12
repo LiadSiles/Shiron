@@ -65,7 +65,7 @@ function ShareHandler() {
   return null;
 }
 
-/** Progress shows in the status banner (ui/ActivityBanner); the result as a toast. */
+/** Progress shows in the activity dock (ui/ActivityDock); the result as a toast. */
 function report(saving: Promise<ImportSummary>) {
   saving
     .then(async (s) => {
