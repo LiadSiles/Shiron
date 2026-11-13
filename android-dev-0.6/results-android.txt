@@ -6,12 +6,12 @@ PASS android-add-voice-whatsapp add-android.yaml
 PASS android-add-old-song add-android.yaml
 PASS android-add-gan-party add-android.yaml
 PASS android-add-boker-tov add-android.yaml
-PASS android e2e-import.yaml
+FAIL(must) android e2e-import.yaml
 PASS android e2e-player.yaml
 PASS android e2e-song.yaml
-PASS android e2e-playlist.yaml
+FAIL(must) android e2e-playlist.yaml
 PASS android e2e-search.yaml
-PASS android e2e-end.yaml
+FAIL(must) android e2e-end.yaml
 PASS android e2e-background.yaml
 PASS android e2e-select.yaml
 PASS android share-out-android.yaml
