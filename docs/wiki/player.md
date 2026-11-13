@@ -186,6 +186,12 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
 - **Not possible / not done.** iOS has no repeat or shuffle button on the lock screen (only
   play/pause, next/previous, the bar; the repeat command is honoured only by CarPlay/remotes);
   repeat stays in the app. Android custom notification buttons (repeat) are not done.
+- **Android gotcha (found here, older than 0.16.0):** expo-audio's Android `loop` *getter* reads
+  ExoPlayer off the main thread (every other getter uses `runOnMain`) and throws. `onStatus`
+  read `player.loop` at the end of a list, so the update was cut short and the app's end
+  handling (`continueAfterEnd`: stop, YouTube next, parking) never ran on Android — ExoPlayer
+  just stopped. The player now keeps the loop it set (`setLoop` / `loopSet`) and never reads it
+  back. Seen through the technical log in CI ("finished" without "ended").
 - Untested on a device: everything on the lock screen itself (the simulator has none). The
   in-app parts are covered by the unit tests and `e2e-end.yaml`.
 

@@ -141,6 +141,17 @@ Asset.fromModule(require('../../assets/icon.png'))
   })
   .catch((e) => diag('lock screen artwork failed', e));
 
+/**
+ * The native loop as last set. Read here, never from `player.loop`: on Android that getter
+ * touches ExoPlayer off its thread and throws, which silently cut every status update short
+ * at the end of a list — so the app's own end handling never ran there (found in 0.16.0).
+ */
+let loopSet: AudioPlaylist['loop'] = 'none';
+function setLoop(p: AudioPlaylist, loop: AudioPlaylist['loop']) {
+  loopSet = loop;
+  p.loop = loop;
+}
+
 async function ensurePlayer(): Promise<AudioPlaylist> {
   if (player) return player;
   await setAudioModeAsync({
@@ -149,6 +160,7 @@ async function ensurePlayer(): Promise<AudioPlaylist> {
     interruptionMode: 'doNotMix', // required for lock-screen controls
   });
   player = createAudioPlaylist({ updateInterval: 500, loop: 'none' });
+  loopSet = 'none';
   onLibraryChange(() => void refreshCurrent());
   player.addListener('playlistStatusUpdate', onStatus);
   player.addListener('trackChanged', ({ currentIndex }) => onNativeIndex(currentIndex));
@@ -226,7 +238,7 @@ function adoptStandby(nativeIndex: number) {
   startSession(song);
   diag('play from lock screen', song.title, `${to + 1}/${state().queue.length}`);
   set({ song, index: to, position: 0, duration: song.durationSec ?? 0, error: null, playing: player?.playing ?? true });
-  if (player) player.loop = loopFor(state().repeat);
+  if (player) setLoop(player, loopFor(state().repeat));
 }
 
 /** Show another audio song of the loaded run as current. */
@@ -276,14 +288,13 @@ function onStatus(status: AudioPlaylistStatus) {
     diag('play failed', state().song?.title ?? '?', error);
     set({ error });
   }
-  if (status.didJustFinish) diag('finished', `index ${state().index}`, `slots ${slots?.join(',') ?? '-'}`);
   if (status.playing && state().listEnded) {
     diag('playing after the end of the list');
     // Played from the lock screen after the list ended: a new round starts here.
     ended = false;
     set({ listEnded: false });
     startSession(state().queue[state().index]);
-    if (player) player.loop = loopFor(state().repeat);
+    if (player) setLoop(player, loopFor(state().repeat));
   }
   const patch: Partial<PlayerState> = {};
   if (typeof status.playing === 'boolean') patch.playing = fading ? false : status.playing;
@@ -293,7 +304,7 @@ function onStatus(status: AudioPlaylistStatus) {
   if (status.didJustFinish && slots?.length && state().index === slots[slots.length - 1]) {
     // The last loaded song ended. A native loop ("single" for repeat-one, "all" around a list
     // it holds whole) has already started the next round; otherwise the app decides.
-    const loop = player?.loop ?? 'none';
+    const loop = loopSet;
     diag('ended', state().song?.title ?? '?', `repeat ${state().repeat}`, `native loop ${loop}`);
     if (loop === 'none') continueAfterEnd();
   }
@@ -335,7 +346,7 @@ async function parkAtEnd() {
   p.clear();
   for (const i of slots) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
   p.skipTo(slots.indexOf(index));
-  p.loop = loopFor(state().repeat);
+  setLoop(p, loopFor(state().repeat));
   ended = false; // the song is loaded again: play and seek work as usual
   set({ position: 0, playing: false });
   p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
@@ -431,7 +442,7 @@ async function startAt(target: number) {
   p.clear();
   for (const i of slots) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
   p.skipTo(slots.indexOf(index));
-  p.loop = loopFor(state().repeat);
+  setLoop(p, loopFor(state().repeat));
   p.volume = 1;
   p.play();
   p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
@@ -657,7 +668,7 @@ export async function previous() {
 export function cycleRepeat() {
   const repeat = nextRepeat(state().repeat);
   set({ repeat });
-  if (player && slots) player.loop = loopFor(repeat);
+  if (player && slots) setLoop(player, loopFor(repeat));
 }
 
 export async function seek(seconds: number) {
@@ -720,7 +731,7 @@ function rebuildAhead() {
   const tail = want.slice(want.indexOf(state().index) + 1);
   for (const i of tail) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
   slots = [...slots.slice(0, cur + 1), ...tail];
-  p.loop = loopFor(state().repeat);
+  setLoop(p, loopFor(state().repeat));
 }
 
 /** Is this song loaded in the player's queue (its file may be read at any moment)? */
@@ -791,7 +802,7 @@ async function onBackground() {
     p.clear();
     for (const i of ahead) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
     p.skipTo(0);
-    p.loop = loopFor(state().repeat);
+    setLoop(p, loopFor(state().repeat));
     p.setActiveForLockScreen(true, lockScreenInfo(state().queue[ahead[0]]), LOCK_SCREEN);
     diag('background: next on the lock screen', state().queue[ahead[0]].title);
     return;
@@ -802,7 +813,7 @@ async function onBackground() {
   const more = backgroundSlots(slots, audioFlags(), state().repeat).slice(slots.length);
   for (const i of more) player.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
   slots = [...slots, ...more];
-  player.loop = loopFor(state().repeat);
+  setLoop(player, loopFor(state().repeat));
 }
 
 async function onForeground() {
@@ -831,7 +842,7 @@ async function onForeground() {
     const keep = foregroundSlots(slots, slots.indexOf(state().index), state().queue.length);
     for (let k = slots.length - 1; k >= keep.length; k--) player.remove(k);
     slots = keep;
-    player.loop = loopFor(state().repeat);
+    setLoop(player, loopFor(state().repeat));
   }
   if (passedInBackground > 0) {
     const n = passedInBackground;
