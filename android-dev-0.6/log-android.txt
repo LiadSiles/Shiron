@@ -1,2 +1,1 @@
-11-13 20:36:33.398 I/ReactNativeJS(11461): '[diag]', '13/11 20:36:33 lock screen artwork skipped · assets_icon'
-11-13 20:37:42.575 I/ReactNativeJS(11858): '[diag]', '13/11 20:37:42 lock screen artwork skipped · assets_icon'
+11-13 21:13:01.919 I/ReactNativeJS(11416): '[diag]', '13/11 21:13:01 lock screen artwork skipped · assets_icon'
