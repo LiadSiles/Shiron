@@ -7,19 +7,14 @@ appId: app.shiron.gan
 - tapOn: "רשימה חדשה"
 - tapOn: "old-song"
 - tapOn: "gan-party"
-# The iPhone simulator sometimes types Hebrew out of order ("מעגל וקרב"): check the field
-# itself (the placeholder also mentions this name, so the match is exact) and type again.
-- retry:
-    maxRetries: 2
-    commands:
-      - tapOn: "שם הרשימה"
-      - eraseText: 40
-      - inputText: "מעגל בוקר"
-      - assertVisible: "מעגל בוקר"
+# A Latin name: the iPhone simulator types Hebrew out of order ("מעגל וקרב") often enough to fail
+# this flow even with retries — a simulator keyboard issue, not the app's (a phone types fine).
+- tapOn: "שם הרשימה"
+- inputText: "Morning circle"
 - pressKey: Enter
 - tapOn: "יצירת הרשימה"
 - waitForAnimationToEnd
-- assertVisible: ".*מעגל בוקר.*"
+- assertVisible: ".*Morning circle.*"
 - assertVisible: ".*old-song.*"
 - assertVisible: ".*gan-party.*"
 - tapOn: "סידור הרשימה"
@@ -36,4 +31,4 @@ appId: app.shiron.gan
 - tapOn: "מחיקת הרשימה"
 - tapOn: "מחיקה"
 - waitForAnimationToEnd
-- assertNotVisible: "רשימה מעגל בוקר.*"
+- assertNotVisible: "רשימה Morning circle.*"

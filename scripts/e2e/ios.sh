@@ -36,7 +36,9 @@ suite() {
   local before; before=$(wc -l < "$RESULTS")
   bash "$HERE/suite.sh" "$RESULTS" "$VARIANT" - "$@" && return
   grep -q "IOSDriverTimeoutException\|driver not ready" "shots/last-$VARIANT.log" 2>/dev/null || return
-  head -n "$before" "$RESULTS" > "$RESULTS.tmp" && mv "$RESULTS.tmp" "$RESULTS"
+  # Drop the failed try's lines. Not `head -n 0`: macOS's head refuses a count of 0, so a retry
+  # of the first suite (launch) kept its "did not run" line next to the retry's PASS.
+  awk -v n="$before" 'NR <= n' "$RESULTS" > "$RESULTS.tmp" && mv "$RESULTS.tmp" "$RESULTS"
   bash "$HERE/suite.sh" "$RESULTS" "$VARIANT" - "$@"
 }
 

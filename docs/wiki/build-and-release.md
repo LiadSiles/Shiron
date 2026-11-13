@@ -47,6 +47,11 @@ target `Shiron` (`ios/Shiron/`).
   (now removed) server imported app code. Locally this hides behind vitest's transform cache
   (`node_modules/.vitest-cache`).
 
+- **macOS `head -n 0` fails** ("illegal line count"): `ios.sh`'s retry of a suite whose driver
+  didn't start dropped the failed try's lines with `head -n $before`, which for the first suite
+  (launch, 0 lines before) did nothing — the results kept "launch.yaml (did not run)" beside the
+  retry's PASS and the job failed. Uses `awk 'NR <= n'` now (0.16.1).
+
 ## Signing
 
 - **Android:** `app/keystore/shiron.keystore` (alias `shiron`, password `shiron-android`)

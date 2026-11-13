@@ -3,7 +3,10 @@
 appId: app.shiron.gan
 ---
 - runFlow: dismiss.yaml
-- launchApp
+# Not restarted: open-link left the app taking the link in, and a restart cut the import off
+# (the library was still empty — CI, 0.16.0). Brought forward if it isn't already.
+- launchApp:
+    stopApp: false
 # The shared link can take a few more seconds to land on a slow CI simulator — and as the first
 # song lands, the app offers to connect an AI service (a modal over home): wait for either,
 # close the offer, then the song.
