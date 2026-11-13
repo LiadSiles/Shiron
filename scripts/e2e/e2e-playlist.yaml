@@ -7,8 +7,9 @@ appId: app.shiron.gan
 - tapOn: "רשימה חדשה"
 - tapOn: "old-song"
 - tapOn: "gan-party"
-# A Latin name: the iPhone simulator types Hebrew out of order ("מעגל וקרב") often enough to fail
-# this flow even with retries — a simulator keyboard issue, not the app's (a phone types fine).
+# Typed letters came out reordered on the iPhone ("מעגל וקרב", then "Morng circlein"): the
+# field was controlled and re-rendered the song list on every letter. It is uncontrolled now
+# (0.16.1); this checks the name arrives exactly as typed.
 - tapOn: "שם הרשימה"
 - inputText: "Morning circle"
 - pressKey: Enter

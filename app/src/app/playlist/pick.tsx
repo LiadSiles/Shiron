@@ -66,8 +66,10 @@ export default function PickSongs() {
           <>
             {/* The field says its own name to VoiceOver / TalkBack; the caption is only for the eye. */}
             <T soft size={13} accessible={false} importantForAccessibility="no" accessibilityElementsHidden>שם הרשימה</T>
+            {/* Uncontrolled: as a controlled field, each letter re-rendered the whole song list
+                and fast typing on iOS came out reordered ("Morng circlein", CI 0.16.1). */}
             <TextInput
-              value={name}
+              defaultValue=""
               onChangeText={setName}
               placeholder="למשל: מעגל בוקר"
               placeholderTextColor={c.inkSoft}

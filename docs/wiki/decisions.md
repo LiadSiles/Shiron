@@ -9,11 +9,12 @@ whenever a choice would surprise a future contributor.
   button in the media controls that cycles the app's mode. iOS: still impossible with the Now
   Playing controls (no custom items since iOS 16); a Live Activity / Control Center control is
   the only route — offered to the owner as a separate, larger step.
-- The owner asked to delete always-failing checks where the app is known to work. None failed
-  because of the app; each had a test-side cause, so each was fixed instead: the playlist flow
-  types a Latin name (the simulator scrambles Hebrew typing), the YouTube flow no longer restarts
+- The owner asked to delete always-failing checks where the app is known to work. None was safe
+  to delete; each cause was fixed instead: the YouTube flow no longer restarts
   the app in the middle of the link's import, and the "launch did not run" line was a bookkeeping
-  bug in `ios.sh`.
+  bug in `ios.sh`. The playlist flow's "Hebrew typing flake" turned out to be the app's: Latin
+  letters came out reordered too, because the new list's name field was a controlled input that
+  re-rendered the whole song list per letter. It is uncontrolled now.
 
 ### 2026-11-13 — Lock screen: no repeat button on iOS; "play next" plays once (0.16.0)
 
