@@ -1,0 +1,22 @@
+diff --git a/node_modules/expo-splash-screen/android/src/main/java/expo/modules/splashscreen/SplashScreenManager.kt b/node_modules/expo-splash-screen/android/src/main/java/expo/modules/splashscreen/SplashScreenManager.kt
+index bc44b70..39f6d5f 100644
+--- a/node_modules/expo-splash-screen/android/src/main/java/expo/modules/splashscreen/SplashScreenManager.kt
++++ b/node_modules/expo-splash-screen/android/src/main/java/expo/modules/splashscreen/SplashScreenManager.kt
+@@ -43,6 +43,17 @@ object SplashScreenManager {
+ 
+     splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
+       val splashScreenView = splashScreenViewProvider.view
++      // [shiron] No fade (duration 0): remove the splash now. The app's first frame can show
++      // before this listener runs; animating then put the splash back on top for the fade —
++      // splash, home, splash, home: the flicker on opening (CI film, 0.16.2).
++      if (exitAnimationDuration <= 0L) {
++        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
++          splashScreenViewProvider.remove()
++        } else {
++          (splashScreenView as SplashScreenView).remove()
++        }
++        return@setOnExitAnimationListener
++      }
+       splashScreenView
+         .animate()
+         .setDuration(exitAnimationDuration)

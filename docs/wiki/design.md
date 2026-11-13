@@ -53,6 +53,17 @@ Now the splash (`ui/launch.ts`) waits for all of the first screen's needs —
 longer changes (still at most `SPLASH_MAX_MS`, 2.5 s). The dock shows work she didn't start
 only once it has lasted 1.5 s (`useLasting`); a share's progress still shows at once.
 
+
+**Android, 0.16.2: the splash came back over the home screen.** The owner still saw a flicker
+on Android. The Android check now films a cold start (`android.sh` → `shots/launch.mp4`, and
+`launch-frames.png` with every frame that differs from the one before it). It showed splash →
+home → splash → home. expo-splash-screen hands the splash to an exit animation
+(`setOnExitAnimationListener`), and on Android 12+ the app's first frame shows before that
+listener runs; the fade then put the splash back on top and faded it out. Our patch
+(`patches/expo-splash-screen+58.0.13.patch`, built from source via `buildFromSource`) removes
+the splash at once when the duration is 0, and `ui/launch.ts` asks for that on Android. The
+iPhone keeps its 250 ms fade.
+
 ## Long press, the action sheet, choosing several songs (0.15.0)
 
 The owner asked for long-press menus "like a professional app" on every object, and acting on

@@ -31,6 +31,7 @@ done
 adb shell input keyevent KEYCODE_HOME
 sleep 20
 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
+adb logcat -G 16M >/dev/null 2>&1 || true  # room for the whole run's technical log
 adb logcat -c
 # Every share sheet that opens, kept from the start: one long session overflows logcat's buffer
 # (0.13.0: the count at the end found 0 of 4).
