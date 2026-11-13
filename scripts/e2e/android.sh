@@ -66,6 +66,19 @@ else
   echo "FAIL(must) $VARIANT share sheet opened $CHOOSERS of 4 times" >> "$RESULTS"
 fi
 
+# Opening the app, filmed (shots/launch.mp4): the owner sees the home screen flicker on Android.
+# A cold start with her library in place; the video shows each frame between splash and home.
+adb shell am force-stop "$PKG"
+adb shell screenrecord --time-limit 8 /sdcard/launch.mp4 >/dev/null 2>&1 &
+REC=$!
+sleep 1
+adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+wait $REC
+adb pull /sdcard/launch.mp4 shots/launch.mp4 >/dev/null 2>&1 || echo "== no launch video"
+# One sheet of frames, 8 a second, read left to right and down (published with the screenshots).
+[ -f shots/launch.mp4 ] && ffmpeg -loglevel error -y -i shots/launch.mp4 \
+  -vf "fps=8,scale=200:-1,tile=8x8:padding=4:color=white" -frames:v 1 shots/launch-frames.png
+
 if crashed; then
   echo "FAIL(must) $VARIANT crash" >> "$RESULTS"
   adb logcat -d -b crash | tail -60 > shots/crash.txt
