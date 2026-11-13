@@ -161,9 +161,11 @@ Owner report (iPhone): on the lock screen the bar stayed at the end when a song 
 and sometimes stuck so it could no longer be dragged. Causes found in expo-audio 58's iOS
 source, fixed in `app/patches/expo-audio+58.0.10.patch`:
 
-- **Repeat one** (`AudioPlaylist.swift`, `.single`): it called `seek(to: .zero)` and `play()`
-  together; the item played before the seek landed, so Now Playing kept the old end position.
-  Now it plays in the seek's completion.
+- **Repeat one** (`AudioPlaylist.swift`, `.single`): it seeked the finished item to 0 and played
+  it; the lock-screen bar stayed at the end. 0.16.0 played in the seek's completion — the owner
+  still saw the bar at the end. 0.16.1 starts the song over as a fresh item
+  (`rebuildPlaylist(startingAt:)`, the way a track change does), so Now Playing gets a new item
+  at 0 like when a song changes. Untested on a phone until the owner tries it.
 - **Seeks from the lock screen** (`MediaController.swift`: change position, skip ±): Now Playing
   was updated only by the next periodic tick, which never comes while paused — the bar sat at
   the old place. Each seek now refreshes Now Playing in its completion.
@@ -183,9 +185,19 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
   resource name (`assets_icon`); expo-audio parses `artworkUrl` as a `java.net.URL`, so the call
   was rejected and no song could start (caught by CI). Only `file://`/`http(s)://` URLs are
   passed; Android's notification shows the app icon on its own.
-- **Not possible / not done.** iOS has no repeat or shuffle button on the lock screen (only
-  play/pause, next/previous, the bar; the repeat command is honoured only by CarPlay/remotes);
-  repeat stays in the app. Android custom notification buttons (repeat) are not done.
+- **iOS: no repeat button possible.** The lock screen shows only play/pause, ⏮/⏭ (or skip ±)
+  and the bar. `changeRepeatModeCommand` is honoured by CarPlay/remotes but drawn nowhere on the
+  phone, and the like/dislike/bookmark "feedback" menu — the one way apps once added their own
+  items there — has not been shown since iOS 16 (Apple developer forums). Repeat stays in the
+  app; what remains possible is a Live Activity or a Control Center control (widget extension),
+  a much larger piece of work, not done.
+- **Android: repeat button (0.16.1).** `repeatMode` in the lock-screen options (our patch to
+  `AudioLockScreenOptions`) draws a button in the overflow slot of the media controls
+  (notification and lock screen, Android 13+): icon repeat-off / all / one. A press reaches the
+  app as a status update with `remoteRepeat`; `onStatus` → `cycleRepeat()` (off → list → song,
+  as in the app) → the controls are set again with the new mode (`showOnLockScreen`), and a
+  change in the app redraws them too. Android 12 and older (the notification's own actions) get
+  no repeat button.
 - **Android gotcha (found here, older than 0.16.0):** expo-audio's Android `loop` *getter* reads
   ExoPlayer off the main thread (every other getter uses `runOnMain`) and throws. `onStatus`
   read `player.loop` at the end of a list, so the update was cut short and the app's end

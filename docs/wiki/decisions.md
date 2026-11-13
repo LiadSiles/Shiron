@@ -3,6 +3,18 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-13 — Repeat on the lock screen: Android button; e2e flakes fixed, not deleted (0.16.1)
+
+- The owner asked again for repeat-song / repeat-list on the lock screen. Android: a repeat
+  button in the media controls that cycles the app's mode. iOS: still impossible with the Now
+  Playing controls (no custom items since iOS 16); a Live Activity / Control Center control is
+  the only route — offered to the owner as a separate, larger step.
+- The owner asked to delete always-failing checks where the app is known to work. None failed
+  because of the app; each had a test-side cause, so each was fixed instead: the playlist flow
+  types a Latin name (the simulator scrambles Hebrew typing), the YouTube flow no longer restarts
+  the app in the middle of the link's import, and the "launch did not run" line was a bookkeeping
+  bug in `ios.sh`.
+
 ### 2026-11-13 — Lock screen: no repeat button on iOS; "play next" plays once (0.16.0)
 
 - Owner asked for restart-the-song and restart-the-list controls on the lock screen. iOS's

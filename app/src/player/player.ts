@@ -108,6 +108,23 @@ const LOCK_SCREEN: AudioLockScreenOptions = {
   isLiveStream: false, // keeps the seek bar in the notification
 };
 
+/** The song the lock screen shows (in standby: the next audio song, not the YouTube one). */
+let lockScreenSong: SongWithCategories | null = null;
+
+/**
+ * Android also gets a repeat button there (our expo-audio patch draws it from `repeatMode` and
+ * reports a press as `remoteRepeat`). iOS has no such button since iOS 16 — see player.md.
+ */
+function lockScreenOptions(): AudioLockScreenOptions {
+  if (Platform.OS !== 'android') return LOCK_SCREEN;
+  return { ...LOCK_SCREEN, repeatMode: state().repeat } as AudioLockScreenOptions;
+}
+
+function showOnLockScreen(p: AudioPlaylist, song: SongWithCategories) {
+  lockScreenSong = song;
+  p.setActiveForLockScreen(true, lockScreenInfo(song), lockScreenOptions());
+}
+
 /** Listening-time accounting for the ranking (audio and YouTube alike). */
 let session: { songId: string; startedAt: number; listened: number; lastTime: number } | null = null;
 
@@ -247,6 +264,7 @@ function moveTo(index: number) {
   const song = state().queue[index];
   startSession(song);
   set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null });
+  lockScreenSong = song;
   player?.updateLockScreenMetadata(lockScreenInfo(song));
   void refreshCurrent(); // the queue was captured when playback started; names may have come since
 }
@@ -266,7 +284,10 @@ async function refreshCurrent() {
   if (!fresh || seq !== refreshSeq || !shown || shown.id !== fresh.id) return;
   if (fresh.updatedAt === shown.updatedAt && sameCategories(fresh, shown)) return;
   set({ song: fresh, queue: state().queue.map((s) => (s.id === fresh.id ? { ...fresh, once: s.once } : s)) });
-  if (!isYoutube(fresh)) player?.updateLockScreenMetadata(lockScreenInfo(fresh));
+  if (!isYoutube(fresh)) {
+    lockScreenSong = fresh;
+    player?.updateLockScreenMetadata(lockScreenInfo(fresh));
+  }
 }
 
 function sameCategories(a: SongWithCategories, b: SongWithCategories): boolean {
@@ -274,6 +295,12 @@ function sameCategories(a: SongWithCategories, b: SongWithCategories): boolean {
 }
 
 function onStatus(status: AudioPlaylistStatus) {
+  // Not in the typed status: the repeat button on Android's lock screen / notification.
+  if ((status as { remoteRepeat?: boolean }).remoteRepeat) {
+    diag('repeat from the lock screen');
+    cycleRepeat();
+    return;
+  }
   if (standby) {
     if (status.playing) adoptStandby(player?.currentIndex ?? 0);
     return;
@@ -349,7 +376,7 @@ async function parkAtEnd() {
   setLoop(p, loopFor(state().repeat));
   ended = false; // the song is loaded again: play and seek work as usual
   set({ position: 0, playing: false });
-  p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
+  showOnLockScreen(p, song);
   diag('list ended, parked on', song.title);
 }
 
@@ -445,7 +472,7 @@ async function startAt(target: number) {
   setLoop(p, loopFor(state().repeat));
   p.volume = 1;
   p.play();
-  p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
+  showOnLockScreen(p, song);
 }
 
 /**
@@ -669,6 +696,10 @@ export function cycleRepeat() {
   const repeat = nextRepeat(state().repeat);
   set({ repeat });
   if (player && slots) setLoop(player, loopFor(repeat));
+  // Redraw Android's repeat button (its look comes from the options).
+  if (Platform.OS === 'android' && player && lockScreenSong && (standby || !isYoutube(state().song))) {
+    showOnLockScreen(player, lockScreenSong);
+  }
 }
 
 export async function seek(seconds: number) {
@@ -803,7 +834,7 @@ async function onBackground() {
     for (const i of ahead) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
     p.skipTo(0);
     setLoop(p, loopFor(state().repeat));
-    p.setActiveForLockScreen(true, lockScreenInfo(state().queue[ahead[0]]), LOCK_SCREEN);
+    showOnLockScreen(p, state().queue[ahead[0]]);
     diag('background: next on the lock screen', state().queue[ahead[0]].title);
     return;
   }

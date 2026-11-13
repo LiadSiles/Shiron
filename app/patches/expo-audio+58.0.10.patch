@@ -1,5 +1,50 @@
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
+index bf3f9c5..0db06a9 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
+@@ -141,6 +141,11 @@ class AudioPlaylist(
+     previous()
+   }
+ 
++  // [shiron] Told to JS in a status update; the app cycles its repeat mode and redraws the button.
++  override fun remoteRepeat() {
++    sendStatusUpdate(mapOf("remoteRepeat" to true))
++  }
++
+   fun skipTo(index: Int) {
+     if (index !in 0..<trackCount) {
+       return
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
+index b6b3b73..b5ec55f 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
+@@ -116,7 +116,9 @@ class AudioLockScreenOptions(
+   @Field val showPreviousTrack: Boolean = false,
+   @Field val isLiveStream: Boolean? = null,
+   @Field val seekForwardIntervalSeconds: Double = 10.0,
+-  @Field val seekBackwardIntervalSeconds: Double = 10.0
++  @Field val seekBackwardIntervalSeconds: Double = 10.0,
++  // [shiron] The app's repeat mode ("off" | "all" | "one"): draws a repeat button; null = none.
++  @Field val repeatMode: String? = null
+ ) : Record
+ 
+ enum class InterruptionMode(val value: String) : Enumerable {
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/LockScreenPlayable.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/LockScreenPlayable.kt
+index 7ac4a57..ba0e8b7 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/LockScreenPlayable.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/LockScreenPlayable.kt
+@@ -26,6 +26,9 @@ interface LockScreenPlayable : Playable {
+ 
+   fun previousTrack() = Unit
+ 
++  // [shiron] The repeat button on the lock screen / notification: the app changes its mode.
++  fun remoteRepeat() = Unit
++
+   fun setActiveForLockScreen(
+     active: Boolean,
+     metadata: Metadata? = null,
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
-index 53c36f7..1bcf7aa 100644
+index 53c36f7..85ef1b0 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 @@ -65,6 +65,11 @@ class AudioControlsService : MediaSessionService() {
@@ -14,7 +59,15 @@ index 53c36f7..1bcf7aa 100644
      ensureForegroundNotification()
  
      val playable = currentPlayable
-@@ -188,6 +193,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -94,6 +99,7 @@ class AudioControlsService : MediaSessionService() {
+         ACTION_SEEK_BACKWARD -> seekBackward()
+         ACTION_NEXT_TRACK -> nextTrack()
+         ACTION_PREVIOUS_TRACK -> previousTrack()
++        ACTION_CYCLE_REPEAT -> cycleRepeat() // [shiron]
+       }
+     }
+ 
+@@ -188,6 +194,7 @@ class AudioControlsService : MediaSessionService() {
        .setContentIntent(buildContentIntent())
        .setAutoCancel(false)
        .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
@@ -22,7 +75,39 @@ index 53c36f7..1bcf7aa 100644
  
      val style = MediaStyleNotificationHelper.MediaStyle(session)
  
-@@ -371,6 +377,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -354,6 +361,31 @@ class AudioControlsService : MediaSessionService() {
+       )
+     }
+ 
++    // [shiron] Repeat: off → the list → this song, as the app has it (Android 13+ shows it next to
++    // the transport buttons, on the lock screen too).
++    currentOptions?.repeatMode?.let { mode ->
++      mediaButtons.add(
++        CommandButton.Builder(
++          when (mode) {
++            "one" -> CommandButton.ICON_REPEAT_ONE
++            "all" -> CommandButton.ICON_REPEAT_ALL
++            else -> CommandButton.ICON_REPEAT_OFF
++          }
++        )
++          .setDisplayName(
++            when (mode) {
++              "one" -> "חזרה על השיר"
++              "all" -> "חזרה על הרשימה"
++              else -> "בלי חזרה"
++            }
++          )
++          .setEnabled(true)
++          .setSessionCommand(SessionCommand(ACTION_CYCLE_REPEAT, Bundle.EMPTY))
++          .setSlots(CommandButton.SLOT_OVERFLOW)
++          .build()
++      )
++    }
++
+     session.setCustomLayout(mediaButtons)
+     session.setMediaButtonPreferences(mediaButtons)
+   }
+@@ -371,6 +403,7 @@ class AudioControlsService : MediaSessionService() {
    }
  
    private fun postOrStartForegroundNotificationNow(startInForeground: Boolean) {
@@ -30,7 +115,7 @@ index 53c36f7..1bcf7aa 100644
      val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
      val notification = buildNotification() ?: return
  
-@@ -437,6 +444,8 @@ class AudioControlsService : MediaSessionService() {
+@@ -437,6 +470,8 @@ class AudioControlsService : MediaSessionService() {
      removePlayerListener()
      currentPlayable?.isActiveForLockScreen = false
      hideNotification()
@@ -39,7 +124,7 @@ index 53c36f7..1bcf7aa 100644
  
      currentPlayable = playable
      currentMetadata = metadata
-@@ -505,6 +514,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -505,6 +540,7 @@ class AudioControlsService : MediaSessionService() {
      playable?.assignBasicMediaSession()
      currentPlayable = null
      stopForeground(STOP_FOREGROUND_REMOVE)
@@ -47,7 +132,7 @@ index 53c36f7..1bcf7aa 100644
    }
  
    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-@@ -531,6 +541,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -531,6 +567,7 @@ class AudioControlsService : MediaSessionService() {
        updateArtwork(metadata, postUpdate = false)
  
        mediaSession?.release()
@@ -55,7 +140,7 @@ index 53c36f7..1bcf7aa 100644
        sessionMetadataPlayer = null
        appContext?.mainQueue?.launch {
          val context = appContext?.reactContext ?: return@launch
-@@ -550,7 +561,15 @@ class AudioControlsService : MediaSessionService() {
+@@ -550,7 +587,15 @@ class AudioControlsService : MediaSessionService() {
          sessionMetadataPlayer = sessionPlayer
  
          updateSessionCustomLayout(playable.player.isPlaying)
@@ -72,7 +157,19 @@ index 53c36f7..1bcf7aa 100644
        }
      } else {
        setActivePlayableInternal(playable, metadata, options)
-@@ -666,6 +685,11 @@ class AudioControlsService : MediaSessionService() {
+@@ -583,6 +628,11 @@ class AudioControlsService : MediaSessionService() {
+     currentPlayable?.takeIf { it.supportsPreviousTrack }?.previousTrack()
+   }
+ 
++  // [shiron]
++  fun cycleRepeat() {
++    currentPlayable?.remoteRepeat()
++  }
++
+   fun supportsNextTrack(): Boolean {
+     return currentPlayable?.supportsNextTrack == true
+   }
+@@ -666,6 +716,11 @@ class AudioControlsService : MediaSessionService() {
  
        override fun onPlaybackStateChanged(playbackState: Int) {
          postOrStartForegroundNotification(startInForeground = false)
@@ -84,7 +181,7 @@ index 53c36f7..1bcf7aa 100644
        }
      }
      playbackListener = listener
-@@ -683,7 +707,42 @@ class AudioControlsService : MediaSessionService() {
+@@ -683,7 +738,42 @@ class AudioControlsService : MediaSessionService() {
      }
    }
  
@@ -127,25 +224,52 @@ index 53c36f7..1bcf7aa 100644
      private const val CHANNEL_ID = "expo_audio_channel"
      private const val ACTION_PLAY = "expo.modules.audio.action.PLAY"
      private const val ACTION_PAUSE = "expo.modules.audio.action.PAUSE"
+@@ -693,5 +783,6 @@ class AudioControlsService : MediaSessionService() {
+     const val ACTION_SEEK_BACKWARD = "expo.modules.audio.action.SEEK_BACKWARD"
+     const val ACTION_NEXT_TRACK = "expo.modules.audio.action.NEXT_TRACK"
+     const val ACTION_PREVIOUS_TRACK = "expo.modules.audio.action.PREVIOUS_TRACK"
++    const val ACTION_CYCLE_REPEAT = "expo.modules.audio.action.CYCLE_REPEAT" // [shiron]
+   }
+ }
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioMediaSessionCallback.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioMediaSessionCallback.kt
+index ee83be1..cae2456 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioMediaSessionCallback.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioMediaSessionCallback.kt
+@@ -38,6 +38,7 @@ class AudioMediaSessionCallback(
+       val availableSessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
+         .add(SessionCommand(AudioControlsService.ACTION_SEEK_BACKWARD, Bundle.EMPTY))
+         .add(SessionCommand(AudioControlsService.ACTION_SEEK_FORWARD, Bundle.EMPTY))
++        .add(SessionCommand(AudioControlsService.ACTION_CYCLE_REPEAT, Bundle.EMPTY)) // [shiron]
+         .apply {
+           if (service.supportsPreviousTrack()) {
+             add(SessionCommand(AudioControlsService.ACTION_PREVIOUS_TRACK, Bundle.EMPTY))
+@@ -80,6 +81,10 @@ class AudioMediaSessionCallback(
+         service.previousTrack()
+         Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+       }
++      AudioControlsService.ACTION_CYCLE_REPEAT -> { // [shiron]
++        service.cycleRepeat()
++        Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
++      }
+       else -> super.onCustomCommand(session, controller, command, args)
+     }
+   }
 diff --git a/node_modules/expo-audio/ios/AudioPlaylist.swift b/node_modules/expo-audio/ios/AudioPlaylist.swift
-index 38e158f..4858c93 100644
+index 38e158f..1f2a094 100644
 --- a/node_modules/expo-audio/ios/AudioPlaylist.swift
 +++ b/node_modules/expo-audio/ios/AudioPlaylist.swift
-@@ -367,8 +367,12 @@ public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable, LockScreenPlayab
+@@ -367,7 +367,10 @@ public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable, LockScreenPlayab
  
        switch self.loopMode {
        case .single:
 -        self.ref.seek(to: .zero)
--        self.play(at: self.currentRate)
-+        // [shiron] Play again once the seek is done: playing at once told the lock screen the
-+        // old position (the end), and its bar stayed there.
-+        self.ref.seek(to: .zero) { [weak self] _ in
-+          guard let self else { return }
-+          self.play(at: self.currentRate)
-+        }
++        // [shiron] Start the song over as a fresh item, the way a track change does. Seeking the
++        // finished item back to 0 (expo-audio's way, and 0.16.0's seek-then-play) left the lock
++        // screen's bar at the end: iOS kept the ended item's position.
++        self.rebuildPlaylist(startingAt: finishedIndex)
+         self.play(at: self.currentRate)
  
        case .all:
-         if isLastTrack {
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
 index 9b66e45..92900f6 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
