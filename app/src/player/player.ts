@@ -132,7 +132,12 @@ let artworkUrl: string | null = null;
 Asset.fromModule(require('../../assets/icon.png'))
   .downloadAsync()
   .then((a) => {
-    artworkUrl = a.localUri ?? a.uri;
+    const url = a.localUri ?? a.uri;
+    // Native code parses it as a URL. In an Android release build the asset is a resource
+    // name ("assets_icon"), which made every song fail to start (CI, 0.16.0 candidate): only a
+    // real file/web URL is passed — on Android the notification shows the app icon anyway.
+    if (/^(file|https?):\/\//.test(url)) artworkUrl = url;
+    else diag('lock screen artwork skipped', url);
   })
   .catch((e) => diag('lock screen artwork failed', e));
 

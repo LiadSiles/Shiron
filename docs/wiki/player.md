@@ -179,7 +179,10 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
   "הרשימה הסתיימה" with "מההתחלה" instead of "הבא".
 - **Branding.** Title = the song; artist line = "<category> · PlayGan" (just "PlayGan" for
   unsorted); album = "PlayGan"; artwork = the app icon (`assets/icon.png` via `expo-asset`,
-  downloaded once to a file URL).
+  downloaded once to a file URL). **Gotcha:** in an Android release build the asset's URI is a
+  resource name (`assets_icon`); expo-audio parses `artworkUrl` as a `java.net.URL`, so the call
+  was rejected and no song could start (caught by CI). Only `file://`/`http(s)://` URLs are
+  passed; Android's notification shows the app icon on its own.
 - **Not possible / not done.** iOS has no repeat or shuffle button on the lock screen (only
   play/pause, next/previous, the bar; the repeat command is honoured only by CarPlay/remotes);
   repeat stays in the app. Android custom notification buttons (repeat) are not done.
