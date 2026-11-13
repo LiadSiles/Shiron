@@ -177,7 +177,10 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
   nothing (the "stuck" window). `player.ts → parkAtEnd()`: at the end with nothing after
   (repeat off) the run is loaded again, paused on the last song at 0, with the native loop set
   to `all` and `listEnded`. Lock-screen ▶ → that song plays again; ⏭ → the list from its start.
-  Any play clears `listEnded` and restores her repeat mode. In the app the full player shows
+  Any play clears `listEnded` and restores her repeat mode. The park ends with `seekTo(0)`: on
+  Android `seekTo` runs on a different native queue than clear/add/skipTo, and a seek from the bar
+  landed after the reload, leaving the song parked near its end (CI's streamed log: play after the
+  end, "ended" again 2.6 s later). In the app the full player shows
   "הרשימה הסתיימה" with "מההתחלה" instead of "הבא".
 - **Branding.** Title = the song; artist line = "<category> · PlayGan" (just "PlayGan" for
   unsorted); album = "PlayGan"; artwork = the app icon (`assets/icon.png` via `expo-asset`,

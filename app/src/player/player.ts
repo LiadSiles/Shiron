@@ -373,6 +373,10 @@ async function parkAtEnd() {
   p.clear();
   for (const i of slots) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
   p.skipTo(slots.indexOf(index));
+  // And to 0 on the queue the bar's seeks use: on Android seekTo runs on another native queue
+  // than clear/add/skipTo, so a seek from the bar could land after the reload and park the song
+  // near its end — play then ended it again within seconds (CI log, 0.16.2).
+  p.seekTo(0).catch(() => undefined);
   setLoop(p, loopFor(state().repeat));
   ended = false; // the song is loaded again: play and seek work as usual
   set({ position: 0, playing: false });
