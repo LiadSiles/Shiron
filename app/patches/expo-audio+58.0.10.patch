@@ -44,7 +44,7 @@ index 7ac4a57..ba0e8b7 100644
      active: Boolean,
      metadata: Metadata? = null,
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
-index 53c36f7..85ef1b0 100644
+index 53c36f7..b8f1d69 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 @@ -65,6 +65,11 @@ class AudioControlsService : MediaSessionService() {
@@ -132,7 +132,36 @@ index 53c36f7..85ef1b0 100644
    }
  
    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-@@ -531,6 +567,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -525,12 +561,36 @@ class AudioControlsService : MediaSessionService() {
+     metadata: Metadata?,
+     options: AudioLockScreenOptions?
+   ) {
++    // [shiron] Same player, same kind of controls (only the song or the repeat mode changed):
++    // update the session in place. Releasing and building a new one made the system replace the
++    // media controls, so the expanded notification collapsed on every press of next, repeat or
++    // play-at-the-end.
++    if (playable == currentPlayable && mediaSession != null && sameSessionShape(currentOptions, options)) {
++      currentOptions = options
++      if (metadata != currentMetadata) {
++        currentMetadata = metadata
++        sessionMetadataPlayer?.updateMetadata(metadata)
++        updateArtwork(metadata, postUpdate = false)
++      }
++      appContext?.mainQueue?.launch {
++        updateSessionCustomLayout(playable.player.isPlaying)
++        dismissed = false
++        if (playable.player.playWhenReady) {
++          detached = false
++          postOrStartForegroundNotification(startInForeground = true)
++        } else {
++          postOrStartForegroundNotification(startInForeground = false)
++        }
++      }
++      return
++    }
+     if (playable == currentPlayable) {
+       currentMetadata = metadata
+       currentOptions = options
        updateArtwork(metadata, postUpdate = false)
  
        mediaSession?.release()
@@ -140,7 +169,7 @@ index 53c36f7..85ef1b0 100644
        sessionMetadataPlayer = null
        appContext?.mainQueue?.launch {
          val context = appContext?.reactContext ?: return@launch
-@@ -550,7 +587,15 @@ class AudioControlsService : MediaSessionService() {
+@@ -550,13 +610,34 @@ class AudioControlsService : MediaSessionService() {
          sessionMetadataPlayer = sessionPlayer
  
          updateSessionCustomLayout(playable.player.isPlaying)
@@ -157,7 +186,26 @@ index 53c36f7..85ef1b0 100644
        }
      } else {
        setActivePlayableInternal(playable, metadata, options)
-@@ -583,6 +628,11 @@ class AudioControlsService : MediaSessionService() {
+     }
+   }
+ 
++  // [shiron] Everything the session player is built from (resolveSessionPlayer) and the buttons
++  // other than repeat, which updateSessionCustomLayout redraws.
++  private fun sameSessionShape(a: AudioLockScreenOptions?, b: AudioLockScreenOptions?): Boolean {
++    if (a == null || b == null) return a == null && b == null
++    return a.showSeekForward == b.showSeekForward &&
++      a.showSeekBackward == b.showSeekBackward &&
++      a.showNextTrack == b.showNextTrack &&
++      a.showPreviousTrack == b.showPreviousTrack &&
++      a.isLiveStream == b.isLiveStream &&
++      a.seekForwardIntervalSeconds == b.seekForwardIntervalSeconds &&
++      a.seekBackwardIntervalSeconds == b.seekBackwardIntervalSeconds
++  }
++
+   fun unregisterPlayable() {
+     clearSessionInternal()
+   }
+@@ -583,6 +664,11 @@ class AudioControlsService : MediaSessionService() {
      currentPlayable?.takeIf { it.supportsPreviousTrack }?.previousTrack()
    }
  
@@ -169,7 +217,7 @@ index 53c36f7..85ef1b0 100644
    fun supportsNextTrack(): Boolean {
      return currentPlayable?.supportsNextTrack == true
    }
-@@ -666,6 +716,11 @@ class AudioControlsService : MediaSessionService() {
+@@ -666,6 +752,11 @@ class AudioControlsService : MediaSessionService() {
  
        override fun onPlaybackStateChanged(playbackState: Int) {
          postOrStartForegroundNotification(startInForeground = false)
@@ -181,7 +229,7 @@ index 53c36f7..85ef1b0 100644
        }
      }
      playbackListener = listener
-@@ -683,7 +738,42 @@ class AudioControlsService : MediaSessionService() {
+@@ -683,7 +774,42 @@ class AudioControlsService : MediaSessionService() {
      }
    }
  
@@ -224,7 +272,7 @@ index 53c36f7..85ef1b0 100644
      private const val CHANNEL_ID = "expo_audio_channel"
      private const val ACTION_PLAY = "expo.modules.audio.action.PLAY"
      private const val ACTION_PAUSE = "expo.modules.audio.action.PAUSE"
-@@ -693,5 +783,6 @@ class AudioControlsService : MediaSessionService() {
+@@ -693,5 +819,6 @@ class AudioControlsService : MediaSessionService() {
      const val ACTION_SEEK_BACKWARD = "expo.modules.audio.action.SEEK_BACKWARD"
      const val ACTION_NEXT_TRACK = "expo.modules.audio.action.NEXT_TRACK"
      const val ACTION_PREVIOUS_TRACK = "expo.modules.audio.action.PREVIOUS_TRACK"

@@ -196,7 +196,13 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
   (notification and lock screen, Android 13+): icon repeat-off / all / one. A press reaches the
   app as a status update with `remoteRepeat`; `onStatus` → `cycleRepeat()` (off → list → song,
   as in the app) → the controls are set again with the new mode (`showOnLockScreen`), and a
-  change in the app redraws them too. Android 12 and older (the notification's own actions) get
+  change in the app redraws them too.
+- **Android: the controls update in place (0.16.2).** expo-audio's `setPlayableOptions` released
+  the media session and built a new one on every `setActiveForLockScreen` — each song start, the
+  end of the list, every repeat press. The system then replaced the media controls and the
+  expanded notification collapsed (owner: pressing repeat folded it). Our patch keeps the session
+  when the player is the same and only the song or the repeat mode changed
+  (`sameSessionShape`): new metadata and buttons on the existing session. Android 12 and older (the notification's own actions) get
   no repeat button.
 - **Android gotcha (found here, older than 0.16.0):** expo-audio's Android `loop` *getter* reads
   ExoPlayer off the main thread (every other getter uses `runOnMain`) and throws. `onStatus`
