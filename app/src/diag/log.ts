@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { getSetting, setSetting } from '../db/repo';
 
 /**
@@ -46,7 +47,9 @@ function describe(v: unknown): string {
 /** Adds one line: "time event · detail · detail". Never throws. */
 export function diag(event: string, ...details: unknown[]): void {
   const line = [`${stamp()} ${event}`, ...details.map(describe)].join(' · ');
-  if (__DEV__) console.log('[diag]', line);
+  // Also to the system log on Android, so CI's emulator run can read it next to the player's own
+  // lines (adb logcat). Stays on the phone like the rest of the log.
+  if (__DEV__ || Platform.OS === 'android') console.log('[diag]', line);
   void load().then((l) => {
     l.push(line);
     if (l.length > MAX) l.splice(0, l.length - MAX);

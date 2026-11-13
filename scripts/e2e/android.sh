@@ -75,15 +75,19 @@ sleep 1
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 wait $REC
 adb pull /sdcard/launch.mp4 shots/launch.mp4 >/dev/null 2>&1 || echo "== no launch video"
-# One sheet of frames, 8 a second, read left to right and down (published with the screenshots).
+# Every frame that differs from the one before it, at the video's full rate, on one sheet: a
+# single odd frame between splash and home can't fall between samples.
 [ -f shots/launch.mp4 ] && ffmpeg -loglevel error -y -i shots/launch.mp4 \
-  -vf "fps=8,scale=200:-1,tile=8x8:padding=4:color=white" -frames:v 1 shots/launch-frames.png
+  -vf "select='gt(scene,0.003)',scale=200:-1,tile=8x6:padding=4:color=white" -fps_mode vfr \
+  -frames:v 1 shots/launch-frames.png
 
 if crashed; then
   echo "FAIL(must) $VARIANT crash" >> "$RESULTS"
   adb logcat -d -b crash | tail -60 > shots/crash.txt
 fi
 adb logcat -d '*:E' | grep -E "AndroidRuntime|ReactNativeJS|Expo|FATAL" | tail -60 > shots/errors-android.txt
+# The app's technical log and audio focus, for player checks that fail on the emulator only.
+adb logcat -d -v time | grep -E "\[diag\]|MediaFocusControl|AudioFocus|ExpoAudio" | tail -400 > shots/log-android.txt
 cat "$RESULTS"
 grep "^FAIL(must)" "$RESULTS" | sed "s/^/::error::/;s/\$/ (see shots\/ on the screenshots branch)/"
 ! grep -q "^FAIL(must)" "$RESULTS"
