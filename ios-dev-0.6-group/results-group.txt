@@ -6,11 +6,11 @@ PASS group open-link.yaml
 PASS group e2e-import.yaml
 PASS group e2e-player.yaml
 PASS group e2e-song.yaml
-FAIL(must) group e2e-playlist.yaml
+PASS group e2e-playlist.yaml
 PASS group e2e-search.yaml
 PASS group e2e-end.yaml
-PASS group e2e-background.yaml
-PASS group e2e-many-links.yaml
-PASS group e2e-select.yaml
-PASS group-add-mp3 add-files.yaml
-PASS group-cats categories.yaml
+FAIL(must) group e2e-background.yaml
+FAIL(must) group e2e-many-links.yaml
+FAIL(must) group e2e-select.yaml
+FAIL(soft) group-add-mp3 add-files.yaml
+FAIL(soft) group-cats categories.yaml
