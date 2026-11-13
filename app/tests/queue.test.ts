@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  afterEnd, withoutQueueIndex, audioAhead, audioRun, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, runSlots,
+  afterEnd, withoutQueueIndex, audioAhead, upNextAt, upNextCount, withQueueInsert, withoutPlayedOnce, audioRun, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, runSlots,
 } from '../src/core/queue';
 
 describe('play queue', () => {
@@ -93,5 +93,35 @@ describe('play queue', () => {
     expect(withoutQueueIndex([2, 3, 6], 3)).toEqual({ slots: [2, 5], removeSlot: 1 });
     expect(withoutQueueIndex([2, 3, 6], 4)).toEqual({ slots: [2, 3, 5], removeSlot: -1 });
     expect(withoutQueueIndex([2, 3], 0)).toEqual({ slots: [1, 2], removeSlot: -1 });
+  });
+});
+
+describe('"נגני הבא": songs to hear next, once (owner, 0.16.0)', () => {
+  const q = (...once: boolean[]) => once.map((o, i) => ({ id: String(i), ...(o ? { once: true as const } : {}) }));
+
+  it('goes after the current song and the up-next ones already waiting, in order', () => {
+    expect(upNextAt(q(false, false, false), 0)).toBe(1);
+    expect(upNextAt(q(false, true, true, false), 0)).toBe(3);
+    expect(upNextCount(q(false, true, true, false), 0)).toBe(2);
+    expect(upNextAt(q(false, false), 1)).toBe(2); // the last song: at the end
+  });
+
+  it('moves the loaded slots past the inserted song', () => {
+    expect(withQueueInsert([2, 3, 4], 3)).toEqual([2, 4, 5]);
+  });
+
+  it('drops up-next songs once played, keeping the target', () => {
+    // a, x(once, playing), b → on to b: x leaves.
+    const r = withoutPlayedOnce(q(false, true, false), 1, 2);
+    expect(r.queue.map((s) => s.id)).toEqual(['0', '2']);
+    expect(r.target).toBe(1);
+    // Back to x itself (previous): it stays.
+    expect(withoutPlayedOnce(q(false, true, false), 2, 1).queue.map((s) => s.id)).toEqual(['0', '1', '2']);
+    // Not played yet (after the current): stays.
+    expect(withoutPlayedOnce(q(false, false, true), 0, 1).queue.map((s) => s.id)).toEqual(['0', '1', '2']);
+    // Around the list: all once songs before the end have played.
+    const w = withoutPlayedOnce(q(false, true, false, true), 3, 0);
+    expect(w.queue.map((s) => s.id)).toEqual(['0', '2']);
+    expect(w.target).toBe(0);
   });
 });

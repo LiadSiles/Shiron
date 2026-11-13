@@ -155,6 +155,47 @@ it was declined for this reason, and the music goes on with the audio songs inst
   waits for the window only on the iPhone and then opens whichever player is showing.
 - The old `youtube/[id]` screen is gone; "פתיחה באפליקציית יוטיוב" is on the full player.
 
+## Lock screen and "play next" (0.16.0)
+
+Owner report (iPhone): on the lock screen the bar stayed at the end when a song started over,
+and sometimes stuck so it could no longer be dragged. Causes found in expo-audio 58's iOS
+source, fixed in `app/patches/expo-audio+58.0.10.patch`:
+
+- **Repeat one** (`AudioPlaylist.swift`, `.single`): it called `seek(to: .zero)` and `play()`
+  together; the item played before the seek landed, so Now Playing kept the old end position.
+  Now it plays in the seek's completion.
+- **Seeks from the lock screen** (`MediaController.swift`: change position, skip ±): Now Playing
+  was updated only by the next periodic tick, which never comes while paused — the bar sat at
+  the old place. Each seek now refreshes Now Playing in its completion.
+- **Commands decided once.** next/previous and change-position were enabled only when the
+  playable was first set; after the list changed (or iOS disabled the position command after
+  an item ended) the bar could not be dragged. `refreshTrackCommands` re-enables them after
+  every Now Playing update, from the options last set (`activeOptions`).
+- **The end of the list.** iOS removes the last item when it ends, so ▶ on the lock screen did
+  nothing (the "stuck" window). `player.ts → parkAtEnd()`: at the end with nothing after
+  (repeat off) the run is loaded again, paused on the last song at 0, with the native loop set
+  to `all` and `listEnded`. Lock-screen ▶ → that song plays again; ⏭ → the list from its start.
+  Any play clears `listEnded` and restores her repeat mode. In the app the full player shows
+  "הרשימה הסתיימה" with "מההתחלה" instead of "הבא".
+- **Branding.** Title = the song; artist line = "<category> · PlayGan" (just "PlayGan" for
+  unsorted); album = "PlayGan"; artwork = the app icon (`assets/icon.png` via `expo-asset`,
+  downloaded once to a file URL).
+- **Not possible / not done.** iOS has no repeat or shuffle button on the lock screen (only
+  play/pause, next/previous, the bar; the repeat command is honoured only by CarPlay/remotes);
+  repeat stays in the app. Android custom notification buttons (repeat) are not done.
+- Untested on a device: everything on the lock screen itself (the simulator has none). The
+  in-app parts are covered by the unit tests and `e2e-end.yaml`.
+
+**"נגני הבא" (play next).** In a song's menu while another song is current
+(`ui/menus.ts → queueNext`, `player.playNext`). The song is inserted right after the current
+one and after any earlier "next" songs (`core/queue.upNextAt`), marked `once` (`Queued`), and
+the native items ahead are rebuilt (`rebuildAhead`) so the end of the song and the lock screen
+go to it too. Once played, the next `startAt` drops it from the queue
+(`withoutPlayedOnce`) — it plays once, it does not join the list. While the queue holds such
+songs the native loop is never `all` (the app wraps and drops them itself). The full player
+shows "הבא <title>" with a "בתור" badge (and how many). Shifting `slots` and `pendingYoutube`
+on insert: `withQueueInsert`.
+
 ## Play counting
 
 A session tracks listened seconds from `playbackStatusUpdate` deltas (ignores jumps > 2 s,

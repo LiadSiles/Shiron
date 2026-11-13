@@ -114,3 +114,48 @@ export function withoutQueueIndex(slots: readonly number[], at: number): { slots
   const removeSlot = slots.indexOf(at);
   return { slots: slots.filter((i) => i !== at).map((i) => (i > at ? i - 1 : i)), removeSlot };
 }
+
+// ---------------------------------------------------------------- "נגני הבא" (0.16.0)
+
+/**
+ * A song she asked to hear next, once (owner, 0.16.0): it goes right after the song playing —
+ * after the ones she asked for before it, in the order she asked — plays once, and leaves the
+ * queue once it has played, so repeating the list doesn't bring it back.
+ */
+export interface Queued {
+  once?: true;
+}
+
+/** Where the next "play next" song goes: after the current one and the up-next ones after it. */
+export function upNextAt(queue: readonly Queued[], index: number): number {
+  let at = index + 1;
+  while (at < queue.length && queue[at].once) at += 1;
+  return at;
+}
+
+/** How many up-next songs wait after the current one. */
+export function upNextCount(queue: readonly Queued[], index: number): number {
+  return upNextAt(queue, index) - index - 1;
+}
+
+/** The native slots after a song was inserted at queue index `at` (later indexes move up). */
+export function withQueueInsert(slots: readonly number[], at: number): number[] {
+  return slots.map((i) => (i >= at ? i + 1 : i));
+}
+
+/**
+ * Starting `target` from the song at `current`: the up-next songs already played (before the
+ * current one, or the current one itself when she moves on) leave the queue. Returns the queue
+ * and where the target is now. The target itself always stays.
+ */
+export function withoutPlayedOnce<T extends Queued>(queue: readonly T[], current: number, target: number): { queue: T[]; target: number } {
+  const played = (i: number) => i !== target && !!queue[i].once && i <= current;
+  const out: T[] = [];
+  let at = target;
+  queue.forEach((s, i) => {
+    if (played(i)) {
+      if (i < target) at -= 1;
+    } else out.push(s);
+  });
+  return { queue: out, target: at };
+}

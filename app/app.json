@@ -91,7 +91,8 @@
             "image": "./assets/splash-icon.png"
           }
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

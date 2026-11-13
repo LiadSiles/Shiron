@@ -3,6 +3,17 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-13 — Lock screen: no repeat button on iOS; "play next" plays once (0.16.0)
+
+- Owner asked for restart-the-song and restart-the-list controls on the lock screen. iOS's
+  Now Playing controls have no repeat/shuffle button, so instead: at the end of the list the
+  player parks on the last song (▶ replays it, ⏭ starts the list again) — see `player.md`.
+  Repeat modes stay in the app. Android custom buttons were left out for now.
+- Lock screen shows PlayGan as album and in the artist line, with the app icon as artwork.
+  Rejected: showing only "PlayGan" as artist — the category helps her know which song it is.
+- "נגני הבא" is one-time: the song plays after the current one and leaves the queue, rather than
+  being added to the list. Several in a row play in the order she chose them.
+
 ### 2026-11-08 — Sharing a whole list or category (0.13.0)
 
 - Owner: share a whole playlist or category. A share button in the header of a list and of a

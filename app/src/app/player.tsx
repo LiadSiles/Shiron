@@ -4,7 +4,7 @@ import { Linking, Platform, Pressable, ScrollView, StyleSheet, View, ViewInstanc
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCategory, primaryCategoryId, UNSORTED_ID } from '../core/categories';
 import { nextRepeat } from '../core/queue';
-import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, usePlayer, youtubeView } from '../player/player';
+import { cycleRepeat, next, previous, seek, setPlayerScreenOpen, togglePlay, upNext, usePlayer, youtubeView } from '../player/player';
 import { Button, CategoryBadge, T } from '../ui/components';
 import { Icon } from '../ui/Icon';
 import { addToPlaylist } from '../ui/menus';
@@ -13,7 +13,7 @@ import { toast } from '../ui/toast';
 import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from '../ui/icons';
 import { Scrubber } from '../ui/Scrubber';
 import { ActionBar } from '../ui/list';
-import { cardShadow, space, useTheme } from '../ui/theme';
+import { cardShadow, radius, space, useTheme } from '../ui/theme';
 
 /** The repeat button's name: off → the whole list → this song. */
 const REPEAT_LABEL = {
@@ -54,7 +54,10 @@ export default function PlayerScreen() {
   }
 
   const catId = primaryCategoryId(p.song);
-  const atEnd = p.index >= p.queue.length - 1 && p.repeat !== 'all';
+  // After the list ended, "next" plays it again from the start.
+  const atEnd = p.index >= p.queue.length - 1 && p.repeat !== 'all' && !p.listEnded;
+  const waiting = upNext();
+  const following = p.queue[p.index + 1];
   const cat = getCategory(catId);
 
   const isYoutube = p.song.kind === 'youtube' && !!p.song.youtubeId;
@@ -120,6 +123,28 @@ export default function PlayerScreen() {
           ) : null}
         </Pressable>
       </View>
+
+      {/* The list ended: say so, and offer both ways on (the song again is the play button). */}
+      {p.listEnded ? (
+        <View style={[styles.ended, { backgroundColor: c.surfaceAlt }]}>
+          <T weight="medium" style={{ flex: 1 }}>הרשימה הסתיימה</T>
+          <Pressable onPress={() => void next()} accessibilityRole="button" hitSlop={6} style={styles.endedBtn}>
+            <Icon name="play-skip-back" size={18} color={c.primary} />
+            <T weight="bold" style={{ color: c.primary }}>מההתחלה</T>
+          </Pressable>
+        </View>
+      ) : following ? (
+        // What comes next — and the songs she asked to hear next, in order.
+        <View style={styles.upNext} accessible accessibilityLabel={`הבא: ${following.title}${waiting.length > 1 ? `, ועוד ${waiting.length - 1} בתור` : ''}`}>
+          <T soft size={14}>הבא</T>
+          <T weight="medium" size={15} numberOfLines={1} style={{ flexShrink: 1 }}>{following.title}</T>
+          {following.once ? (
+            <View style={[styles.badge, { backgroundColor: c.primarySoft }]}>
+              <T size={12} weight="medium" style={{ color: c.primary }}>{waiting.length > 1 ? `בתור · ${waiting.length}` : 'בתור'}</T>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
       <View style={{ marginTop: space.xl }}>
         <ActionBar
@@ -208,6 +233,10 @@ const styles = StyleSheet.create({
   art: { alignSelf: 'center', width: 240, height: 240, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: space.l, ...cardShadow },
   controls: { direction: 'ltr', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s, marginTop: space.l },
   // 44 + hitSlop, gaps of 8: the five controls (320 pt) fit a 375 pt phone's row.
+  ended: { flexDirection: 'row', alignItems: 'center', gap: space.m, marginTop: space.l, paddingHorizontal: space.l, minHeight: 52, borderRadius: radius.m },
+  endedBtn: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: 44 },
+  upNext: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s, marginTop: space.l },
+  badge: { paddingHorizontal: space.s, paddingVertical: 2, borderRadius: 10 },
   repeat: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   one: { position: 'absolute', top: 6, right: 6, minWidth: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   main: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center' },

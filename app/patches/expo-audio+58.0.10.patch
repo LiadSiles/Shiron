@@ -127,3 +127,95 @@ index 53c36f7..1bcf7aa 100644
      private const val CHANNEL_ID = "expo_audio_channel"
      private const val ACTION_PLAY = "expo.modules.audio.action.PLAY"
      private const val ACTION_PAUSE = "expo.modules.audio.action.PAUSE"
+diff --git a/node_modules/expo-audio/ios/AudioPlaylist.swift b/node_modules/expo-audio/ios/AudioPlaylist.swift
+index 38e158f..4858c93 100644
+--- a/node_modules/expo-audio/ios/AudioPlaylist.swift
++++ b/node_modules/expo-audio/ios/AudioPlaylist.swift
+@@ -367,8 +367,12 @@ public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable, LockScreenPlayab
+ 
+       switch self.loopMode {
+       case .single:
+-        self.ref.seek(to: .zero)
+-        self.play(at: self.currentRate)
++        // [shiron] Play again once the seek is done: playing at once told the lock screen the
++        // old position (the end), and its bar stayed there.
++        self.ref.seek(to: .zero) { [weak self] _ in
++          guard let self else { return }
++          self.play(at: self.currentRate)
++        }
+ 
+       case .all:
+         if isLastTrack {
+diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
+index 9b66e45..92900f6 100644
+--- a/node_modules/expo-audio/ios/MediaController.swift
++++ b/node_modules/expo-audio/ios/MediaController.swift
+@@ -81,6 +81,7 @@ class MediaController {
+     }
+ 
+     activePlayable = playable
++    activeOptions = options // [shiron]
+     playable?.isActiveForLockScreen = true
+     isLiveStream = options?.isLiveStream ?? playable?.isLive ?? false
+ 
+@@ -118,6 +119,25 @@ class MediaController {
+     }
+ 
+     nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
++    refreshTrackCommands(for: playable)
++  }
++
++  // [shiron] Whether ⏮ / ⏭ apply changes as songs are added (play next) or the list ends; it
++  // was decided only when the controls were first shown.
++  private var activeOptions: LockScreenOptions?
++
++  private func refreshTrackCommands(for playable: any LockScreenPlayable) {
++    let showNextTrack = (activeOptions?.showNextTrack ?? false) && playable.supportsNextTrack
++    let showPreviousTrack = (activeOptions?.showPreviousTrack ?? false) && playable.supportsPreviousTrack
++    if remoteCommandCenter.nextTrackCommand.isEnabled != showNextTrack {
++      remoteCommandCenter.nextTrackCommand.isEnabled = showNextTrack
++    }
++    if remoteCommandCenter.previousTrackCommand.isEnabled != showPreviousTrack {
++      remoteCommandCenter.previousTrackCommand.isEnabled = showPreviousTrack
++    }
++    if !isLiveStream && !remoteCommandCenter.changePlaybackPositionCommand.isEnabled {
++      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = true
++    }
+   }
+ 
+   private func applyPlaybackInfo(_ info: inout [String: Any], for playable: any LockScreenPlayable) {
+@@ -337,7 +357,11 @@ class MediaController {
+       }
+ 
+       let seekTime = MediaController.cmTime(seconds: event.positionTime)
+-      playable.lockScreenPlayer.seek(to: seekTime)
++      // [shiron] Tell the lock screen where it is once the seek is done (paused, nothing else
++      // would, and the bar stayed where it was).
++      playable.lockScreenPlayer.seek(to: seekTime) { [weak self] _ in
++        self?.updateNowPlayingInfo(for: playable)
++      }
+ 
+       return .success
+     }
+@@ -353,7 +377,9 @@ class MediaController {
+ 
+       let currentTime = playable.lockScreenPlayer.currentTime()
+       let seekTime = currentTime + MediaController.cmTime(seconds: event.interval)
+-      playable.lockScreenPlayer.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
++      playable.lockScreenPlayer.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
++        self?.updateNowPlayingInfo(for: playable) // [shiron]
++      }
+ 
+       return .success
+     }
+@@ -369,7 +395,9 @@ class MediaController {
+ 
+       let currentTime = playable.lockScreenPlayer.currentTime()
+       let seekTime = currentTime - MediaController.cmTime(seconds: event.interval)
+-      playable.lockScreenPlayer.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
++      playable.lockScreenPlayer.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
++        self?.updateNowPlayingInfo(for: playable) // [shiron]
++      }
+ 
+       return .success
+     }

@@ -7,7 +7,7 @@ import type { Playlist, SongWithCategories } from '../core/types';
 import { deleteCategory, deletePlaylist, deleteSong, setPlaylistSongs, updateSong } from '../db/repo';
 import { diag } from '../diag/log';
 import { deleteStored } from '../ingest/storage';
-import { forgetSong } from '../player/player';
+import { currentSongId, forgetSong, playNext } from '../player/player';
 import { SheetAction, showActions } from './ActionSheet';
 import { playAll, playOrOpen } from './play';
 import { shareSong, shareSongs } from './share';
@@ -32,6 +32,12 @@ export function showSongMenu(song: SongWithCategories, ctx: SongMenuContext) {
   const cat = getCategory(primaryCategoryId(song));
   const actions: (SheetAction | false)[] = [
     canStart(song) && { icon: 'play', label: 'נגני', onPress: () => playOrOpen(song, ctx.queue) },
+    // Something else is playing: this one right after it, once (0.16.0).
+    canStart(song) && !!currentSongId() && currentSongId() !== song.id && {
+      icon: 'play-forward',
+      label: 'נגני הבא',
+      onPress: () => void queueNext(song),
+    },
     { icon: 'create-outline', label: 'פרטים ועריכה', onPress: () => openSong(song.id) },
     { icon: 'list', label: 'הוספה לרשימה', onPress: () => addToPlaylist([song.id]) },
     { icon: 'share-outline', label: 'שיתוף', onPress: () => void shareSong(song) },
@@ -97,6 +103,17 @@ export function showPlaylistMenu(list: Playlist, songs: SongWithCategories[]) {
 }
 
 // ---------------------------------------------------------------- the actions themselves
+
+/** "נגני הבא": after the song playing (and the ones she asked for before), once. */
+async function queueNext(song: SongWithCategories) {
+  try {
+    const before = await playNext(song);
+    toast(before === 0 ? 'יתנגן אחרי השיר הזה' : `יתנגן אחרי ${before + 1} שירים`, 'success');
+  } catch (e) {
+    diag('play next failed', song.title, e);
+    toast('לא הצלחנו להוסיף את השיר לתור', 'error');
+  }
+}
 
 export function openSong(id: string) {
   router.push({ pathname: '/song/[id]', params: { id } });

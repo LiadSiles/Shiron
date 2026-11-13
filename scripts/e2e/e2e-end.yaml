@@ -29,6 +29,8 @@ appId: app.shiron.gan
     timeout: 10000
 - runFlow: wait-4s.yaml
 - assertVisible: "ניגון"
+# Parked on the last song (0.16.0): the lock screen's play replays it.
+- assertVisible: "הרשימה הסתיימה"
 - takeScreenshot: ${VARIANT}-end-stopped
 # "Play" after the end starts the song again.
 - tapOn: "ניגון"

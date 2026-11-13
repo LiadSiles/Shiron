@@ -7,12 +7,14 @@ import {
   requestNotificationPermissionsAsync,
   setAudioModeAsync,
 } from 'expo-audio';
+import { Asset } from 'expo-asset';
 import { router } from 'expo-router';
 import { AppState, Platform } from 'react-native';
-import { getCategory, primaryCategoryId } from '../core/categories';
+import { getCategory, primaryCategoryId, UNSORTED_ID } from '../core/categories';
 import { createStore } from '../core/store';
 import {
-  afterEnd, audioAhead, backgroundSlots, withoutQueueIndex, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, RepeatMode, runSlots,
+  afterEnd, audioAhead, backgroundSlots, foregroundSlots, nativeLoop, nextIndex, nextRepeat, passedOver, previousIndex, Queued,
+  RepeatMode, runSlots, upNextAt, upNextCount, withoutPlayedOnce, withoutQueueIndex, withQueueInsert,
 } from '../core/queue';
 import type { SongWithCategories } from '../core/types';
 import { getSong, onLibraryChange, recordPlay } from '../db/repo';
@@ -21,10 +23,14 @@ import { resolveStored } from '../ingest/storage';
 import { toast } from '../ui/toast';
 import { useStore } from '../ui/useStore';
 
+/** A song in the queue; `once` = she asked to hear it next (core/queue → Queued). */
+export type QueueSong = SongWithCategories & Queued;
+
 export interface PlayerState {
   song: SongWithCategories | null;
-  /** The list the song was picked from: audio and YouTube songs, in order. */
-  queue: SongWithCategories[];
+  /** The list the song was picked from: audio and YouTube songs, in order, with the songs she
+   *  asked to hear next ("נגני הבא") right after the current one. */
+  queue: QueueSong[];
   index: number;
   playing: boolean;
   position: number;
@@ -32,10 +38,13 @@ export interface PlayerState {
   repeat: RepeatMode;
   /** Why the current song didn't play (from the platform player), or null. */
   error: string | null;
+  /** The list played to its end and stopped on its last song: "play" plays that song again,
+   *  "next" the list from the start (here and on the lock screen). */
+  listEnded: boolean;
 }
 
 const store = createStore<PlayerState>({
-  song: null, queue: [], index: -1, playing: false, position: 0, duration: 0, repeat: 'off', error: null,
+  song: null, queue: [], index: -1, playing: false, position: 0, duration: 0, repeat: 'off', error: null, listEnded: false,
 });
 /** Always read fresh: async code runs across state changes. */
 const state = () => store.get();
@@ -102,10 +111,30 @@ const LOCK_SCREEN: AudioLockScreenOptions = {
 /** Listening-time accounting for the ranking (audio and YouTube alike). */
 let session: { songId: string; startedAt: number; listened: number; lastTime: number } | null = null;
 
+/**
+ * The lock screen and notification: the song, "<category> · PlayGan" under it (or just
+ * "PlayGan"), and the app's own picture — so it is clearly PlayGan playing, not an empty grey
+ * square (0.16.0).
+ */
 function lockScreenInfo(song: SongWithCategories) {
-  const category = song.categories.length ? getCategory(primaryCategoryId(song)).name : 'PlayGan';
-  return { title: song.title, artist: category, albumTitle: 'PlayGan' };
+  const catId = primaryCategoryId(song);
+  const category = catId !== UNSORTED_ID ? getCategory(catId).name : null;
+  return {
+    title: song.title,
+    artist: category ? `${category} · PlayGan` : 'PlayGan',
+    albumTitle: 'PlayGan',
+    ...(artworkUrl ? { artworkUrl } : {}),
+  };
 }
+
+/** The app's icon as a local file for the lock screen's picture (null until it is ready). */
+let artworkUrl: string | null = null;
+Asset.fromModule(require('../../assets/icon.png'))
+  .downloadAsync()
+  .then((a) => {
+    artworkUrl = a.localUri ?? a.uri;
+  })
+  .catch((e) => diag('lock screen artwork failed', e));
 
 async function ensurePlayer(): Promise<AudioPlaylist> {
   if (player) return player;
@@ -123,7 +152,16 @@ async function ensurePlayer(): Promise<AudioPlaylist> {
 
 const isYoutube = (s: SongWithCategories | null) => s?.kind === 'youtube';
 const audioFlags = () => state().queue.map((s) => s.kind === 'audio');
-const loopFor = (repeat: RepeatMode) => nativeLoop(repeat, slots ?? [], audioFlags(), !appActive);
+/**
+ * The native playlist's loop. While she is choosing what follows the end of the list (it
+ * ended: play / next from the lock screen) it is "all", so ⏭ there wraps to the list's start;
+ * with up-next songs in the queue the app wraps itself, to drop them once played.
+ */
+const loopFor = (repeat: RepeatMode) => {
+  if (state().listEnded) return 'all' as const;
+  const loop = nativeLoop(repeat, slots ?? [], audioFlags(), !appActive);
+  return loop === 'all' && state().queue.some((s) => s.once) ? ('none' as const) : loop;
+};
 
 // ---------------------------------------------------------------- the current song
 
@@ -210,7 +248,7 @@ async function refreshCurrent() {
   const shown = state().song;
   if (!fresh || seq !== refreshSeq || !shown || shown.id !== fresh.id) return;
   if (fresh.updatedAt === shown.updatedAt && sameCategories(fresh, shown)) return;
-  set({ song: fresh, queue: state().queue.map((s) => (s.id === fresh.id ? fresh : s)) });
+  set({ song: fresh, queue: state().queue.map((s) => (s.id === fresh.id ? { ...fresh, once: s.once } : s)) });
   if (!isYoutube(fresh)) player?.updateLockScreenMetadata(lockScreenInfo(fresh));
 }
 
@@ -232,6 +270,13 @@ function onStatus(status: AudioPlaylistStatus) {
   if (error && error !== state().error) {
     diag('play failed', state().song?.title ?? '?', error);
     set({ error });
+  }
+  if (status.playing && state().listEnded) {
+    // Played from the lock screen after the list ended: a new round starts here.
+    ended = false;
+    set({ listEnded: false });
+    startSession(state().queue[state().index]);
+    if (player) player.loop = loopFor(state().repeat);
   }
   const patch: Partial<PlayerState> = {};
   if (typeof status.playing === 'boolean') patch.playing = fading ? false : status.playing;
@@ -255,14 +300,38 @@ function continueAfterEnd() {
   const n = afterEnd(state().index, state().queue.length, state().repeat);
   if (n === null) {
     ended = true;
-    set({ playing: false });
+    set({ playing: false, listEnded: true });
     void finishSession();
+    if (!isYoutube(state().song)) void parkAtEnd().catch((e) => diag('park failed', e));
   } else if (n === state().index && isYoutube(state().song)) {
     youtube?.seek(0);
     youtube?.play();
   } else {
     void startAt(n).catch((e) => diag('continue failed', e));
   }
+}
+
+/**
+ * The list ended: load its last song again, paused at the start, and keep the lock screen on
+ * it (0.16.0). iOS had dropped the finished song, so the lock screen showed it stuck at its end
+ * with a "play" that did nothing. Now ▶ there plays the song again and ⏭ (the native loop is
+ * "all" meanwhile) starts the list over — the same as in the app.
+ */
+async function parkAtEnd() {
+  const p = player;
+  const index = state().index;
+  const song = state().queue[index];
+  if (!p || !song || isYoutube(song)) return;
+  const run = runSlots(audioFlags(), index);
+  slots = run;
+  expectIndex = slots.indexOf(index);
+  p.clear();
+  for (const i of slots) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
+  p.skipTo(slots.indexOf(index));
+  p.loop = loopFor(state().repeat);
+  ended = false; // the song is loaded again: play and seek work as usual
+  set({ position: 0, playing: false });
+  p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
 }
 
 // ---------------------------------------------------------------- starting songs
@@ -296,7 +365,15 @@ export async function playSong(song: SongWithCategories, queue: SongWithCategori
 }
 
 /** Make queue[index] the current song: native playlist for audio, the YouTube player otherwise. */
-async function startAt(index: number) {
+async function startAt(target: number) {
+  // Up-next songs already played leave the queue as she moves on (core/queue → withoutPlayedOnce).
+  const kept = withoutPlayedOnce(state().queue, state().index, target);
+  let index = target;
+  if (kept.queue.length !== state().queue.length) {
+    index = kept.target;
+    set({ queue: kept.queue, index: state().index - (state().queue.length - kept.queue.length) });
+    slots = null;
+  }
   const song = state().queue[index];
   if (!song) return;
   if (skipTimer) clearTimeout(skipTimer);
@@ -318,6 +395,7 @@ async function startAt(index: number) {
   standby = false;
   pendingYoutube = null;
   ended = false;
+  if (state().listEnded) set({ listEnded: false });
   startSession(song);
   // YouTube reports "playing" itself once it really plays (it may still be loading, or offline).
   set({ song, index, position: 0, duration: song.durationSec ?? 0, error: null, playing: !isYoutube(song) });
@@ -493,7 +571,7 @@ export function togglePlay(): Promise<void> {
       set({ playing: false });
     } else {
       youtube.play();
-      set({ playing: true });
+      set({ playing: true, listEnded: false });
     }
     return Promise.resolve();
   }
@@ -536,7 +614,7 @@ export async function playOrToggle(song: SongWithCategories, queue: SongWithCate
 /** Inside the loaded songs the native playlist moves (gapless, notification in sync); else restart. */
 async function go(target: number) {
   const slot = slots?.indexOf(target) ?? -1;
-  if (player && slot >= 0 && !standby && !ended && !isYoutube(state().song)) {
+  if (player && slot >= 0 && !standby && !ended && !state().listEnded && !isYoutube(state().song)) {
     expectIndex = slot;
     player.skipTo(slot);
     if (!state().playing) player.play();
@@ -549,7 +627,10 @@ async function go(target: number) {
 
 export async function next() {
   direction = 1;
-  const n = nextIndex(state().index, state().queue.length, state().repeat === 'one' ? 'all' : state().repeat);
+  // After the list ended, "next" plays it again from the start.
+  const n = state().listEnded
+    ? 0
+    : nextIndex(state().index, state().queue.length, state().repeat === 'one' ? 'all' : state().repeat);
   if (n !== null && n !== state().index) await go(n);
 }
 
@@ -580,6 +661,58 @@ export async function seek(seconds: number) {
     if (ended) await startAt(state().index);
     await player?.seekTo(to);
   }
+}
+
+/**
+ * "נגני הבא" (0.16.0): this song plays after the current one — after the ones she asked for
+ * before it — once. Nothing playing: it just plays. Returns how many songs come before it
+ * (0 = right after this one). The native playlist takes it at once, so the lock screen's ⏭ and
+ * the gapless move reach it too.
+ */
+export async function playNext(song: SongWithCategories): Promise<number> {
+  const s = state();
+  if (!s.song) {
+    await playSong(song);
+    return 0;
+  }
+  const at = upNextAt(s.queue, s.index);
+  const queue: QueueSong[] = [...s.queue.slice(0, at), { ...song, once: true }, ...s.queue.slice(at)];
+  if (slots) slots = withQueueInsert(slots, at);
+  if (pendingYoutube !== null && pendingYoutube >= at) pendingYoutube += 1;
+  set({ queue, listEnded: false });
+  ended = false;
+  diag('play next', song.title, `after ${upNextCount(queue, s.index) - 1} more`);
+  rebuildAhead();
+  return at - s.index - 1;
+}
+
+/** The song playing (or paused) now, if any. */
+export function currentSongId(): string | null {
+  return state().song?.id ?? null;
+}
+
+/** The songs she asked to hear next, in order (for the full player's "הבא בתור"). */
+export function upNext(): QueueSong[] {
+  const s = state();
+  return s.queue.slice(s.index + 1, upNextAt(s.queue, s.index));
+}
+
+/**
+ * The queue changed after the current song: the native playlist drops what it had loaded after
+ * it and takes what follows now, without touching the song playing.
+ */
+function rebuildAhead() {
+  const p = player;
+  if (!p || !slots || standby || isYoutube(state().song)) return;
+  const cur = slots.indexOf(state().index);
+  if (cur < 0) return;
+  for (let k = slots.length - 1; k > cur; k--) p.remove(k);
+  const run = runSlots(audioFlags(), state().index);
+  const want = appActive ? run : backgroundSlots(run, audioFlags(), state().repeat);
+  const tail = want.slice(want.indexOf(state().index) + 1);
+  for (const i of tail) p.add({ uri: resolveStored(state().queue[i].playableUri!).uri });
+  slots = [...slots.slice(0, cur + 1), ...tail];
+  p.loop = loopFor(state().repeat);
 }
 
 /** Is this song loaded in the player's queue (its file may be read at any moment)? */
