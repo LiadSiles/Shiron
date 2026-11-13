@@ -29,6 +29,20 @@ appId: app.shiron.gan
     timeout: 10000
 - runFlow: wait-4s.yaml
 - assertVisible: "ניגון"
+# What the player logged at the end (to see why Android isn't parked; temporary).
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow: back.yaml
+      - tapOn: "הגדרות"
+      - scrollUntilVisible:
+          element: "יומן טכני.*"
+      - tapOn: "יומן טכני.*"
+      - takeScreenshot: ${VARIANT}-end-log
+      - runFlow: back.yaml
+      - runFlow: back.yaml
+      - tapOn: "מתנגן: old-song.*"
 # Parked on the last song (0.16.0): the lock screen's play replays it.
 - assertVisible: "הרשימה הסתיימה"
 - takeScreenshot: ${VARIANT}-end-stopped

@@ -276,7 +276,9 @@ function onStatus(status: AudioPlaylistStatus) {
     diag('play failed', state().song?.title ?? '?', error);
     set({ error });
   }
+  if (status.didJustFinish) diag('finished', `index ${state().index}`, `slots ${slots?.join(',') ?? '-'}`);
   if (status.playing && state().listEnded) {
+    diag('playing after the end of the list');
     // Played from the lock screen after the list ended: a new round starts here.
     ended = false;
     set({ listEnded: false });
@@ -337,6 +339,7 @@ async function parkAtEnd() {
   ended = false; // the song is loaded again: play and seek work as usual
   set({ position: 0, playing: false });
   p.setActiveForLockScreen(true, lockScreenInfo(song), LOCK_SCREEN);
+  diag('list ended, parked on', song.title);
 }
 
 // ---------------------------------------------------------------- starting songs
