@@ -37,6 +37,11 @@ adb logcat -c
 # (0.13.0: the count at the end found 0 of 4).
 adb logcat -v brief | grep --line-buffered "act=android.intent.action.CHOOSER" > shots/choosers.txt &
 CHOOSERLOG=$!
+# The app's technical log and audio focus, kept as it comes (a read at the end found only the
+# last few lines: the emulator's busy log overflows any buffer). For player checks that fail on
+# the emulator only.
+adb logcat -v time | grep --line-buffered -E "\[diag\]|MediaFocusControl|AudioFocus" > shots/log-android.txt &
+DIAGLOG=$!
 
 export MAESTRO_DRIVER_STARTUP_TIMEOUT=240000
 crashed() { adb logcat -d -b crash | grep -q "Process: $PKG"; }
@@ -67,8 +72,7 @@ else
   echo "FAIL(must) $VARIANT share sheet opened $CHOOSERS of 4 times" >> "$RESULTS"
 fi
 
-# The app's technical log and audio focus, for player checks that fail on the emulator only.
-adb logcat -d -v time | grep -E "\[diag\]|MediaFocusControl|AudioFocus|ExpoAudio" | tail -400 > shots/log-android.txt
+kill $DIAGLOG 2>/dev/null
 
 # Opening the app, filmed (shots/launch.mp4): the owner sees the home screen flicker on Android.
 # A cold start with her library in place; the video shows each frame between splash and home.

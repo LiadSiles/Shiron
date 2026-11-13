@@ -53,7 +53,8 @@ export function LibraryScreen({ lib }: { lib: LibraryState }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    // No scroll bar: Android flashed one down the side as the screen opened (CI launch film, 0.16.2).
+    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <T weight="bold" size={28}>ספרייה</T>
       <T soft>{total} שירים</T>
 

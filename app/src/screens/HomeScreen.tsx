@@ -27,7 +27,8 @@ export function HomeScreen({ lib }: { lib: LibraryState }) {
   const pendingCount = lib.songs.filter((s) => s.status === 'pending').length;
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    // No scroll bar: Android flashed one down the side as the screen opened (CI launch film, 0.16.2).
+    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <T soft size={15}>{greeting(new Date().getHours())}</T>

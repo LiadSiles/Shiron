@@ -62,7 +62,10 @@ home → splash → home. expo-splash-screen hands the splash to an exit animati
 listener runs; the fade then put the splash back on top and faded it out. Our patch
 (`patches/expo-splash-screen+58.0.13.patch`, built from source via `buildFromSource`) removes
 the splash at once when the duration is 0, and `ui/launch.ts` asks for that on Android. The
-iPhone keeps its 250 ms fade.
+iPhone keeps its 250 ms fade. The next film (15 s, with a time on each frame and the system's
+log in `launch-log.txt`) went splash → home with nothing coming back. It also showed Android
+flashing a scroll bar down the side of home as it opened, so home and library hide their
+vertical scroll indicator.
 
 ## Long press, the action sheet, choosing several songs (0.15.0)
 
