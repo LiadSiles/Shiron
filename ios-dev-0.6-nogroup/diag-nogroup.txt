@@ -1,13 +1,12 @@
-13/11 08:27:36 app group · none granted · declared group.app.shiron.gan · provisioned - · alt -
-13/11 08:31:16 background task unavailable · 1
-13/11 08:31:16 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+13/11 09:16:06 app group · none granted · declared group.app.shiron.gan · provisioned - · alt -
+13/11 09:19:37 background task unavailable · 1
+13/11 09:20:46 share received · type text · 0 files · 
+13/11 09:20:46 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-13/11 08:31:16 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+13/11 09:20:46 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-13/11 08:31:33 play youtube · שיר מיוטיוב · 1/1
-13/11 08:35:15 ended · שיר מיוטיוב · repeat off · youtube
-13/11 08:36:53 background task unavailable · 1
-13/11 08:36:54 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+13/11 09:20:53 background task unavailable · 1
+13/11 09:20:53 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
-13/11 08:36:54 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
+13/11 09:20:53 naming stopped · ERR_KEY_CHAIN: Calling the 'getValueWithKeyAsync' function has failed
 → Caused by: A required entitlement isn't present.
