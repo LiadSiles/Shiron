@@ -1,8 +1,0 @@
-title|kind|audio_state|status|error
-שיר מיוטיוב|youtube|done|pending|
-בוקר טוב לגן|audio|done|pending|
-old-song|audio|done|pending|
-gan-party|audio|done|pending|
-broken|audio|unsupported|pending|הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום
-שיר מיוטיוב|youtube|done|pending|
-שיר מיוטיוב|youtube|done|pending|
