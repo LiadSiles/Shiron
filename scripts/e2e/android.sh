@@ -67,19 +67,26 @@ else
   echo "FAIL(must) $VARIANT share sheet opened $CHOOSERS of 4 times" >> "$RESULTS"
 fi
 
+# The app's technical log and audio focus, for player checks that fail on the emulator only.
+adb logcat -d -v time | grep -E "\[diag\]|MediaFocusControl|AudioFocus|ExpoAudio" | tail -400 > shots/log-android.txt
+
 # Opening the app, filmed (shots/launch.mp4): the owner sees the home screen flicker on Android.
 # A cold start with her library in place; the video shows each frame between splash and home.
 adb shell am force-stop "$PKG"
-adb shell screenrecord --time-limit 8 /sdcard/launch.mp4 >/dev/null 2>&1 &
+adb logcat -c
+adb shell screenrecord --time-limit 15 /sdcard/launch.mp4 >/dev/null 2>&1 &
 REC=$!
 sleep 1
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 wait $REC
+# What the system did with the app's windows meanwhile (a restart would show as a second start).
+adb logcat -d -v time | grep -E "ActivityTaskManager|ActivityManager|SplashScreen|WindowManager.*shiron|ReactNativeJS|AndroidRuntime" \
+  | grep -iE "shiron|splash|ReactNativeJS|FATAL" | tail -200 > shots/launch-log.txt
 adb pull /sdcard/launch.mp4 shots/launch.mp4 >/dev/null 2>&1 || echo "== no launch video"
 # Every frame that differs from the one before it, at the video's full rate, on one sheet: a
 # single odd frame between splash and home can't fall between samples.
 [ -f shots/launch.mp4 ] && ffmpeg -loglevel error -y -i shots/launch.mp4 \
-  -vf "select='gt(scene,0.003)',scale=200:-1,tile=8x6:padding=4:color=white" -fps_mode vfr \
+  -vf "select='gt(scene,0.003)',drawtext=text='%{pts\\:hms}':x=10:y=60:fontsize=48:fontcolor=red:box=1:boxcolor=white,scale=200:-1,tile=8x6:padding=4:color=white" -fps_mode vfr \
   -frames:v 1 shots/launch-frames.png
 
 if crashed; then
@@ -87,8 +94,6 @@ if crashed; then
   adb logcat -d -b crash | tail -60 > shots/crash.txt
 fi
 adb logcat -d '*:E' | grep -E "AndroidRuntime|ReactNativeJS|Expo|FATAL" | tail -60 > shots/errors-android.txt
-# The app's technical log and audio focus, for player checks that fail on the emulator only.
-adb logcat -d -v time | grep -E "\[diag\]|MediaFocusControl|AudioFocus|ExpoAudio" | tail -400 > shots/log-android.txt
 cat "$RESULTS"
 grep "^FAIL(must)" "$RESULTS" | sed "s/^/::error::/;s/\$/ (see shots\/ on the screenshots branch)/"
 ! grep -q "^FAIL(must)" "$RESULTS"
