@@ -8,7 +8,7 @@ PASS group e2e-player.yaml
 PASS group e2e-song.yaml
 PASS group e2e-playlist.yaml
 PASS group e2e-search.yaml
-PASS group e2e-end.yaml
+FAIL(must) group e2e-end.yaml
 PASS group e2e-background.yaml
 PASS group e2e-many-links.yaml
 PASS group e2e-select.yaml

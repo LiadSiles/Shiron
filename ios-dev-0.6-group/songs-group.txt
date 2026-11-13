@@ -6,4 +6,3 @@ gan-party|audio|done|pending|
 broken|audio|unsupported|pending|הפורמט לא נתמך במכשיר הזה, או שהקובץ פגום
 שיר מיוטיוב|youtube|done|pending|
 שיר מיוטיוב|youtube|done|pending|
-boker-tov|audio|done|pending|
