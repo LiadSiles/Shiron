@@ -362,6 +362,9 @@ function continueAfterEnd() {
  * with a "play" that did nothing. Now ▶ there plays the song again and ⏭ (the native loop is
  * "all" meanwhile) starts the list over — the same as in the app.
  */
+/** When the player last parked at the end of the list (see seek). */
+let parkedAt = 0;
+
 async function parkAtEnd() {
   const p = player;
   const index = state().index;
@@ -379,6 +382,7 @@ async function parkAtEnd() {
   p.seekTo(0).catch(() => undefined);
   setLoop(p, loopFor(state().repeat));
   ended = false; // the song is loaded again: play and seek work as usual
+  parkedAt = Date.now();
   set({ position: 0, playing: false });
   showOnLockScreen(p, song);
   diag('list ended, parked on', song.title);
@@ -707,6 +711,12 @@ export function cycleRepeat() {
 }
 
 export async function seek(seconds: number) {
+  // A drag that raced the song's own end (she let go just after it finished): it was meant for
+  // the song that ended, not the one parked at its start. CI's slow emulator hit it.
+  if (state().listEnded && Date.now() - parkedAt < 1500) {
+    diag('seek after the end ignored', Math.round(seconds));
+    return;
+  }
   const to = Math.max(0, Math.min(seconds, state().duration || seconds));
   seekingUntil = Date.now() + 800;
   set({ position: to });

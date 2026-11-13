@@ -180,7 +180,9 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
   Any play clears `listEnded` and restores her repeat mode. The park ends with `seekTo(0)`: on
   Android `seekTo` runs on a different native queue than clear/add/skipTo, and a seek from the bar
   landed after the reload, leaving the song parked near its end (CI's streamed log: play after the
-  end, "ended" again 2.6 s later). In the app the full player shows
+  end, "ended" again 2.6 s later). A seek that arrives within 1.5 s of parking is dropped: the
+  next log showed the song ending on its own while the drag to the end was still under way, and
+  the drag then moved the parked song to 0:32. In the app the full player shows
   "הרשימה הסתיימה" with "מההתחלה" instead of "הבא".
 - **Branding.** Title = the song; artist line = "<category> · PlayGan" (just "PlayGan" for
   unsorted); album = "PlayGan"; artwork = the app icon (`assets/icon.png` via `expo-asset`,
