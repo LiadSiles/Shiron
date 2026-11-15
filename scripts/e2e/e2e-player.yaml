@@ -37,6 +37,22 @@ appId: app.shiron.gan
       - runFlow: back.yaml
       - assertNotVisible: "מתנגן עכשיו"
 - takeScreenshot: ${VARIANT}-after-backs
+# "נגני הבא" from a song's long-press menu (0.16.0, always offered since 0.16.3): it goes right
+# after the song playing, and the full player shows it as next, "בתור". Pick a song that isn't
+# the one playing (that one has no "נגני הבא").
+- longPressOn: "(נגני|השהיית) voice-whatsapp.*"
+- runFlow:
+    when:
+      notVisible: "נגני הבא"
+    commands:
+      - tapOn: "ביטול"
+      - longPressOn: "(נגני|השהיית) boker-tov.*"
+- tapOn: "נגני הבא"
+- assertVisible: "יתנגן אחרי השיר הזה"
+- tapOn: "מתנגן: .*"
+- assertVisible: ".*בתור.*"
+- takeScreenshot: ${VARIANT}-up-next
+- runFlow: back.yaml
 - tapOn: "מתנגן: .*"
 # The test songs are short: pause if it is still playing; either way it shows "ניגון" then.
 - runFlow:

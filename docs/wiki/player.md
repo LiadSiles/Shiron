@@ -218,8 +218,10 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
 - Untested on a device: everything on the lock screen itself (the simulator has none). The
   in-app parts are covered by the unit tests and `e2e-end.yaml`.
 
-**"נגני הבא" (play next).** In a song's menu while another song is current
-(`ui/menus.ts → queueNext`, `player.playNext`). The song is inserted right after the current
+**"נגני הבא" (play next).** In a song's menu (`ui/menus.ts → queueNext`, `player.playNext`),
+for every playable song but the one playing. 0.16.0 showed it only while another song was
+current; the owner then thought it had never been added (0.16.3). With nothing playing it just
+plays the song. Covered by `e2e-player.yaml`. The song is inserted right after the current
 one and after any earlier "next" songs (`core/queue.upNextAt`), marked `once` (`Queued`), and
 the native items ahead are rebuilt (`rebuildAhead`) so the end of the song and the lock screen
 go to it too. Once played, the next `startAt` drops it from the queue

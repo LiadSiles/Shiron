@@ -32,8 +32,9 @@ export function showSongMenu(song: SongWithCategories, ctx: SongMenuContext) {
   const cat = getCategory(primaryCategoryId(song));
   const actions: (SheetAction | false)[] = [
     canStart(song) && { icon: 'play', label: 'נגני', onPress: () => playOrOpen(song, ctx.queue) },
-    // Something else is playing: this one right after it, once (0.16.0).
-    canStart(song) && !!currentSongId() && currentSongId() !== song.id && {
+    // Right after the song playing, once (0.16.0). Always offered (0.16.3): hidden while nothing
+    // played, the owner couldn't find it; with nothing playing it simply plays.
+    canStart(song) && currentSongId() !== song.id && {
       icon: 'play-forward',
       label: 'נגני הבא',
       onPress: () => void queueNext(song),
@@ -107,7 +108,9 @@ export function showPlaylistMenu(list: Playlist, songs: SongWithCategories[]) {
 /** "נגני הבא": after the song playing (and the ones she asked for before), once. */
 async function queueNext(song: SongWithCategories) {
   try {
+    const playing = !!currentSongId();
     const before = await playNext(song);
+    if (!playing) return; // nothing was playing: it plays now, which says enough
     toast(before === 0 ? 'יתנגן אחרי השיר הזה' : `יתנגן אחרי ${before + 1} שירים`, 'success');
   } catch (e) {
     diag('play next failed', song.title, e);
