@@ -1,4 +1,4 @@
-PASS group launch.yaml
+FAIL(must) group launch.yaml (did not run)
 PASS group open-link.yaml
 PASS group e2e-youtube.yaml
 PASS group e2e-settings.yaml
