@@ -1,4 +1,4 @@
 PASS nogroup launch.yaml
 PASS nogroup open-link.yaml
-PASS nogroup e2e-youtube.yaml
+FAIL(must) nogroup e2e-youtube.yaml
 PASS nogroup e2e-settings.yaml
