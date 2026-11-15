@@ -135,7 +135,9 @@ export default function PlayerScreen() {
         </View>
       ) : following ? (
         // What comes next — and the songs she asked to hear next, in order.
-        <View style={styles.upNext} accessible accessibilityLabel={`הבא: ${following.title}${waiting.length > 1 ? `, ועוד ${waiting.length - 1} בתור` : ''}`}>
+        // Read as one: says "בתור" whenever the badge shows (0.16.3 — with one queued song it was
+        // left out, so VoiceOver never said the song had been queued).
+        <View style={styles.upNext} accessible accessibilityLabel={upNextLabel(following.title, !!following.once, waiting.length)}>
           <T soft size={14}>הבא</T>
           <T weight="medium" size={15} numberOfLines={1} style={{ flexShrink: 1 }}>{following.title}</T>
           {following.once ? (
@@ -225,6 +227,11 @@ function YouTubeSlot() {
       <View ref={ref} onLayout={measure} collapsable={false} style={{ aspectRatio: 16 / 9, borderRadius: 12, backgroundColor: '#000' }} />
     </View>
   );
+}
+
+function upNextLabel(title: string, queued: boolean, waiting: number): string {
+  if (!queued) return `הבא: ${title}`;
+  return waiting > 1 ? `הבא: ${title}, בתור, ועוד ${waiting - 1} בתור` : `הבא: ${title}, בתור`;
 }
 
 const styles = StyleSheet.create({
