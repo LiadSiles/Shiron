@@ -1,8 +1,54 @@
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
-index bf3f9c5..0db06a9 100644
+index bf3f9c5..bf21a5d 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
-@@ -141,6 +141,11 @@ class AudioPlaylist(
+@@ -75,20 +75,41 @@ class AudioPlaylist(
+   }
+ 
+   var loopMode: LoopMode
+-    get() = when (ref.repeatMode) {
+-      Player.REPEAT_MODE_ONE -> LoopMode.SINGLE
+-      Player.REPEAT_MODE_ALL -> LoopMode.ALL
++    get() = when {
++      ref.pauseAtEndOfMediaItems -> LoopMode.STOP // [shiron]
++      ref.repeatMode == Player.REPEAT_MODE_ONE -> LoopMode.SINGLE
++      ref.repeatMode == Player.REPEAT_MODE_ALL -> LoopMode.ALL
+       else -> LoopMode.NONE
+     }
+     set(value) {
+       ref.repeatMode = when (value) {
+         LoopMode.SINGLE -> Player.REPEAT_MODE_ONE
+         LoopMode.ALL -> Player.REPEAT_MODE_ALL
+-        LoopMode.NONE -> Player.REPEAT_MODE_OFF
++        LoopMode.NONE, LoopMode.STOP -> Player.REPEAT_MODE_OFF
+       }
++      // [shiron] ExoPlayer pauses at the end of each item itself, so nothing after it starts
++      // (in the background too); stopListener takes it back to the song's start.
++      ref.pauseAtEndOfMediaItems = value == LoopMode.STOP
+       sendStatusUpdate(mapOf("loop" to value.value))
+     }
+ 
++  // [shiron] "stop" mode: paused at the end of a song → back to its start, and the app is told
++  // the song finished (as when a list ends).
++  private val stopListener = object : Player.Listener {
++    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
++      if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
++        intendedPlayingState = false
++        ref.seekTo(ref.currentMediaItemIndex, 0)
++        sendStatusUpdate(mapOf("playing" to false, "didJustFinish" to true))
++      }
++    }
++  }
++
++  // [shiron] After the property above: Kotlin runs initializers in the order they are written.
++  init {
++    ref.addListener(stopListener)
++  }
++
+   fun getSources(): List<AudioSource> {
+     return sources.toList()
+   }
+@@ -141,6 +162,11 @@ class AudioPlaylist(
      previous()
    }
  
@@ -15,10 +61,20 @@ index bf3f9c5..0db06a9 100644
      if (index !in 0..<trackCount) {
        return
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
-index b6b3b73..b5ec55f 100644
+index b6b3b73..287b13c 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
-@@ -116,7 +116,9 @@ class AudioLockScreenOptions(
+@@ -19,7 +19,8 @@ class AudioSource(
+ enum class LoopMode(val value: String) : Enumerable {
+   NONE("none"),
+   SINGLE("single"),
+-  ALL("all")
++  ALL("all"),
++  STOP("stop") // [shiron] stop at the end of each song: paused, back at its start
+ }
+ 
+ @OptimizedRecord
+@@ -116,7 +117,9 @@ class AudioLockScreenOptions(
    @Field val showPreviousTrack: Boolean = false,
    @Field val isLiveStream: Boolean? = null,
    @Field val seekForwardIntervalSeconds: Double = 10.0,
@@ -44,7 +100,7 @@ index 7ac4a57..ba0e8b7 100644
      active: Boolean,
      metadata: Metadata? = null,
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
-index 53c36f7..b8f1d69 100644
+index 53c36f7..1fae53d 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 @@ -65,6 +65,11 @@ class AudioControlsService : MediaSessionService() {
@@ -75,11 +131,11 @@ index 53c36f7..b8f1d69 100644
  
      val style = MediaStyleNotificationHelper.MediaStyle(session)
  
-@@ -354,6 +361,31 @@ class AudioControlsService : MediaSessionService() {
+@@ -354,6 +361,33 @@ class AudioControlsService : MediaSessionService() {
        )
      }
  
-+    // [shiron] Repeat: off → the list → this song, as the app has it (Android 13+ shows it next to
++    // [shiron] Repeat: off → the list → this song → stop after this song, as the app has it (Android 13+ shows it next to
 +    // the transport buttons, on the lock screen too).
 +    currentOptions?.repeatMode?.let { mode ->
 +      mediaButtons.add(
@@ -87,6 +143,7 @@ index 53c36f7..b8f1d69 100644
 +          when (mode) {
 +            "one" -> CommandButton.ICON_REPEAT_ONE
 +            "all" -> CommandButton.ICON_REPEAT_ALL
++            "stop" -> CommandButton.ICON_STOP // stop at the end of this song (0.17.0)
 +            else -> CommandButton.ICON_REPEAT_OFF
 +          }
 +        )
@@ -94,6 +151,7 @@ index 53c36f7..b8f1d69 100644
 +            when (mode) {
 +              "one" -> "חזרה על השיר"
 +              "all" -> "חזרה על הרשימה"
++              "stop" -> "עצירה בסוף השיר"
 +              else -> "בלי חזרה"
 +            }
 +          )
@@ -107,7 +165,7 @@ index 53c36f7..b8f1d69 100644
      session.setCustomLayout(mediaButtons)
      session.setMediaButtonPreferences(mediaButtons)
    }
-@@ -371,6 +403,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -371,6 +405,7 @@ class AudioControlsService : MediaSessionService() {
    }
  
    private fun postOrStartForegroundNotificationNow(startInForeground: Boolean) {
@@ -115,7 +173,7 @@ index 53c36f7..b8f1d69 100644
      val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
      val notification = buildNotification() ?: return
  
-@@ -437,6 +470,8 @@ class AudioControlsService : MediaSessionService() {
+@@ -437,6 +472,8 @@ class AudioControlsService : MediaSessionService() {
      removePlayerListener()
      currentPlayable?.isActiveForLockScreen = false
      hideNotification()
@@ -124,7 +182,7 @@ index 53c36f7..b8f1d69 100644
  
      currentPlayable = playable
      currentMetadata = metadata
-@@ -505,6 +540,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -505,6 +542,7 @@ class AudioControlsService : MediaSessionService() {
      playable?.assignBasicMediaSession()
      currentPlayable = null
      stopForeground(STOP_FOREGROUND_REMOVE)
@@ -132,7 +190,7 @@ index 53c36f7..b8f1d69 100644
    }
  
    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-@@ -525,12 +561,36 @@ class AudioControlsService : MediaSessionService() {
+@@ -525,12 +563,36 @@ class AudioControlsService : MediaSessionService() {
      metadata: Metadata?,
      options: AudioLockScreenOptions?
    ) {
@@ -169,7 +227,7 @@ index 53c36f7..b8f1d69 100644
        sessionMetadataPlayer = null
        appContext?.mainQueue?.launch {
          val context = appContext?.reactContext ?: return@launch
-@@ -550,13 +610,34 @@ class AudioControlsService : MediaSessionService() {
+@@ -550,13 +612,34 @@ class AudioControlsService : MediaSessionService() {
          sessionMetadataPlayer = sessionPlayer
  
          updateSessionCustomLayout(playable.player.isPlaying)
@@ -205,7 +263,7 @@ index 53c36f7..b8f1d69 100644
    fun unregisterPlayable() {
      clearSessionInternal()
    }
-@@ -583,6 +664,11 @@ class AudioControlsService : MediaSessionService() {
+@@ -583,6 +666,11 @@ class AudioControlsService : MediaSessionService() {
      currentPlayable?.takeIf { it.supportsPreviousTrack }?.previousTrack()
    }
  
@@ -217,7 +275,7 @@ index 53c36f7..b8f1d69 100644
    fun supportsNextTrack(): Boolean {
      return currentPlayable?.supportsNextTrack == true
    }
-@@ -666,6 +752,11 @@ class AudioControlsService : MediaSessionService() {
+@@ -666,6 +754,11 @@ class AudioControlsService : MediaSessionService() {
  
        override fun onPlaybackStateChanged(playbackState: Int) {
          postOrStartForegroundNotification(startInForeground = false)
@@ -229,7 +287,7 @@ index 53c36f7..b8f1d69 100644
        }
      }
      playbackListener = listener
-@@ -683,7 +774,42 @@ class AudioControlsService : MediaSessionService() {
+@@ -683,7 +776,42 @@ class AudioControlsService : MediaSessionService() {
      }
    }
  
@@ -272,7 +330,7 @@ index 53c36f7..b8f1d69 100644
      private const val CHANNEL_ID = "expo_audio_channel"
      private const val ACTION_PLAY = "expo.modules.audio.action.PLAY"
      private const val ACTION_PAUSE = "expo.modules.audio.action.PAUSE"
-@@ -693,5 +819,6 @@ class AudioControlsService : MediaSessionService() {
+@@ -693,5 +821,6 @@ class AudioControlsService : MediaSessionService() {
      const val ACTION_SEEK_BACKWARD = "expo.modules.audio.action.SEEK_BACKWARD"
      const val ACTION_NEXT_TRACK = "expo.modules.audio.action.NEXT_TRACK"
      const val ACTION_PREVIOUS_TRACK = "expo.modules.audio.action.PREVIOUS_TRACK"
@@ -303,9 +361,27 @@ index ee83be1..cae2456 100644
      }
    }
 diff --git a/node_modules/expo-audio/ios/AudioPlaylist.swift b/node_modules/expo-audio/ios/AudioPlaylist.swift
-index 38e158f..1f2a094 100644
+index 38e158f..db56310 100644
 --- a/node_modules/expo-audio/ios/AudioPlaylist.swift
 +++ b/node_modules/expo-audio/ios/AudioPlaylist.swift
+@@ -89,7 +89,7 @@ public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable, LockScreenPlayab
+     self.playerItems = items
+     super.init(ref)
+ 
+-    ref.actionAtItemEnd = loopMode == .single ? .pause : .advance
++    ref.actionAtItemEnd = loopMode == .single || loopMode == .stop ? .pause : .advance // [shiron] stop
+     setupPublisher()
+     addPlaybackEndNotification()
+   }
+@@ -245,7 +245,7 @@ public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable, LockScreenPlayab
+ 
+   func setLoopMode(_ mode: LoopMode) {
+     loopMode = mode
+-    ref.actionAtItemEnd = mode == .single ? .pause : .advance
++    ref.actionAtItemEnd = mode == .single || mode == .stop ? .pause : .advance // [shiron] stop
+     updateStatus(with: ["loop": mode.rawValue])
+   }
+ 
 @@ -367,7 +367,10 @@ public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable, LockScreenPlayab
  
        switch self.loopMode {
@@ -318,6 +394,36 @@ index 38e158f..1f2a094 100644
          self.play(at: self.currentRate)
  
        case .all:
+@@ -376,6 +379,16 @@ public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable, LockScreenPlayab
+           self.play(at: self.currentRate)
+         }
+ 
++      case .stop:
++        // [shiron] The song ended and nothing should follow: the same song again as a fresh item at
++        // its start (as repeat-one does, so the lock screen's bar goes back to 0), paused. Done
++        // here, not in JS: in the background the app's code may not run before iOS would move on.
++        self.rebuildPlaylist(startingAt: finishedIndex)
++        self.updateStatus(with: [
++          "playing": false,
++          "didJustFinish": true
++        ])
++
+       case .none:
+         if isLastTrack {
+           self.updateStatus(with: [
+diff --git a/node_modules/expo-audio/ios/AudioRecords.swift b/node_modules/expo-audio/ios/AudioRecords.swift
+index 7b8b421..17a02ff 100644
+--- a/node_modules/expo-audio/ios/AudioRecords.swift
++++ b/node_modules/expo-audio/ios/AudioRecords.swift
+@@ -28,6 +28,8 @@ enum LoopMode: String, Enumerable {
+   case none
+   case single
+   case all
++  // [shiron] Stop at the end of each song: pause, back at its start, nothing after it plays.
++  case stop
+ }
+ 
+ enum PitchCorrectionQuality: String, Enumerable {
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
 index 9b66e45..92900f6 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift

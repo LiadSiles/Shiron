@@ -15,11 +15,12 @@ import { Scrubber } from '../ui/Scrubber';
 import { ActionBar } from '../ui/list';
 import { cardShadow, radius, space, useTheme } from '../ui/theme';
 
-/** The repeat button's name: off → the whole list → this song. */
+/** The repeat button's name: off → the whole list → this song → stop after this song. */
 const REPEAT_LABEL = {
   off: 'בלי חזרה',
   all: 'חזרה על הכול',
   one: 'חזרה על השיר',
+  stop: 'עצירה בסוף השיר',
 } as const;
 
 /** What the toast says after a tap: the button is an icon, so the change is said in words. */
@@ -27,6 +28,7 @@ const REPEAT_TOLD = {
   off: 'הניגון ייעצר בסוף הרשימה',
   all: 'הרשימה תתנגן שוב ושוב',
   one: 'השיר יתנגן שוב ושוב',
+  stop: 'הניגון ייעצר בסוף השיר',
 } as const;
 
 /**
@@ -111,11 +113,16 @@ export default function PlayerScreen() {
           }}
           accessibilityRole="button"
           accessibilityLabel={REPEAT_LABEL[p.repeat]}
-          accessibilityHint="מחליף בין בלי חזרה, חזרה על הכול וחזרה על השיר"
+          accessibilityHint="מחליף בין בלי חזרה, חזרה על הכול, חזרה על השיר ועצירה בסוף השיר"
           hitSlop={6}
           style={[styles.repeat, { backgroundColor: p.repeat === 'off' ? 'transparent' : c.primarySoft }]}
         >
-          <Icon name="repeat" size={24} color={p.repeat === 'off' ? c.inkSoft : c.primary} />
+          {/* Stop after this song: a stop sign, not the repeat arrows — nothing comes round. */}
+          <Icon
+            name={p.repeat === 'stop' ? 'stop-circle-outline' : 'repeat'}
+            size={24}
+            color={p.repeat === 'off' ? c.inkSoft : c.primary}
+          />
           {p.repeat === 'one' ? (
             <View style={[styles.one, { backgroundColor: c.primary }]}>
               <T weight="bold" size={10} style={{ color: c.primaryInk, lineHeight: 12 }}>1</T>
@@ -132,6 +139,12 @@ export default function PlayerScreen() {
             <Icon name="play-skip-back" size={18} color={c.primary} />
             <T weight="bold" style={{ color: c.primary }}>מההתחלה</T>
           </Pressable>
+        </View>
+      ) : p.repeat === 'stop' ? (
+        // Stop after this song (0.17.0): nothing follows by itself, so no "הבא" — say so instead.
+        <View style={styles.upNext} accessible accessibilityLabel="הניגון ייעצר בסוף השיר">
+          <Icon name="stop-circle-outline" size={16} color={c.inkSoft} />
+          <T soft size={14}>הניגון ייעצר בסוף השיר</T>
         </View>
       ) : following ? (
         // What comes next — and the songs she asked to hear next, in order.

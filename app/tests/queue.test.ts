@@ -5,7 +5,7 @@ import {
 
 describe('play queue', () => {
   it('cycles the repeat button', () => {
-    expect([nextRepeat('off'), nextRepeat('all'), nextRepeat('one')]).toEqual(['all', 'one', 'off']);
+    expect([nextRepeat('off'), nextRepeat('all'), nextRepeat('one'), nextRepeat('stop')]).toEqual(['all', 'one', 'stop', 'off']);
   });
 
   it('finds the run of audio songs around a song', () => {
@@ -36,6 +36,21 @@ describe('play queue', () => {
     expect(afterEnd(2, 3, 'one')).toBe(2);
     expect(afterEnd(1, 3, 'off')).toBe(2);
     expect(afterEnd(1, 3, 'one')).toBe(1);
+    // Stop at the end of the song: nothing follows, wherever it is in the list.
+    expect(afterEnd(0, 1, 'stop')).toBeNull();
+    expect(afterEnd(1, 3, 'stop')).toBeNull();
+    expect(afterEnd(2, 3, 'stop')).toBeNull();
+  });
+
+  it('stops at the end of a song natively in stop mode, even with more songs loaded', () => {
+    expect(nativeLoop('stop', [0, 1, 2], [true, true, true], false)).toBe('stop');
+    expect(nativeLoop('stop', [1], [false, true, false], true)).toBe('stop');
+  });
+
+  it("moves on by hand in stop mode as when it's off (no wrap around the list)", () => {
+    expect(nextIndex(1, 3, 'stop')).toBe(2);
+    expect(nextIndex(2, 3, 'stop')).toBeNull();
+    expect(previousIndex(0, 3, 'stop')).toBeNull();
   });
 
   it('lets the native playlist loop by itself only when it holds every song it should play', () => {

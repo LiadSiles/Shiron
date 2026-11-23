@@ -5,11 +5,16 @@
  * on itself. Pure logic, unit-tested.
  */
 
-export type RepeatMode = 'off' | 'all' | 'one';
+/**
+ * What happens when a song ends: `off` — the next one, stop at the list's end; `all` — the list
+ * round and round; `one` — this song again and again; `stop` — nothing: stop at the end of this
+ * song, back at its start (owner, 0.17.0).
+ */
+export type RepeatMode = 'off' | 'all' | 'one' | 'stop';
 
-/** Repeat button cycle: off → the whole list → this song → off. */
+/** Repeat button cycle: off → the whole list → this song → stop after this song → off. */
 export function nextRepeat(mode: RepeatMode): RepeatMode {
-  return mode === 'off' ? 'all' : mode === 'all' ? 'one' : 'off';
+  return mode === 'off' ? 'all' : mode === 'all' ? 'one' : mode === 'one' ? 'stop' : 'off';
 }
 
 /** The consecutive audio songs around `index` ([start, end], inclusive); null on a YouTube song. */
@@ -24,6 +29,7 @@ export function audioRun(isAudio: boolean[], index: number): { start: number; en
 
 /** What plays when a song reaches its end: the same song (repeat-one), the next one, or null = stop. */
 export function afterEnd(index: number, length: number, repeat: RepeatMode): number | null {
+  if (repeat === 'stop') return null;
   return repeat === 'one' ? index : nextIndex(index, length, repeat);
 }
 
@@ -45,8 +51,11 @@ export function previousIndex(index: number, length: number, repeat: RepeatMode)
  * play: in the foreground that means a queue of audio only; in the background YouTube songs are
  * passed over anyway (`skipYoutube`). Otherwise the app wraps at the last slot.
  */
-export function nativeLoop(repeat: RepeatMode, slots: readonly number[], isAudio: readonly boolean[], skipYoutube: boolean): 'none' | 'single' | 'all' {
+export function nativeLoop(repeat: RepeatMode, slots: readonly number[], isAudio: readonly boolean[], skipYoutube: boolean): 'none' | 'single' | 'all' | 'stop' {
   if (repeat === 'one') return 'single';
+  // Our expo-audio patch: the phone pauses at the end of each song and goes back to its start —
+  // in the background too, where the app's code may not run in time to stop it.
+  if (repeat === 'stop') return 'stop';
   if (repeat !== 'all') return 'none';
   const audio = isAudio.filter(Boolean).length;
   if (slots.length !== audio) return 'none';

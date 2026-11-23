@@ -60,7 +60,7 @@ if [ "$VARIANT" = group ]; then
     "app/modules/shiron-audio/fixtures/README.md|notes.txt|text/plain" \
     || echo "FAIL(must) $VARIANT staging the shared files" >> "$RESULTS"
   FLOWS+=("must:open-link.yaml@LINK=shiron://dataUrl=shironShareKey#file" "must:e2e-import.yaml@COUNT=6" must:e2e-player.yaml must:e2e-song.yaml
-    must:e2e-playlist.yaml must:e2e-search.yaml must:e2e-end.yaml must:e2e-background.yaml
+    must:e2e-playlist.yaml must:e2e-search.yaml must:e2e-end.yaml must:e2e-stop.yaml must:e2e-background.yaml
     "must:e2e-many-links.yaml@AFTER=7" must:e2e-select.yaml
     "soft:add-files.yaml@FILE=boker-tov,VARIANT=$VARIANT-add-mp3" "soft:categories.yaml@VARIANT=$VARIANT-cats")
 fi

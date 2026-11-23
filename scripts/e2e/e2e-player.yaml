@@ -1,4 +1,4 @@
-# The full player: play all, next / previous, the three repeat modes, pause — and "חזרה" works
+# The full player: play all, next / previous, the four repeat modes, pause — and "חזרה" works
 # every time, also after coming back to the player again and again (owner, 0.11.0).
 appId: app.shiron.gan
 ---
@@ -21,6 +21,8 @@ appId: app.shiron.gan
 - tapOn: "חזרה על הכול"
 - assertVisible: "חזרה על השיר"
 - tapOn: "חזרה על השיר"
+- assertVisible: "עצירה בסוף השיר"
+- tapOn: "עצירה בסוף השיר"
 - assertVisible: "בלי חזרה"
 - takeScreenshot: ${VARIANT}-player
 - runFlow: back.yaml

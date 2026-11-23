@@ -1,0 +1,40 @@
+# Stop at the end of the song (owner, 0.17.0) inside a list: when the song ends nothing else
+# plays — not the next song, not the same one again, not the list from its start. The song waits
+# at its start, and play starts it again. The phone stops it itself (our expo-audio patch), so
+# it holds in the background too.
+appId: app.shiron.gan
+---
+- runFlow: dismiss.yaml
+- launchApp
+- tapOn: ספרייה
+- tapOn: "כל השירים.*"
+- tapOn: "נגני boker-tov.*"
+- tapOn: "מתנגן: boker-tov.*"
+- assertVisible: "מתנגן עכשיו"
+- repeat:
+    while:
+      notVisible: "עצירה בסוף השיר"
+    times: 4
+    commands:
+      - tapOn: "(בלי חזרה|חזרה על.*)"
+- assertVisible: "הניגון ייעצר בסוף השיר"
+- swipe:
+    from: "מיקום בשיר.*"
+    direction: RIGHT
+- extendedWaitUntil:
+    visible: "ניגון"
+    timeout: 10000
+- runFlow: wait-4s.yaml
+# Still this song, stopped; had it gone on, the next song would be playing ("השהיה"), or the
+# list would say it ended.
+- assertVisible: "ניגון"
+- assertVisible: "boker-tov"
+- assertNotVisible: "הרשימה הסתיימה"
+- takeScreenshot: ${VARIANT}-stop
+- tapOn: "ניגון"
+- extendedWaitUntil:
+    visible: "השהיה"
+    timeout: 5000
+- assertVisible: "boker-tov"
+- tapOn: "השהיה"
+- runFlow: back.yaml

@@ -3,6 +3,16 @@
 Newest first. Each entry: what was decided, why, and what was rejected. Add an entry
 whenever a choice would surprise a future contributor.
 
+### 2026-11-23 — Stop at the end of the song: a fourth repeat mode (0.17.0)
+
+- Owner asked for a mode where a song stops at its end — not the next song, not again, not the
+  list over. Added as the fourth step of the repeat button (off → list → song → stop), not a
+  separate button: it answers the same question ("what happens when the song ends") and keeps
+  the player's controls as they are. Android's lock-screen button cycles through it too.
+- Done natively (patched expo-audio loop mode `stop`), not by the app pausing at the end: the
+  native playlist already holds the next songs and would start them in the background before
+  the app's code could stop it.
+
 ### 2026-11-13 — Repeat on the lock screen: Android button; e2e flakes fixed, not deleted (0.16.1)
 
 - The owner asked again for repeat-song / repeat-list on the lock screen. Android: a repeat

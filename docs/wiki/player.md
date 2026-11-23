@@ -53,8 +53,8 @@ setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, inter
   800 ms (`seekingUntil`) so the bar doesn't jump back to the old time before the player
   reports the new one. `previous()` = back to 0:00.
 - Status `error` is stored in `PlayerState.error` and logged with `diag`; the players show it.
-- Repeat (`cycleRepeat`): off → **all** (the whole list, around) → **one** → off
-  (`core/queue.ts`, tested). Repeat-one = native `loop: 'single'` (YouTube: seek 0 on end);
+- Repeat (`cycleRepeat`): off → **all** (the whole list, around) → **one** → **stop** (stop at
+  the end of this song) → off (`core/queue.ts`, tested). See "Stop at the end of the song" below. Repeat-one = native `loop: 'single'` (YouTube: seek 0 on end);
   repeat-all wraps natively only when the run is the whole queue, otherwise the app wraps.
   What follows the end of a song is one decision, `afterEnd` (`core/queue.ts`, tested): the
   same song (one), the next, around (all), or stop — for audio past the native loop and for
@@ -199,8 +199,8 @@ source, fixed in `app/patches/expo-audio+58.0.10.patch`:
 - **Android: repeat button (0.16.1).** `repeatMode` in the lock-screen options (our patch to
   `AudioLockScreenOptions`) draws a button in the overflow slot of the media controls
   (notification and lock screen, Android 13+): icon repeat-off / all / one. A press reaches the
-  app as a status update with `remoteRepeat`; `onStatus` → `cycleRepeat()` (off → list → song,
-  as in the app) → the controls are set again with the new mode (`showOnLockScreen`), and a
+  app as a status update with `remoteRepeat`; `onStatus` → `cycleRepeat()` (off → list → song →
+  stop, as in the app; stop shows media3's stop icon, 0.17.0) → the controls are set again with the new mode (`showOnLockScreen`), and a
   change in the app redraws them too.
 - **Android: the controls update in place (0.16.2).** expo-audio's `setPlayableOptions` released
   the media session and built a new one on every `setActiveForLockScreen` — each song start, the
@@ -229,6 +229,30 @@ go to it too. Once played, the next `startAt` drops it from the queue
 songs the native loop is never `all` (the app wraps and drops them itself). The full player
 shows "הבא <title>" with a "בתור" badge (and how many). Shifting `slots` and `pendingYoutube`
 on insert: `withQueueInsert`.
+
+## Stop at the end of the song (0.17.0)
+
+Owner: a mode where the song stops when it ends — no next song, no repeat, no list from its
+start. The fourth repeat mode, `stop` ("עצירה בסוף השיר"; a stop-circle icon on the button, and
+the full player's "הבא" row says "הניגון ייעצר בסוף השיר" instead, since nothing follows).
+
+- **Native, because of the background.** The native playlist holds the songs after the current
+  one and moves on by itself; on iOS the app's code may not run before it does. So our
+  expo-audio patch adds a loop mode `stop` (`nativeLoop` → `'stop'`):
+  - iOS (`AudioPlaylist.swift`): `actionAtItemEnd = .pause` (as for repeat-one); at the item's
+    end the same song is loaded again as a fresh item at 0 (`rebuildPlaylist(startingAt:)`, so
+    the lock screen's bar is at 0 too), paused, and `didJustFinish` is reported.
+  - Android (`AudioPlaylist.kt`): `pauseAtEndOfMediaItems = true` (repeat off); a listener sees
+    the pause with reason `END_OF_MEDIA_ITEM`, seeks the same item to 0 and reports
+    `didJustFinish`.
+- **JS** (`onStatus`): `didJustFinish` with the native loop `stop` — whichever slot it came
+  from — closes the listening session and shows the song stopped at 0; play resumes it from
+  the start. A YouTube song in stop mode stops in `continueAfterEnd` (`ended`, play reloads it).
+  Not "the list ended": no parking, no "הרשימה הסתיימה". Next / previous by hand work as when
+  repeat is off.
+- Checks: `queue.test.ts` (cycle, `afterEnd` → null anywhere, native `stop`); `e2e-end.yaml`
+  (a lone song stops, no "list ended"); `e2e-stop.yaml` (inside the all-songs list: still the
+  same song, stopped, play starts it again).
 
 ## Play counting
 

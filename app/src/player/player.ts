@@ -163,10 +163,12 @@ Asset.fromModule(require('../../assets/icon.png'))
  * touches ExoPlayer off its thread and throws, which silently cut every status update short
  * at the end of a list — so the app's own end handling never ran there (found in 0.16.0).
  */
-let loopSet: AudioPlaylist['loop'] = 'none';
-function setLoop(p: AudioPlaylist, loop: AudioPlaylist['loop']) {
+/** expo-audio's loops plus our patch's "stop" (pause at the end of each song, back at its start). */
+type NativeLoopMode = AudioPlaylist['loop'] | 'stop';
+let loopSet: NativeLoopMode = 'none';
+function setLoop(p: AudioPlaylist, loop: NativeLoopMode) {
   loopSet = loop;
-  p.loop = loop;
+  p.loop = loop as AudioPlaylist['loop'];
 }
 
 async function ensurePlayer(): Promise<AudioPlaylist> {
@@ -328,6 +330,14 @@ function onStatus(status: AudioPlaylistStatus) {
   if (typeof status.currentTime === 'number' && Date.now() >= seekingUntil) patch.position = status.currentTime;
   if (status.duration) patch.duration = status.duration;
   set(patch);
+  if (status.didJustFinish && loopSet === 'stop') {
+    // Stop at the end of the song (0.17.0): the phone has already paused and gone back to this
+    // song's start, whichever song of the list it was. Nothing to load; play starts it again.
+    diag('ended', state().song?.title ?? '?', 'repeat stop');
+    void finishSession();
+    set({ playing: false, position: 0 });
+    return;
+  }
   if (status.didJustFinish && slots?.length && state().index === slots[slots.length - 1]) {
     // The last loaded song ended. A native loop ("single" for repeat-one, "all" around a list
     // it holds whole) has already started the next round; otherwise the app decides.
@@ -342,6 +352,13 @@ function onStatus(status: AudioPlaylistStatus) {
  * next one, or stop — then the play button starts this song again (see `ended`).
  */
 function continueAfterEnd() {
+  if (state().repeat === 'stop') {
+    // A YouTube song in stop mode (audio songs stop natively): stay on it; play starts it again.
+    ended = true;
+    set({ playing: false });
+    void finishSession();
+    return;
+  }
   const n = afterEnd(state().index, state().queue.length, state().repeat);
   if (n === null) {
     ended = true;

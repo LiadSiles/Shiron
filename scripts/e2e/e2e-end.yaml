@@ -16,9 +16,9 @@ appId: app.shiron.gan
 - repeat:
     while:
       notVisible: "בלי חזרה"
-    times: 3
+    times: 4
     commands:
-      - tapOn: "חזרה על.*"
+      - tapOn: "(חזרה על|עצירה בסוף).*"
 
 # Without repeat: stops at the end, and doesn't start again by itself.
 - swipe:
@@ -54,7 +54,22 @@ appId: app.shiron.gan
 - runFlow: wait-4s.yaml
 - assertVisible: "השהיה"
 - takeScreenshot: ${VARIANT}-end-repeat-one
+
+# Stop at the end of the song (0.17.0): stopped, and not "the list ended" — the song waits at its
+# start (e2e-stop checks it inside a longer list).
 - tapOn: "חזרה על השיר"
+- assertVisible: "עצירה בסוף השיר"
+- assertVisible: "הניגון ייעצר בסוף השיר"
+- swipe:
+    from: "מיקום בשיר.*"
+    direction: RIGHT
+- extendedWaitUntil:
+    visible: "ניגון"
+    timeout: 10000
+- runFlow: wait-4s.yaml
+- assertVisible: "ניגון"
+- assertNotVisible: "הרשימה הסתיימה"
+- takeScreenshot: ${VARIANT}-end-stop
+- tapOn: "עצירה בסוף השיר"
 - assertVisible: "בלי חזרה"
-- tapOn: "השהיה"
 - runFlow: back.yaml
