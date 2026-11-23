@@ -8,8 +8,9 @@ appId: app.shiron.gan
 - launchApp
 - tapOn: ספרייה
 - tapOn: "כל השירים.*"
-- tapOn: "נגני boker-tov.*"
-- tapOn: "מתנגן: boker-tov.*"
+# (Earlier flows rename boker-tov and delete voice-whatsapp; gan-party keeps its name.)
+- tapOn: "נגני gan-party.*"
+- tapOn: "מתנגן: gan-party.*"
 - assertVisible: "מתנגן עכשיו"
 - repeat:
     while:
@@ -28,13 +29,13 @@ appId: app.shiron.gan
 # Still this song, stopped; had it gone on, the next song would be playing ("השהיה"), or the
 # list would say it ended.
 - assertVisible: "ניגון"
-- assertVisible: "boker-tov"
+- assertVisible: "gan-party"
 - assertNotVisible: "הרשימה הסתיימה"
 - takeScreenshot: ${VARIANT}-stop
 - tapOn: "ניגון"
 - extendedWaitUntil:
     visible: "השהיה"
     timeout: 5000
-- assertVisible: "boker-tov"
+- assertVisible: "gan-party"
 - tapOn: "השהיה"
 - runFlow: back.yaml
