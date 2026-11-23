@@ -12,12 +12,14 @@ appId: app.shiron.gan
 - tapOn: "נגני gan-party.*"
 - tapOn: "מתנגן: gan-party.*"
 - assertVisible: "מתנגן עכשיו"
-- repeat:
-    while:
-      notVisible: "עצירה בסוף השיר"
-    times: 4
-    commands:
-      - tapOn: "(בלי חזרה|חזרה על.*)"
+# Repeat starts "off" after a launch: three taps to the fourth mode, one by one (a while-loop
+# with one pattern for every name stopped at "חזרה על הכול" on Android).
+- tapOn: "בלי חזרה"
+- assertVisible: "חזרה על הכול"
+- tapOn: "חזרה על הכול"
+- assertVisible: "חזרה על השיר"
+- tapOn: "חזרה על השיר"
+- assertVisible: "עצירה בסוף השיר"
 - assertVisible: "הניגון ייעצר בסוף השיר"
 - swipe:
     from: "מיקום בשיר.*"
