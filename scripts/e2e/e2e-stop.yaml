@@ -10,10 +10,12 @@ appId: app.shiron.gan
 - tapOn: "כל השירים.*"
 # (Earlier flows rename boker-tov and delete voice-whatsapp; gan-party keeps its name.)
 - tapOn: "נגני gan-party.*"
+# Paused at once from its row: the songs are ~40 s, and on the emulator setting the mode took
+# about that long, so the song ended before stop mode was on (CI log, 0.17.0).
+- tapOn: "השהיית gan-party.*"
 - tapOn: "מתנגן: gan-party.*"
 - assertVisible: "מתנגן עכשיו"
-# Repeat starts "off" after a launch: three taps to the fourth mode, one by one (a while-loop
-# with one pattern for every name stopped at "חזרה על הכול" on Android).
+# Repeat starts "off" after a launch: three taps to the fourth mode, one by one.
 - tapOn: "בלי חזרה"
 - assertVisible: "חזרה על הכול"
 - tapOn: "חזרה על הכול"
@@ -21,6 +23,7 @@ appId: app.shiron.gan
 - tapOn: "חזרה על השיר"
 - assertVisible: "עצירה בסוף השיר"
 - assertVisible: "הניגון ייעצר בסוף השיר"
+- tapOn: "ניגון"
 - swipe:
     from: "מיקום בשיר.*"
     direction: RIGHT
