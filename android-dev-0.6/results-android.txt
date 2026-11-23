@@ -13,7 +13,7 @@ PASS android e2e-playlist.yaml
 PASS android e2e-search.yaml
 PASS android e2e-end.yaml
 FAIL(must) android e2e-stop.yaml
-PASS android e2e-background.yaml
+FAIL(must) android e2e-background.yaml
 PASS android e2e-select.yaml
 PASS android share-out-android.yaml
 PASS android-cats categories.yaml
