@@ -1,88 +1,86 @@
-11-23 22:49:54.182 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10167/839 AA=USAGE_NOTIFICATION/CONTENT_TYPE_SONIFICATION clientId=android.media.AudioManager@cc6d0aa callingPack=com.android.systemui req=3 flags=0x0 sdk=34
-11-23 22:49:55.029 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10167/839 clientId=android.media.AudioManager@cc6d0aa
-11-23 22:50:33.515 I/ReactNativeJS( 5922): '[diag]', '23/11 22:50:33 lock screen artwork skipped · assets_icon'
-11-23 22:50:45.649 I/ReactNativeJS( 5922): '[diag]', '23/11 22:50:45 share received · type weburl · 0 files · https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-11-23 22:51:41.880 I/ReactNativeJS( 5922): '[diag]', '23/11 22:51:41 play youtube · שיר מיוטיוב · 1/1'
-11-23 22:51:49.593 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/5922 AA=USAGE_MEDIA/CONTENT_TYPE_UNKNOWN clientId=android.media.AudioManager@a566515org.chromium.content.browser.AudioFocusDelegate@cd3a02a callingPack=app.shiron.gan req=1 flags=0x0 sdk=36
-11-23 22:55:23.776 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/5922 clientId=android.media.AudioManager@a566515org.chromium.content.browser.AudioFocusDelegate@cd3a02a
-11-23 22:55:23.808 I/ReactNativeJS( 5922): '[diag]', '23/11 22:55:23 ended · שיר מיוטיוב · repeat off · youtube'
-11-23 22:56:07.187 I/ReactNativeJS( 7150): '[diag]', '23/11 22:56:07 lock screen artwork skipped · assets_icon'
-11-23 22:56:31.538 I/ReactNativeJS( 7323): '[diag]', '23/11 22:56:31 lock screen artwork skipped · assets_icon'
-11-23 22:56:47.827 I/ReactNativeJS( 7323): '[diag]', '23/11 22:56:47 import · boker-tov.mp3 · 313 KB · from file:///data/user/0/app.shiron.gan/files/songs/287cfd35-46a0'
-11-23 22:57:03.233 I/ReactNativeJS( 7323): '[diag]', '23/11 22:57:03 converted · boker-tov.mp3 · 38.5 s of 40.0 s · gain 17.74 dB · 461 KB · 15166 ms'
-11-23 22:57:15.784 I/ReactNativeJS( 7669): '[diag]', '23/11 22:57:15 lock screen artwork skipped · assets_icon'
-11-23 22:57:28.971 I/ReactNativeJS( 7669): '[diag]', '23/11 22:57:28 import · voice-whatsapp.opus · 188 KB · from file:///data/user/0/app.shiron.gan/files/songs/668d209c-0191'
-11-23 22:57:44.354 I/ReactNativeJS( 7669): '[diag]', '23/11 22:57:44 converted · voice-whatsapp.opus · 38.5 s of 40.1 s · gain 14.03 dB · 462 KB · 15292 ms'
-11-23 22:57:56.373 I/ReactNativeJS( 7907): '[diag]', '23/11 22:57:56 lock screen artwork skipped · assets_icon'
-11-23 22:58:10.842 I/ReactNativeJS( 7907): '[diag]', '23/11 22:58:10 import · old-song.wma · 647 KB · from file:///data/user/0/app.shiron.gan/files/songs/e0088852-a986'
-11-23 22:58:25.351 I/ReactNativeJS( 7907): '[diag]', '23/11 22:58:25 converted · old-song.wma · 38.3 s of 39.6 s · gain 14.04 dB · 458 KB · 14344 ms'
-11-23 22:58:38.556 I/ReactNativeJS( 8168): '[diag]', '23/11 22:58:38 lock screen artwork skipped · assets_icon'
-11-23 22:58:53.407 I/ReactNativeJS( 8168): '[diag]', '23/11 22:58:53 import · gan-party.mpg · 674 KB · from file:///data/user/0/app.shiron.gan/files/songs/c0487464-0a9b'
-11-23 22:59:07.972 I/ReactNativeJS( 8168): '[diag]', '23/11 22:59:07 converted · gan-party.mpg · 38.8 s of 40.2 s · gain 14.04 dB · 464 KB · 14443 ms'
-11-23 22:59:21.394 I/ReactNativeJS( 8428): '[diag]', '23/11 22:59:21 lock screen artwork skipped · assets_icon'
-11-23 22:59:36.016 I/ReactNativeJS( 8428): '[diag]', '23/11 22:59:36 import · boker-tov.mp3 · 313 KB · from file:///data/user/0/app.shiron.gan/files/songs/9ccc4261-34bb'
-11-23 23:00:03.881 I/ReactNativeJS( 8673): '[diag]', '23/11 23:00:03 lock screen artwork skipped · assets_icon'
-11-23 23:00:14.418 I/ReactNativeJS( 8673): '[diag]', '23/11 23:00:14 play · boker-tov · 5/5 · native 4'
-11-23 23:00:14.633 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/8673 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@4a6e20erh@8c2b42f callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:00:29.957 I/ReactNativeJS( 8673): '[diag]', '23/11 23:00:29 play · voice-whatsapp · 4/5 · native 4'
-11-23 23:00:29.961 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/8673 clientId=android.media.AudioManager@4a6e20erh@8c2b42f
-11-23 23:00:30.013 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/8673 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@4a6e20erh@8c2b42f callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:00:44.892 I/ReactNativeJS( 8673): '[diag]', '23/11 23:00:44 play · old-song · 3/5 · native 4'
-11-23 23:00:44.902 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/8673 clientId=android.media.AudioManager@4a6e20erh@8c2b42f
-11-23 23:00:44.993 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/8673 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@4a6e20erh@8c2b42f callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:01:02.374 I/ReactNativeJS( 8673): '[diag]', '23/11 23:01:02 play · gan-party · 2/5 · native 4'
-11-23 23:01:02.376 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/8673 clientId=android.media.AudioManager@4a6e20erh@8c2b42f
-11-23 23:01:02.507 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/8673 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@4a6e20erh@8c2b42f callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:01:39.219 I/MediaFocusControl(  520): AudioFocus  removeFocusStackEntryOnDeath(): removing entry for android.os.BinderProxy@9a0305c
-11-23 23:01:40.840 I/ReactNativeJS( 8906): '[diag]', '23/11 23:01:40 lock screen artwork skipped · assets_icon'
-11-23 23:01:48.916 I/ReactNativeJS( 8906): '[diag]', '23/11 23:01:48 play youtube · שיר מיוטיוב · 1/5'
-11-23 23:01:55.915 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/8906 AA=USAGE_MEDIA/CONTENT_TYPE_UNKNOWN clientId=android.media.AudioManager@ec3fff7org.chromium.content.browser.AudioFocusDelegate@17b6e64 callingPack=app.shiron.gan req=1 flags=0x0 sdk=36
-11-23 23:03:09.687 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/8906 clientId=android.media.AudioManager@ec3fff7org.chromium.content.browser.AudioFocusDelegate@17b6e64
-11-23 23:03:10.061 I/ReactNativeJS( 8906): '[diag]', '23/11 23:03:10 play · gan-party · 2/5 · native 4'
-11-23 23:03:10.247 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/8906 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@ec3fff7rh@42b05f8 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:04:49.515 I/ReactNativeJS( 8906): '[diag]', '23/11 23:04:49 ended · gan-party · repeat stop'
-11-23 23:04:49.516 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/8906 clientId=android.media.AudioManager@ec3fff7rh@42b05f8
-11-23 23:05:54.796 I/ReactNativeJS( 8906): '[diag]', '23/11 23:05:54 play next · voice-whatsapp · after 0 more'
-11-23 23:06:31.634 I/ReactNativeJS( 9386): '[diag]', '23/11 23:06:31 lock screen artwork skipped · assets_icon'
-11-23 23:07:04.776 I/ReactNativeJS( 9686): '[diag]', '23/11 23:07:04 lock screen artwork skipped · assets_icon'
-11-23 23:07:43.005 I/ReactNativeJS( 9869): '[diag]', '23/11 23:07:43 lock screen artwork skipped · assets_icon'
-11-23 23:08:16.698 I/ReactNativeJS( 9869): '[diag]', '23/11 23:08:16 play · gan-party · 1/2 · native 2'
-11-23 23:08:16.857 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/9869 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@d97f18rh@5e49d71 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:09:09.629 I/MediaFocusControl(  520): AudioFocus  removeFocusStackEntryOnDeath(): removing entry for android.os.BinderProxy@1ac24d7
-11-23 23:09:11.012 I/ReactNativeJS(10091): '[diag]', '23/11 23:09:11 lock screen artwork skipped · assets_icon'
-11-23 23:09:48.037 I/ReactNativeJS(10340): '[diag]', '23/11 23:09:48 lock screen artwork skipped · assets_icon'
-11-23 23:09:56.430 I/ReactNativeJS(10340): '[diag]', '23/11 23:09:56 play · old-song · 1/1 · native 1'
-11-23 23:09:56.464 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/10340 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@56c0b03rh@1adca80 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:10:35.788 I/ReactNativeJS(10340): '[diag]', '23/11 23:10:35 ended · old-song · repeat off · native loop none'
-11-23 23:10:35.789 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/10340 clientId=android.media.AudioManager@56c0b03rh@1adca80
-11-23 23:10:35.804 I/ReactNativeJS(10340): '[diag]', '23/11 23:10:35 list ended, parked on · old-song'
-11-23 23:10:40.664 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/10340 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@56c0b03rh@1adca80 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:10:40.702 I/ReactNativeJS(10340): '[diag]', '23/11 23:10:40 playing after the end of the list'
-11-23 23:12:27.817 I/ReactNativeJS(10340): '[diag]', '23/11 23:12:27 ended · old-song · repeat stop'
-11-23 23:12:27.819 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/10340 clientId=android.media.AudioManager@56c0b03rh@1adca80
-11-23 23:12:27.833 I/ReactNativeJS(10340): '[diag]', '23/11 23:12:27 ended · old-song · repeat stop'
-11-23 23:12:52.652 I/ReactNativeJS(10600): '[diag]', '23/11 23:12:52 lock screen artwork skipped · assets_icon'
-11-23 23:13:00.721 I/ReactNativeJS(10600): '[diag]', '23/11 23:13:00 play · gan-party · 3/4 · native 3'
-11-23 23:13:01.094 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/10600 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@c26a8edrh@83c5322 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:13:16.681 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/10600 clientId=android.media.AudioManager@c26a8edrh@83c5322
-11-23 23:13:28.880 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/10600 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@c26a8edrh@83c5322 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:13:44.589 I/ReactNativeJS(10600): '[diag]', '23/11 23:13:44 ended · gan-party · repeat stop'
-11-23 23:13:44.602 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/10600 clientId=android.media.AudioManager@c26a8edrh@83c5322
-11-23 23:13:44.614 I/ReactNativeJS(10600): '[diag]', '23/11 23:13:44 ended · gan-party · repeat stop'
-11-23 23:13:48.347 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/10600 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@c26a8edrh@83c5322 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:14:13.398 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/10600 clientId=android.media.AudioManager@c26a8edrh@83c5322
-11-23 23:14:34.028 I/ReactNativeJS(10809): '[diag]', '23/11 23:14:34 lock screen artwork skipped · assets_icon'
-11-23 23:14:42.285 I/ReactNativeJS(10809): '[diag]', '23/11 23:14:42 play youtube · שיר מיוטיוב · 4/4'
-11-23 23:14:49.637 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/10809 AA=USAGE_MEDIA/CONTENT_TYPE_UNKNOWN clientId=android.media.AudioManager@4110d0eorg.chromium.content.browser.AudioFocusDelegate@411032f callingPack=app.shiron.gan req=1 flags=0x0 sdk=36
-11-23 23:16:27.165 I/ReactNativeJS(10809): '[diag]', '23/11 23:16:27 background: youtube paused · שיר מיוטיוב · resumes on return'
-11-23 23:16:28.259 I/MediaFocusControl(  520): abandonAudioFocus() from uid/pid 10192/10809 clientId=android.media.AudioManager@4110d0eorg.chromium.content.browser.AudioFocusDelegate@411032f
-11-23 23:16:55.078 I/ReactNativeJS(10809): '[diag]', '23/11 23:16:55 play · בוקר טוב לגן · 1/4 · native 3'
-11-23 23:16:55.305 I/MediaFocusControl(  520): requestAudioFocus() from uid/pid 10192/10809 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@4110d0erh@af2940 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
-11-23 23:18:12.641 I/MediaFocusControl(  520): AudioFocus  removeFocusStackEntryOnDeath(): removing entry for android.os.BinderProxy@b450276
-11-23 23:18:13.267 I/ReactNativeJS(11247): '[diag]', '23/11 23:18:13 lock screen artwork skipped · assets_icon'
-11-23 23:19:13.950 I/ReactNativeJS(11448): '[diag]', '23/11 23:19:13 lock screen artwork skipped · assets_icon'
-11-23 23:19:26.343 I/ReactNativeJS(11448): '[diag]', '23/11 23:19:26 share file · בוקר טוב לגן · file:///data/user/0/app.shiron.gan/cache/share/%D7%91%D7%95%D7%A7%D7%A8%20%D7%98%D7%95%D7%91%20%D7%9C%D7%92%D7%9F.m4a · 471674 bytes · audio/mp4'
-11-23 23:19:37.300 I/ReactNativeJS(11448): '[diag]', '23/11 23:19:37 share file · בוקר טוב לגן · file:///data/user/0/app.shiron.gan/cache/share/%D7%91%D7%95%D7%A7%D7%A8%20%D7%98%D7%95%D7%91%20%D7%9C%D7%92%D7%9F.m4a · 471674 bytes · audio/mp4'
-11-23 23:19:47.952 I/ReactNativeJS(11448): '[diag]', '23/11 23:19:47 share link · שיר מיוטיוב · sharedAction · '
-11-23 23:19:54.165 I/ReactNativeJS(11448): '[diag]', '23/11 23:19:54 share list · כל השירים · 3 files · 1383 KB · with links · 0 not ready'
-11-23 23:20:16.712 I/ReactNativeJS(11739): '[diag]', '23/11 23:20:16 lock screen artwork skipped · assets_icon'
+11-23 23:55:23.145 I/ReactNativeJS( 5947): '[diag]', '23/11 23:55:23 lock screen artwork skipped · assets_icon'
+11-23 23:55:31.866 I/ReactNativeJS( 5947): '[diag]', '23/11 23:55:31 share received · type weburl · 0 files · https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+11-23 23:56:22.476 I/ReactNativeJS( 5947): '[diag]', '23/11 23:56:22 play youtube · שיר מיוטיוב · 1/1'
+11-23 23:56:28.407 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/5947 AA=USAGE_MEDIA/CONTENT_TYPE_UNKNOWN clientId=android.media.AudioManager@15e9788org.chromium.content.browser.AudioFocusDelegate@2a22521 callingPack=app.shiron.gan req=1 flags=0x0 sdk=36
+11-24 00:00:01.881 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/5947 clientId=android.media.AudioManager@15e9788org.chromium.content.browser.AudioFocusDelegate@2a22521
+11-24 00:00:02.020 I/ReactNativeJS( 5947): '[diag]', '24/11 00:00:02 ended · שיר מיוטיוב · repeat off · youtube'
+11-24 00:00:39.643 I/ReactNativeJS( 7059): '[diag]', '24/11 00:00:39 lock screen artwork skipped · assets_icon'
+11-24 00:01:02.169 I/ReactNativeJS( 7236): '[diag]', '24/11 00:01:02 lock screen artwork skipped · assets_icon'
+11-24 00:01:17.369 I/ReactNativeJS( 7236): '[diag]', '24/11 00:01:17 import · boker-tov.mp3 · 313 KB · from file:///data/user/0/app.shiron.gan/files/songs/32c1d4fb-b124'
+11-24 00:01:32.008 I/ReactNativeJS( 7236): '[diag]', '24/11 00:01:32 converted · boker-tov.mp3 · 38.5 s of 40.0 s · gain 17.74 dB · 461 KB · 14528 ms'
+11-24 00:01:44.689 I/ReactNativeJS( 7575): '[diag]', '24/11 00:01:44 lock screen artwork skipped · assets_icon'
+11-24 00:01:58.301 I/ReactNativeJS( 7575): '[diag]', '24/11 00:01:58 import · voice-whatsapp.opus · 188 KB · from file:///data/user/0/app.shiron.gan/files/songs/fc64f0ae-7a51'
+11-24 00:02:13.030 I/ReactNativeJS( 7575): '[diag]', '24/11 00:02:13 converted · voice-whatsapp.opus · 38.5 s of 40.1 s · gain 14.03 dB · 462 KB · 14668 ms'
+11-24 00:02:25.384 I/ReactNativeJS( 7813): '[diag]', '24/11 00:02:25 lock screen artwork skipped · assets_icon'
+11-24 00:02:38.748 I/ReactNativeJS( 7813): '[diag]', '24/11 00:02:38 import · old-song.wma · 647 KB · from file:///data/user/0/app.shiron.gan/files/songs/82058940-c3df'
+11-24 00:02:52.783 I/ReactNativeJS( 7813): '[diag]', '24/11 00:02:52 converted · old-song.wma · 38.3 s of 39.6 s · gain 14.04 dB · 458 KB · 13840 ms'
+11-24 00:03:05.865 I/ReactNativeJS( 8060): '[diag]', '24/11 00:03:05 lock screen artwork skipped · assets_icon'
+11-24 00:03:19.253 I/ReactNativeJS( 8060): '[diag]', '24/11 00:03:19 import · gan-party.mpg · 674 KB · from file:///data/user/0/app.shiron.gan/files/songs/d49f92ce-f1a6'
+11-24 00:03:33.468 I/ReactNativeJS( 8060): '[diag]', '24/11 00:03:33 converted · gan-party.mpg · 38.8 s of 40.2 s · gain 14.04 dB · 464 KB · 14049 ms'
+11-24 00:03:45.592 I/ReactNativeJS( 8289): '[diag]', '24/11 00:03:45 lock screen artwork skipped · assets_icon'
+11-24 00:04:16.622 I/ReactNativeJS( 8289): '[diag]', '24/11 00:04:16 import · boker-tov.mp3 · 313 KB · from file:///data/user/0/app.shiron.gan/files/songs/e19fdb5c-654c'
+11-24 00:04:43.495 I/ReactNativeJS( 8596): '[diag]', '24/11 00:04:43 lock screen artwork skipped · assets_icon'
+11-24 00:04:53.279 I/ReactNativeJS( 8596): '[diag]', '24/11 00:04:53 play · boker-tov · 5/5 · native 4'
+11-24 00:04:53.687 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/8596 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@f285963rh@4fc6960 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:05:11.093 I/ReactNativeJS( 8596): '[diag]', '24/11 00:05:11 play · voice-whatsapp · 4/5 · native 4'
+11-24 00:05:11.096 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/8596 clientId=android.media.AudioManager@f285963rh@4fc6960
+11-24 00:05:11.117 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/8596 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@f285963rh@4fc6960 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:05:27.086 I/ReactNativeJS( 8596): '[diag]', '24/11 00:05:27 play · old-song · 3/5 · native 4'
+11-24 00:05:27.093 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/8596 clientId=android.media.AudioManager@f285963rh@4fc6960
+11-24 00:05:27.131 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/8596 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@f285963rh@4fc6960 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:05:42.642 I/ReactNativeJS( 8596): '[diag]', '24/11 00:05:42 play · gan-party · 2/5 · native 4'
+11-24 00:05:42.645 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/8596 clientId=android.media.AudioManager@f285963rh@4fc6960
+11-24 00:05:42.746 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/8596 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@f285963rh@4fc6960 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:06:15.809 I/MediaFocusControl(  516): AudioFocus  removeFocusStackEntryOnDeath(): removing entry for android.os.BinderProxy@4b58803
+11-24 00:06:17.235 I/ReactNativeJS( 8855): '[diag]', '24/11 00:06:17 lock screen artwork skipped · assets_icon'
+11-24 00:06:24.476 I/ReactNativeJS( 8855): '[diag]', '24/11 00:06:24 play youtube · שיר מיוטיוב · 1/5'
+11-24 00:06:30.646 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/8855 AA=USAGE_MEDIA/CONTENT_TYPE_UNKNOWN clientId=android.media.AudioManager@31e44feorg.chromium.content.browser.AudioFocusDelegate@75cf45f callingPack=app.shiron.gan req=1 flags=0x0 sdk=36
+11-24 00:07:29.693 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/8855 clientId=android.media.AudioManager@31e44feorg.chromium.content.browser.AudioFocusDelegate@75cf45f
+11-24 00:07:30.029 I/ReactNativeJS( 8855): '[diag]', '24/11 00:07:30 play · gan-party · 2/5 · native 4'
+11-24 00:07:30.163 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/8855 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@31e44ferh@9e64aca callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:09:08.998 I/ReactNativeJS( 8855): '[diag]', '24/11 00:09:08 ended · gan-party · repeat stop'
+11-24 00:09:09.001 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/8855 clientId=android.media.AudioManager@31e44ferh@9e64aca
+11-24 00:10:11.036 I/ReactNativeJS( 8855): '[diag]', '24/11 00:10:11 play next · voice-whatsapp · after 0 more'
+11-24 00:10:46.860 I/ReactNativeJS( 9315): '[diag]', '24/11 00:10:46 lock screen artwork skipped · assets_icon'
+11-24 00:11:18.396 I/ReactNativeJS( 9622): '[diag]', '24/11 00:11:18 lock screen artwork skipped · assets_icon'
+11-24 00:11:53.713 I/ReactNativeJS( 9802): '[diag]', '24/11 00:11:53 lock screen artwork skipped · assets_icon'
+11-24 00:12:25.683 I/ReactNativeJS( 9802): '[diag]', '24/11 00:12:25 play · gan-party · 1/2 · native 2'
+11-24 00:12:25.983 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/9802 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@91e2e9frh@2087bec callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:13:20.991 I/MediaFocusControl(  516): AudioFocus  removeFocusStackEntryOnDeath(): removing entry for android.os.BinderProxy@d8307ed
+11-24 00:13:21.922 I/ReactNativeJS(10011): '[diag]', '24/11 00:13:21 lock screen artwork skipped · assets_icon'
+11-24 00:13:58.407 I/ReactNativeJS(10296): '[diag]', '24/11 00:13:58 lock screen artwork skipped · assets_icon'
+11-24 00:14:06.381 I/ReactNativeJS(10296): '[diag]', '24/11 00:14:06 play · old-song · 1/1 · native 1'
+11-24 00:14:06.597 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/10296 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@fa91092rh@f4ba63 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:14:46.496 I/ReactNativeJS(10296): '[diag]', '24/11 00:14:46 ended · old-song · repeat off · native loop none'
+11-24 00:14:46.497 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/10296 clientId=android.media.AudioManager@fa91092rh@f4ba63
+11-24 00:14:46.518 I/ReactNativeJS(10296): '[diag]', '24/11 00:14:46 list ended, parked on · old-song'
+11-24 00:14:50.620 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/10296 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@fa91092rh@f4ba63 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:14:50.632 I/ReactNativeJS(10296): '[diag]', '24/11 00:14:50 playing after the end of the list'
+11-24 00:16:39.769 I/ReactNativeJS(10296): '[diag]', '24/11 00:16:39 ended · old-song · repeat stop'
+11-24 00:16:39.774 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/10296 clientId=android.media.AudioManager@fa91092rh@f4ba63
+11-24 00:16:39.778 I/ReactNativeJS(10296): '[diag]', '24/11 00:16:39 ended · old-song · repeat stop'
+11-24 00:17:03.433 I/ReactNativeJS(10546): '[diag]', '24/11 00:17:03 lock screen artwork skipped · assets_icon'
+11-24 00:17:11.582 I/ReactNativeJS(10546): '[diag]', '24/11 00:17:11 play · gan-party · 3/4 · native 3'
+11-24 00:17:11.693 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/10546 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@a626665rh@e368f3a callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:17:27.738 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/10546 clientId=android.media.AudioManager@a626665rh@e368f3a
+11-24 00:17:39.754 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/10546 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@a626665rh@e368f3a callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:17:55.419 I/ReactNativeJS(10546): '[diag]', '24/11 00:17:55 ended · gan-party · repeat stop'
+11-24 00:17:55.424 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/10546 clientId=android.media.AudioManager@a626665rh@e368f3a
+11-24 00:17:55.444 I/ReactNativeJS(10546): '[diag]', '24/11 00:17:55 ended · gan-party · repeat stop'
+11-24 00:17:59.494 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/10546 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@a626665rh@e368f3a callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:18:23.505 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/10546 clientId=android.media.AudioManager@a626665rh@e368f3a
+11-24 00:18:44.600 I/ReactNativeJS(10771): '[diag]', '24/11 00:18:44 lock screen artwork skipped · assets_icon'
+11-24 00:18:51.974 I/ReactNativeJS(10771): '[diag]', '24/11 00:18:51 play youtube · שיר מיוטיוב · 4/4'
+11-24 00:18:58.037 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/10771 AA=USAGE_MEDIA/CONTENT_TYPE_UNKNOWN clientId=android.media.AudioManager@1c71f12org.chromium.content.browser.AudioFocusDelegate@72be6e3 callingPack=app.shiron.gan req=1 flags=0x0 sdk=36
+11-24 00:20:16.338 I/ReactNativeJS(10771): '[diag]', '24/11 00:20:16 background: youtube paused · שיר מיוטיוב · resumes on return'
+11-24 00:20:16.654 I/MediaFocusControl(  516): abandonAudioFocus() from uid/pid 10192/10771 clientId=android.media.AudioManager@1c71f12org.chromium.content.browser.AudioFocusDelegate@72be6e3
+11-24 00:20:42.570 I/ReactNativeJS(10771): '[diag]', '24/11 00:20:42 play · בוקר טוב לגן · 1/4 · native 3'
+11-24 00:20:42.773 I/MediaFocusControl(  516): requestAudioFocus() from uid/pid 10192/10771 AA=USAGE_UNKNOWN/CONTENT_TYPE_MUSIC clientId=android.media.AudioManager@1c71f12rh@6ea25 callingPack=app.shiron.gan req=2 flags=0x1 sdk=36
+11-24 00:21:50.835 I/MediaFocusControl(  516): AudioFocus  removeFocusStackEntryOnDeath(): removing entry for android.os.BinderProxy@1a50c84
+11-24 00:21:52.278 I/ReactNativeJS(11198): '[diag]', '24/11 00:21:52 lock screen artwork skipped · assets_icon'
+11-24 00:22:50.706 I/ReactNativeJS(11397): '[diag]', '24/11 00:22:50 lock screen artwork skipped · assets_icon'
+11-24 00:23:02.758 I/ReactNativeJS(11397): '[diag]', '24/11 00:23:02 share file · בוקר טוב לגן · file:///data/user/0/app.shiron.gan/cache/share/%D7%91%D7%95%D7%A7%D7%A8%20%D7%98%D7%95%D7%91%20%D7%9C%D7%92%D7%9F.m4a · 471674 bytes · audio/mp4'
+11-24 00:23:13.606 I/ReactNativeJS(11397): '[diag]', '24/11 00:23:13 share file · בוקר טוב לגן · file:///data/user/0/app.shiron.gan/cache/share/%D7%91%D7%95%D7%A7%D7%A8%20%D7%98%D7%95%D7%91%20%D7%9C%D7%92%D7%9F.m4a · 471674 bytes · audio/mp4'
+11-24 00:23:23.775 I/ReactNativeJS(11397): '[diag]', '24/11 00:23:23 share link · שיר מיוטיוב · sharedAction · '
+11-24 00:23:29.383 I/ReactNativeJS(11397): '[diag]', '24/11 00:23:29 share list · כל השירים · 3 files · 1383 KB · with links · 0 not ready'
+11-24 00:23:51.391 I/ReactNativeJS(11677): '[diag]', '24/11 00:23:51 lock screen artwork skipped · assets_icon'
